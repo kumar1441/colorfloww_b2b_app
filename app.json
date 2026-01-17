@@ -24,6 +24,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "scheme": "nail-app",
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ]
   }
 }
