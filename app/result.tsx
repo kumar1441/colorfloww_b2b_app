@@ -1,11 +1,28 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { GamificationService } from '../services/gamification';
 
+/**
+ * ResultScreen: Logic for updating streaks and displaying try-on results.
+ */
 export default function ResultScreen() {
     const params = useLocalSearchParams();
     const router = useRouter();
+
+    useEffect(() => {
+        // Increment streak on every successful try-on (once per day logic inside service)
+        GamificationService.updateStreak().then(({ streak, reachedMilestone }) => {
+            if (reachedMilestone) {
+                Alert.alert(
+                    "🔥 Great job!",
+                    `You've painted your nails for ${streak} days in a row! You're on fire!`,
+                    [{ text: "Excellent!" }]
+                );
+            }
+        });
+    }, []);
 
     return (
         <SafeAreaView style={styles.container}>

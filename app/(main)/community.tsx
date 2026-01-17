@@ -56,7 +56,17 @@ export default function CommunityScreen() {
                             <LucideHeart size={16} color={item.isLiked ? '#FF6B9D' : '#8A8A8A'} fill={item.isLiked ? '#FF6B9D' : 'transparent'} />
                             <Text style={styles.likesCount}>{item.likes}</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.iconBtn}>
+                        <TouchableOpacity
+                            style={styles.iconBtn}
+                            onPress={() => {
+                                import('react-native').then(({ Share }) => {
+                                    Share.share({
+                                        message: `Check out this gorgeous nail color: ${item.name} (${item.color})! Found on NailArt.`,
+                                        title: 'Share Nail Color'
+                                    });
+                                });
+                            }}
+                        >
                             <LucideShare2 size={16} color="#8A8A8A" />
                         </TouchableOpacity>
                     </View>

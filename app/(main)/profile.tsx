@@ -1,15 +1,25 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-// import Animated, { FadeIn } from 'react-native-reanimated';
-import { LucideUser, LucideSettings, LucideTrophy, LucideLogOut, LucideChevronRight } from 'lucide-react-native';
+import { LucideUser, LucideSettings, LucideTrophy, LucideLogOut, LucideChevronRight, LucideFlame } from 'lucide-react-native';
+import { GamificationService } from '../../services/gamification';
+import StreakCard from '../../components/StreakCard';
+import StreakShareModal from '../../components/StreakShareModal';
 
+/**
+ * ProfileScreen: Displays user info and gamification stats (streaks, awards).
+ */
 export default function ProfileScreen() {
     const router = useRouter();
+    const [streak, setStreak] = useState(0);
+    const [isShareModalVisible, setShareModalVisible] = useState(false);
+
+    useEffect(() => {
+        GamificationService.getStreak().then(setStreak);
+    }, []);
 
     const handleLogout = () => {
-        // In a real app, clear auth state
         router.replace('/');
     };
 
@@ -37,23 +47,39 @@ export default function ProfileScreen() {
                     <Text style={styles.userEmail}>nail.lover@example.com</Text>
                 </View>
 
-                {/* Stats */}
+                {/* Streak Card */}
+                <StreakCard 
+                    streak={streak} 
+                    onShare={() => setShareModalVisible(true)} 
+                />
+
+                {/* Share Modal */}
+                <StreakShareModal 
+                    visible={isShareModalVisible}
+                    streak={streak}
+                    onClose={() => setShareModalVisible(false)}
+                />
+
+                {/* Stats Row */}
                 <View style={styles.statsRow}>
                     <View style={styles.statCard}>
+                        <LucideFlame size={20} color="#F97316" style={{ marginBottom: 4 }} />
+                        <Text style={styles.statValue}>{streak}</Text>
+                        <Text style={styles.statLabel}>Day Streak</Text>
+                    </View>
+                    <View style={styles.statCard}>
+                        <LucideTrophy size={20} color="#FBBF24" style={{ marginBottom: 4 }} />
                         <Text style={styles.statValue}>12</Text>
                         <Text style={styles.statLabel}>Looks</Text>
                     </View>
                     <View style={styles.statCard}>
+                        <LucideTrophy size={20} color="#A78BFA" style={{ marginBottom: 4 }} />
                         <Text style={styles.statValue}>4</Text>
                         <Text style={styles.statLabel}>Awards</Text>
                     </View>
-                    <View style={styles.statCard}>
-                        <Text style={styles.statValue}>248</Text>
-                        <Text style={styles.statLabel}>XP</Text>
-                    </View>
                 </View>
 
-                {/* Sections */}
+                {/* Menu Sections */}
                 <View style={styles.menu}>
                     <TouchableOpacity style={styles.menuItem}>
                         <View style={styles.menuLeft}>

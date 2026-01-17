@@ -4,12 +4,15 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useEffect } from "react";
 import { trackEvent, incrementSessionCount } from "../services/analytics";
+import { AuthService } from "../services/auth";
+import { NotificationService } from "../services/notifications";
 import "../global.css";
 
 export default function Layout() {
     useEffect(() => {
         incrementSessionCount();
         trackEvent("APP_OPEN");
+        NotificationService.setupDailyReminders();
     }, []);
 
     return (
