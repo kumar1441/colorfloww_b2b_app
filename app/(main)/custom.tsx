@@ -38,72 +38,81 @@ export default function ColorCustomizer() {
     };
 
     return (
-        <View style={styles.container}>
-            <SafeAreaView edges={['top']} style={styles.header}>
-                <View style={styles.headerContent}>
-                    <View style={styles.titleRow}>
+        <View className="flex-1 bg-brand-cream dark:bg-brand-cream-dark">
+            <SafeAreaView edges={['top']} className="bg-brand-cream/80 dark:bg-brand-cream-dark/80">
+                <View className="px-6 pt-4 pb-5">
+                    <View className="flex-row items-center gap-x-3 mb-5">
                         <LucidePalette size={32} color="#697D59" strokeWidth={1.5} />
-                        <Text style={styles.title}>Custom Colors</Text>
+                        <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Custom Mix</Text>
                     </View>
 
                     {/* Tabs */}
-                    <View style={styles.tabContainer}>
+                    <View className="flex-row bg-white/60 dark:bg-brand-charcoal/40 rounded-2xl p-1 gap-x-1 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5">
                         <TouchableOpacity
                             onPress={() => setActiveTab("sliders")}
-                            style={[styles.tab, activeTab === "sliders" && styles.activeTab]}
+                            className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl gap-x-2 ${activeTab === "sliders" ? "bg-brand-sage dark:bg-brand-sage-dark" : ""}`}
                         >
-                            <LucideSliders size={20} color={activeTab === "sliders" ? "#fff" : "#8A8A8A"} />
-                            <Text style={[styles.tabText, activeTab === "sliders" && styles.activeTabText]}>Sliders</Text>
+                            <LucideSliders size={18} color={activeTab === "sliders" ? "#fff" : "#8A8A8A"} />
+                            <Text className={`text-sm font-semibold ${activeTab === "sliders" ? "text-white" : "text-brand-charcoal-light"}`}>Sliders</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() => setActiveTab("upload")}
-                            style={[styles.tab, activeTab === "upload" && styles.activeTab]}
+                            className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl gap-x-2 ${activeTab === "upload" ? "bg-brand-sage dark:bg-brand-sage-dark" : ""}`}
                         >
-                            <LucideUpload size={20} color={activeTab === "upload" ? "#fff" : "#8A8A8A"} />
-                            <Text style={[styles.tabText, activeTab === "upload" && styles.activeTabText]}>Upload</Text>
+                            <LucideUpload size={18} color={activeTab === "upload" ? "#fff" : "#8A8A8A"} />
+                            <Text className={`text-sm font-semibold ${activeTab === "upload" ? "text-white" : "text-brand-charcoal-light"}`}>Upload</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             </SafeAreaView>
 
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
                 {/* Preview Card */}
-                <View style={styles.previewCard}>
-                    <Text style={styles.previewLabel}>Preview</Text>
-                    <View style={[styles.colorPreview, { backgroundColor: currentColor }]}>
-                        <View style={styles.shine} />
+                <View className="bg-white/60 dark:bg-brand-charcoal/40 rounded-[32px] p-6 mb-6 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 items-center shadow-sm">
+                    <Text className="self-start text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60 mb-4">Preview</Text>
+                    <View
+                        className="w-full h-40 rounded-3xl mb-5 overflow-hidden shadow-lg"
+                        style={{ backgroundColor: currentColor }}
+                    >
+                        <View className="absolute inset-0 bg-white/10 -skew-x-[20deg] -translate-x-[50px]" />
                     </View>
-                    <View style={styles.colorInfo}>
-                        <Text style={styles.hexText}>{currentColor}</Text>
-                        <Text style={styles.rgbText}>RGB({Math.round(rgb.r)}, {Math.round(rgb.g)}, {Math.round(rgb.b)})</Text>
+                    <View className="items-center">
+                        <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-1">{currentColor}</Text>
+                        <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60">
+                            RGB({Math.round(rgb.r)}, {Math.round(rgb.g)}, {Math.round(rgb.b)})
+                        </Text>
                     </View>
                 </View>
 
                 {/* Name Input */}
                 {showNameInput && (
-                    <View style={styles.glassCard}>
-                        <View style={styles.labelRow}>
+                    <View className="bg-white/60 dark:bg-brand-charcoal/40 rounded-3xl p-5 mb-6 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5">
+                        <View className="flex-row items-center gap-x-2 mb-3">
                             <LucideSparkles size={18} color="#697D59" />
-                            <Text style={styles.cardLabel}>Name Your Creation</Text>
+                            <Text className="text-base font-semibold text-brand-charcoal dark:text-brand-charcoal-dark">Name Your Creation</Text>
                         </View>
                         <TextInput
                             value={colorName}
                             onChangeText={setColorName}
                             placeholder="e.g., Morning Dew..."
-                            placeholderTextColor="#8A8A8A"
-                            style={styles.input}
+                            placeholderTextColor="#A1A1A1"
+                            className="bg-white/80 dark:bg-brand-charcoal/60 rounded-xl p-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5"
                         />
                     </View>
                 )}
 
                 {/* Sliders */}
                 {activeTab === "sliders" && (
-                    <View style={styles.controls}>
+                    <View className="gap-y-4 mb-8">
                         {['r', 'g', 'b'].map((channel) => (
-                            <View key={channel} style={styles.sliderCard}>
-                                <View style={styles.sliderHeader}>
-                                    <Text style={styles.channelLabel}>{channel === 'r' ? 'Red' : channel === 'g' ? 'Green' : 'Blue'}</Text>
-                                    <Text style={styles.channelValue}>{Math.round(rgb[channel as keyof typeof rgb])}</Text>
+                            <View key={channel} className="bg-white/40 dark:bg-brand-charcoal/20 rounded-2xl p-4 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5">
+                                <View className="flex-row justify-between mb-3">
+                                    <Text className="text-sm font-semibold text-brand-charcoal dark:text-brand-charcoal-dark">
+                                        {channel === 'r' ? 'Red' : channel === 'g' ? 'Green' : 'Blue'}
+                                    </Text>
+                                    <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60 font-mono">
+                                        {Math.round(rgb[channel as keyof typeof rgb])}
+                                    </Text>
                                 </View>
                                 <Slider
                                     minimumValue={0}
@@ -111,7 +120,7 @@ export default function ColorCustomizer() {
                                     value={rgb[channel as keyof typeof rgb]}
                                     onValueChange={(v) => handleSliderChange(channel as any, v)}
                                     minimumTrackTintColor={channel === 'r' ? '#FF4B4B' : channel === 'g' ? '#4BFF4B' : '#4B4BFF'}
-                                    maximumTrackTintColor="#E8E5E1"
+                                    maximumTrackTintColor={Platform.OS === 'ios' ? '#E8E5E1' : '#D1D1D1'}
                                     thumbTintColor="#697D59"
                                 />
                             </View>
@@ -120,18 +129,20 @@ export default function ColorCustomizer() {
                 )}
 
                 {activeTab === "upload" && (
-                    <View style={styles.glassCard}>
-                        <Text style={styles.cardLabel}>Upload logic placeholder</Text>
-                        <Text style={styles.subtitle}>In the native app, you can pick colors directly from your camera roll or using the color picker.</Text>
+                    <View className="bg-white/60 dark:bg-brand-charcoal/40 rounded-3xl p-5 mb-6 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5">
+                        <Text className="text-base font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Upload logic placeholder</Text>
+                        <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60 leading-5">
+                            In the native app, you can pick colors directly from your camera roll or using the color picker.
+                        </Text>
                     </View>
                 )}
 
                 <TouchableOpacity
                     onPress={handleTryOn}
                     activeOpacity={0.8}
-                    style={styles.primaryButton}
+                    className="bg-brand-sage dark:bg-brand-sage-dark rounded-2xl py-5 items-center shadow-lg"
                 >
-                    <Text style={styles.buttonText}>
+                    <Text className="text-white text-lg font-bold">
                         {showNameInput && colorName ? "Save & Try This Color" : "Try This Color"}
                     </Text>
                 </TouchableOpacity>
@@ -140,179 +151,5 @@ export default function ColorCustomizer() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F9F7F4',
-    },
-    header: {
-        backgroundColor: 'rgba(249, 247, 244, 0.8)',
-    },
-    headerContent: {
-        paddingHorizontal: 24,
-        paddingTop: 16,
-        paddingBottom: 20,
-    },
-    titleRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        marginBottom: 20,
-    },
-    title: {
-        fontSize: 28,
-        color: '#2D2D2D',
-        fontWeight: '700',
-    },
-    tabContainer: {
-        flexDirection: 'row',
-        backgroundColor: 'rgba(255, 255, 255, 0.6)',
-        borderRadius: 20,
-        padding: 4,
-        gap: 4,
-    },
-    tab: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 10,
-        borderRadius: 16,
-        gap: 8,
-    },
-    activeTab: {
-        backgroundColor: '#697D59',
-    },
-    tabText: {
-        fontSize: 14,
-        color: '#8A8A8A',
-        fontWeight: '600',
-    },
-    activeTabText: {
-        color: '#fff',
-    },
-    scrollContent: {
-        padding: 24,
-        paddingBottom: 120,
-    },
-    previewCard: {
-        backgroundColor: 'rgba(255, 255, 255, 0.6)',
-        borderRadius: 32,
-        padding: 24,
-        marginBottom: 24,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.4)',
-        alignItems: 'center',
-    },
-    previewLabel: {
-        alignSelf: 'flex-start',
-        fontSize: 14,
-        color: '#8A8A8A',
-        marginBottom: 16,
-    },
-    colorPreview: {
-        width: '100%',
-        height: 160,
-        borderRadius: 24,
-        marginBottom: 20,
-        overflow: 'hidden',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.1,
-        shadowRadius: 15,
-        elevation: 5,
-    },
-    shine: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-        transform: [{ skewX: '-20deg' }, { translateX: -50 }],
-    },
-    colorInfo: {
-        alignItems: 'center',
-    },
-    hexText: {
-        fontSize: 28,
-        fontWeight: '700',
-        color: '#2D2D2D',
-        marginBottom: 4,
-    },
-    rgbText: {
-        fontSize: 14,
-        color: '#8A8A8A',
-    },
-    glassCard: {
-        backgroundColor: 'rgba(255, 255, 255, 0.6)',
-        borderRadius: 24,
-        padding: 20,
-        marginBottom: 24,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.4)',
-    },
-    labelRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        marginBottom: 12,
-    },
-    cardLabel: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#2D2D2D',
-    },
-    subtitle: {
-        fontSize: 14,
-        color: '#8A8A8A',
-        lineHeight: 20,
-    },
-    input: {
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        borderRadius: 16,
-        padding: 14,
-        fontSize: 16,
-        color: '#2D2D2D',
-        borderWidth: 1,
-        borderColor: '#E8E5E1',
-    },
-    controls: {
-        gap: 16,
-        marginBottom: 32,
-    },
-    sliderCard: {
-        backgroundColor: 'rgba(255, 255, 255, 0.4)',
-        borderRadius: 20,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.4)',
-    },
-    sliderHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 12,
-    },
-    channelLabel: {
-        fontSize: 14,
-        color: '#2D2D2D',
-        fontWeight: '600',
-    },
-    channelValue: {
-        fontSize: 14,
-        color: '#8A8A8A',
-        fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    },
-    primaryButton: {
-        backgroundColor: '#697D59',
-        borderRadius: 20,
-        paddingVertical: 18,
-        alignItems: 'center',
-        shadowColor: "#697D59",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 4,
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: '700',
-    }
-});
+const styles = StyleSheet.create({});
+

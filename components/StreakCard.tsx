@@ -12,34 +12,31 @@ export default function StreakCard({ streak, onShare }: StreakCardProps) {
     const currentDay = new Date().getDay();
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <View style={styles.flameContainer}>
+        <View className="bg-white dark:bg-brand-charcoal rounded-[24px] p-6 w-full shadow-sm mb-6 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5">
+            <View className="flex-row items-center mb-6">
+                <View className="relative mr-4">
                     <LucideFlame size={32} color="#F97316" fill="#F97316" />
-                    <View style={styles.badge}>
-                        <Text style={styles.badgeText}>{streak}</Text>
+                    <View className="absolute -bottom-1 -right-1 bg-white dark:bg-brand-charcoal w-[18px] h-[18px] rounded-full border-1.5 border-[#F97316] justify-center items-center">
+                        <Text className="text-[10px] font-bold text-brand-charcoal dark:text-brand-charcoal-dark">{streak}</Text>
                     </View>
                 </View>
 
-                <View style={styles.titleColumn}>
-                    <Text style={styles.title}>Your streak</Text>
+                <View className="flex-1">
+                    <Text className="text-2xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Your streak</Text>
                 </View>
 
-                <TouchableOpacity onPress={onShare} style={styles.shareBtn}>
+                <TouchableOpacity onPress={onShare} className="p-1">
                     <LucideShare2 size={24} color="#8A8A8A" />
                 </TouchableOpacity>
             </View>
 
-            <View style={styles.daysRow}>
+            <View className="flex-row justify-between">
                 {days.map((day, index) => {
                     const isCompleted = index <= currentDay;
                     return (
-                        <View key={day} style={styles.dayItem}>
-                            <Text style={styles.dayLabel}>{day}</Text>
-                            <View style={[
-                                styles.dot,
-                                isCompleted ? styles.dotActive : styles.dotInactive
-                            ]}>
+                        <View key={day} className="items-center">
+                            <Text className="text-sm text-brand-charcoal dark:text-brand-charcoal-dark font-semibold mb-2">{day}</Text>
+                            <View className={`w-8 h-8 rounded-full justify-center items-center ${isCompleted ? 'bg-brand-sage dark:bg-brand-sage-dark' : 'bg-brand-cream dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10'}`}>
                                 {isCompleted && <LucideCheck size={12} color="#fff" strokeWidth={3} />}
                             </View>
                         </View>
@@ -50,83 +47,4 @@ export default function StreakCard({ streak, onShare }: StreakCardProps) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        backgroundColor: '#fff',
-        borderRadius: 24,
-        padding: 24,
-        width: '100%',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 3,
-        marginBottom: 24,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 24,
-    },
-    flameContainer: {
-        position: 'relative',
-        marginRight: 16,
-    },
-    badge: {
-        position: 'absolute',
-        bottom: -4,
-        right: -4,
-        backgroundColor: '#fff',
-        width: 18,
-        height: 18,
-        borderRadius: 9,
-        borderWidth: 1.5,
-        borderColor: '#F97316',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    badgeText: {
-        fontSize: 10,
-        fontWeight: 'bold',
-        color: '#2D2D2D',
-    },
-    titleColumn: {
-        flex: 1,
-    },
-    title: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#2D2D2D',
-    },
-    shareBtn: {
-        padding: 4,
-    },
-    daysRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    dayItem: {
-        alignItems: 'center',
-    },
-    dayLabel: {
-        fontSize: 14,
-        color: '#2D2D2D',
-        fontWeight: '600',
-        marginBottom: 8,
-    },
-    dot: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    dotActive: {
-        backgroundColor: '#A78BFA', // Matching the purple/blue gradient from ref image
-    },
-    dotInactive: {
-        backgroundColor: '#F9F7F4',
-        borderWidth: 1,
-        borderColor: '#E8E5E1',
-    }
-});
+const styles = StyleSheet.create({});

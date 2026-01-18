@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { LucideArrowLeft } from 'lucide-react-native';
+import { LucideArrowLeft, LucideFingerprint } from 'lucide-react-native';
 import { AuthService } from '../services/auth';
 
 const { width } = Dimensions.get('window');
 
 /**
- * LoginScreen: Mirror of Onboarding design for consistency.
+ * LoginScreen: Mirror of Onboarding design for consistency with biometric support.
  */
 export default function LoginScreen() {
     const router = useRouter();
@@ -16,6 +16,11 @@ export default function LoginScreen() {
         email: "",
         password: ""
     });
+    const [isBiometricSupported, setIsBiometricSupported] = useState(false);
+
+    useEffect(() => {
+        AuthService.isBiometricsSupported().then(setIsBiometricSupported);
+    }, []);
 
     const handleLogin = async () => {
         // Simulated Login
@@ -23,28 +28,36 @@ export default function LoginScreen() {
         router.replace('/(main)/community');
     };
 
+    const handleBiometricLogin = async () => {
+        const success = await AuthService.authenticateBiometric();
+        if (success) {
+            await AuthService.login({ email: 'biometric@user.com', name: 'Biometric User' });
+            router.replace('/(main)/community');
+        }
+    };
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.container}
+            className="flex-1 bg-brand-cream dark:bg-brand-cream-dark"
         >
-            <SafeAreaView style={styles.safeArea}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <SafeAreaView className="flex-1">
+                <View className="px-6 pt-4">
+                    <TouchableOpacity onPress={() => router.back()} className="flex-row items-center">
                         <LucideArrowLeft size={20} color="#697D59" />
-                        <Text style={styles.backText}>Back</Text>
+                        <Text className="ml-2 text-brand-sage dark:text-brand-sage-dark text-lg font-medium">Back</Text>
                     </TouchableOpacity>
                 </View>
 
-                <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-                    <View style={styles.card}>
-                        <Text style={styles.title}>Welcome Back</Text>
-                        <Text style={styles.subtitle}>Sign in to continue</Text>
+                <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }} keyboardShouldPersistTaps="handled">
+                    <View className="bg-white dark:bg-brand-charcoal rounded-[32px] p-8 shadow-xl">
+                        <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Welcome Back</Text>
+                        <Text className="text-base text-brand-charcoal-light dark:text-brand-charcoal-light/60 mb-8">Sign in to continue</Text>
 
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>Email</Text>
+                        <View className="mb-5">
+                            <Text className="text-[15px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Email</Text>
                             <TextInput
-                                style={styles.input}
+                                className="bg-brand-cream/50 dark:bg-brand-cream-dark/30 border border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 rounded-xl py-3 px-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
                                 placeholder="your@email.com"
                                 placeholderTextColor="#A1A1A1"
                                 keyboardType="email-address"
@@ -54,10 +67,10 @@ export default function LoginScreen() {
                             />
                         </View>
 
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>Password</Text>
+                        <View className="mb-5">
+                            <Text className="text-[15px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Password</Text>
                             <TextInput
-                                style={styles.input}
+                                className="bg-brand-cream/50 dark:bg-brand-cream-dark/30 border border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 rounded-xl py-3 px-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
                                 placeholder="Enter your password"
                                 placeholderTextColor="#A1A1A1"
                                 secureTextEntry
@@ -69,14 +82,25 @@ export default function LoginScreen() {
                         <TouchableOpacity
                             onPress={handleLogin}
                             activeOpacity={0.8}
-                            style={styles.primaryButton}
+                            className="bg-brand-sage dark:bg-brand-sage-dark rounded-2xl py-5 items-center mt-3 mb-6 shadow-md"
                         >
-                            <Text style={styles.buttonText}>Sign In</Text>
+                            <Text className="text-white text-lg font-bold">Sign In</Text>
                         </TouchableOpacity>
 
-                        <View style={styles.footerTextContainer}>
-                            <Text style={styles.footerText}>
-                                Don't have an account? <Text style={styles.linkText} onPress={() => router.replace('/onboarding')}>Sign up</Text>
+                        {isBiometricSupported && (
+                            <TouchableOpacity
+                                onPress={handleBiometricLogin}
+                                activeOpacity={0.8}
+                                className="flex-row items-center justify-center py-4 rounded-2xl border-1.5 border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 mb-6 gap-3"
+                            >
+                                <LucideFingerprint size={24} color="#697D59" />
+                                <Text className="text-brand-sage dark:text-brand-sage-dark text-base font-semibold">Login with Biometrics</Text>
+                            </TouchableOpacity>
+                        )}
+
+                        <View className="items-center">
+                            <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60">
+                                Don't have an account? <Text className="text-brand-sage dark:text-brand-sage-dark font-bold" onPress={() => router.replace('/onboarding')}>Sign up</Text>
                             </Text>
                         </View>
                     </View>
@@ -86,95 +110,4 @@ export default function LoginScreen() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F9F7F4',
-    },
-    safeArea: {
-        flex: 1,
-    },
-    header: {
-        paddingHorizontal: 24,
-        paddingTop: 16,
-    },
-    backButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    backText: {
-        marginLeft: 8,
-        color: '#697D59',
-        fontSize: 16,
-        fontWeight: '500',
-    },
-    scrollContent: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        padding: 24,
-    },
-    card: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 32,
-        padding: 32,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.05,
-        shadowRadius: 15,
-        elevation: 5,
-    },
-    title: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#2D2D2D',
-        marginBottom: 8,
-    },
-    subtitle: {
-        fontSize: 16,
-        color: '#8A8A8A',
-        marginBottom: 32,
-    },
-    inputGroup: {
-        marginBottom: 20,
-    },
-    label: {
-        fontSize: 15,
-        fontWeight: '600',
-        color: '#2D2D2D',
-        marginBottom: 8,
-    },
-    input: {
-        backgroundColor: 'rgba(249, 247, 244, 0.5)',
-        borderWidth: 1,
-        borderColor: '#E8E5E1',
-        borderRadius: 12,
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        fontSize: 16,
-        color: '#2D2D2D',
-    },
-    primaryButton: {
-        backgroundColor: '#697D59',
-        borderRadius: 16,
-        paddingVertical: 18,
-        alignItems: 'center',
-        marginTop: 12,
-        marginBottom: 24,
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    footerTextContainer: {
-        alignItems: 'center',
-    },
-    footerText: {
-        fontSize: 14,
-        color: '#8A8A8A',
-    },
-    linkText: {
-        color: '#697D59',
-        fontWeight: 'bold',
-    },
-});
+const styles = StyleSheet.create({});

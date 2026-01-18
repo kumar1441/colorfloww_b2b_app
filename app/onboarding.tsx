@@ -51,31 +51,31 @@ export default function OnboardingScreen() {
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.container}
+            className="flex-1 bg-brand-cream dark:bg-brand-cream-dark"
         >
-            <SafeAreaView style={styles.safeArea}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+            <SafeAreaView className="flex-1">
+                <View className="px-6 pt-4">
+                    <TouchableOpacity onPress={handleBack} className="flex-row items-center">
                         <LucideArrowLeft size={20} color="#697D59" />
-                        <Text style={styles.backText}>Back</Text>
+                        <Text className="ml-2 text-brand-sage dark:text-brand-sage-dark text-lg font-medium">Back</Text>
                     </TouchableOpacity>
                 </View>
 
-                <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-                    <View style={styles.card}>
-                        <Text style={styles.title}>
+                <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }} keyboardShouldPersistTaps="handled">
+                    <View className="bg-white dark:bg-brand-charcoal rounded-[32px] p-8 shadow-xl">
+                        <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">
                             {step === 1 ? "Create Account" : "About You"}
                         </Text>
-                        <Text style={styles.subtitle}>
+                        <Text className="text-base text-brand-charcoal-light dark:text-brand-charcoal-light/60 mb-8">
                             {step === 1 ? "Let's get you started" : "Help us personalize your experience"}
                         </Text>
 
                         {step === 1 ? (
                             <>
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Full Name</Text>
+                                <View className="mb-5">
+                                    <Text className="text-[15px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Full Name</Text>
                                     <TextInput
-                                        style={styles.input}
+                                        className="bg-brand-cream/50 dark:bg-brand-cream-dark/30 border border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 rounded-xl py-3 px-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
                                         placeholder="Enter your name"
                                         placeholderTextColor="#A1A1A1"
                                         value={formData.name}
@@ -83,10 +83,10 @@ export default function OnboardingScreen() {
                                     />
                                 </View>
 
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Email</Text>
+                                <View className="mb-5">
+                                    <Text className="text-[15px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Email</Text>
                                     <TextInput
-                                        style={styles.input}
+                                        className="bg-brand-cream/50 dark:bg-brand-cream-dark/30 border border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 rounded-xl py-3 px-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
                                         placeholder="your@email.com"
                                         placeholderTextColor="#A1A1A1"
                                         keyboardType="email-address"
@@ -96,10 +96,10 @@ export default function OnboardingScreen() {
                                     />
                                 </View>
 
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Password</Text>
+                                <View className="mb-5">
+                                    <Text className="text-[15px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Password</Text>
                                     <TextInput
-                                        style={styles.input}
+                                        className="bg-brand-cream/50 dark:bg-brand-cream-dark/30 border border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 rounded-xl py-3 px-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
                                         placeholder="Create a password"
                                         placeholderTextColor="#A1A1A1"
                                         secureTextEntry
@@ -110,11 +110,11 @@ export default function OnboardingScreen() {
                             </>
                         ) : (
                             <>
-                                <View style={styles.row}>
-                                    <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-                                        <Text style={styles.label}>Age</Text>
+                                <View className="flex-row gap-4">
+                                    <View className="flex-1 mb-5">
+                                        <Text className="text-[15px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Age</Text>
                                         <TextInput
-                                            style={styles.input}
+                                            className="bg-brand-cream/50 dark:bg-brand-cream-dark/30 border border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 rounded-xl py-3 px-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
                                             placeholder="25"
                                             placeholderTextColor="#A1A1A1"
                                             keyboardType="numeric"
@@ -122,10 +122,10 @@ export default function OnboardingScreen() {
                                             onChangeText={(v) => setFormData({ ...formData, age: v })}
                                         />
                                     </View>
-                                    <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-                                        <Text style={styles.label}>Gender</Text>
+                                    <View className="flex-1 mb-5">
+                                        <Text className="text-[15px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Gender</Text>
                                         <TextInput
-                                            style={styles.input}
+                                            className="bg-brand-cream/50 dark:bg-brand-cream-dark/30 border border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 rounded-xl py-3 px-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
                                             placeholder="Female"
                                             placeholderTextColor="#A1A1A1"
                                             value={formData.gender}
@@ -134,10 +134,10 @@ export default function OnboardingScreen() {
                                     </View>
                                 </View>
 
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>City Name</Text>
+                                <View className="mb-5">
+                                    <Text className="text-[15px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">City Name</Text>
                                     <TextInput
-                                        style={styles.input}
+                                        className="bg-brand-cream/50 dark:bg-brand-cream-dark/30 border border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 rounded-xl py-3 px-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
                                         placeholder="New York"
                                         placeholderTextColor="#A1A1A1"
                                         value={formData.city}
@@ -145,10 +145,10 @@ export default function OnboardingScreen() {
                                     />
                                 </View>
 
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Zipcode</Text>
+                                <View className="mb-5">
+                                    <Text className="text-[15px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Zipcode</Text>
                                     <TextInput
-                                        style={styles.input}
+                                        className="bg-brand-cream/50 dark:bg-brand-cream-dark/30 border border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 rounded-xl py-3 px-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
                                         placeholder="10001"
                                         placeholderTextColor="#A1A1A1"
                                         keyboardType="numeric"
@@ -162,25 +162,25 @@ export default function OnboardingScreen() {
                         <TouchableOpacity
                             onPress={handleContinue}
                             activeOpacity={0.8}
-                            style={styles.primaryButton}
+                            className="bg-brand-sage dark:bg-brand-sage-dark rounded-2xl py-5 items-center mt-3 mb-6 shadow-md"
                         >
-                            <Text style={styles.buttonText}>
+                            <Text className="text-white text-lg font-bold">
                                 {step === 1 ? "Continue" : "Finish Set Up"}
                             </Text>
                         </TouchableOpacity>
 
                         {step === 1 && (
-                            <View style={styles.footerTextContainer}>
-                                <Text style={styles.footerText}>
-                                    Already have an account? <Text style={styles.linkText} onPress={() => router.replace('/login')}>Log in</Text>
+                            <View className="items-center">
+                                <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60">
+                                    Already have an account? <Text className="text-brand-sage dark:text-brand-sage-dark font-bold" onPress={() => router.replace('/login')}>Log in</Text>
                                 </Text>
                             </View>
                         )}
                     </View>
 
-                    <View style={styles.indicatorContainer}>
-                        <View style={[styles.dot, step === 1 && styles.activeDot]} />
-                        <View style={[styles.dot, step === 2 && styles.activeDot]} />
+                    <View className="flex-row justify-center mt-10 gap-x-2">
+                        <View className={`w-2 h-2 rounded-full ${step === 1 ? 'bg-brand-sage dark:bg-brand-sage-dark' : 'bg-brand-charcoal-light/20'}`} />
+                        <View className={`w-2 h-2 rounded-full ${step === 2 ? 'bg-brand-sage dark:bg-brand-sage-dark' : 'bg-brand-charcoal-light/20'}`} />
                     </View>
                 </ScrollView>
             </SafeAreaView>
@@ -191,29 +191,29 @@ export default function OnboardingScreen() {
                 transparent={true}
                 animationType="fade"
             >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <View style={styles.modalIcon}>
+                <View className="flex-1 bg-black/50 justify-center items-center p-6">
+                    <View className="bg-white dark:bg-brand-charcoal rounded-[32px] p-8 w-full items-center shadow-2xl">
+                        <View className="w-20 h-20 rounded-full bg-brand-cream dark:bg-brand-cream-dark/20 justify-center items-center mb-6">
                             <LucideShieldCheck size={48} color="#697D59" />
                         </View>
-                        <Text style={styles.modalTitle}>Data Privacy</Text>
-                        <Text style={styles.modalBody}>
+                        <Text className="text-2xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-4">Data Privacy</Text>
+                        <Text className="text-base text-brand-charcoal/70 dark:text-brand-charcoal-light/80 text-center leading-6 mb-8">
                             We value your privacy. Can we collect anonymized data to improve the virtual try-on experience? This data is encrypted and never linked to your personal identity.
                         </Text>
 
                         <TouchableOpacity
-                            style={styles.confirmButton}
+                            className="bg-brand-sage dark:bg-brand-sage-dark w-full py-4 rounded-2xl flex-row justify-center items-center mb-3"
                             onPress={finalizeOnboarding}
                         >
-                            <LucideCheck size={20} color="#fff" style={{ marginRight: 8 }} />
-                            <Text style={styles.confirmText}>I Agree</Text>
+                            <LucideCheck size={20} color="#fff" className="mr-2" />
+                            <Text className="text-white text-lg font-bold">I Agree</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            style={styles.skipButton}
+                            className="py-3"
                             onPress={finalizeOnboarding}
                         >
-                            <Text style={styles.skipText}>Maybe Later</Text>
+                            <Text className="text-brand-charcoal-light dark:text-brand-charcoal-light/60 text-base font-medium">Maybe Later</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -222,173 +222,5 @@ export default function OnboardingScreen() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F9F7F4',
-    },
-    safeArea: {
-        flex: 1,
-    },
-    header: {
-        paddingHorizontal: 24,
-        paddingTop: 16,
-    },
-    backButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    backText: {
-        marginLeft: 8,
-        color: '#697D59',
-        fontSize: 16,
-        fontWeight: '500',
-    },
-    scrollContent: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        padding: 24,
-    },
-    card: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 32,
-        padding: 32,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.05,
-        shadowRadius: 15,
-        elevation: 5,
-    },
-    title: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#2D2D2D',
-        marginBottom: 8,
-    },
-    subtitle: {
-        fontSize: 16,
-        color: '#8A8A8A',
-        marginBottom: 32,
-    },
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    inputGroup: {
-        marginBottom: 20,
-    },
-    label: {
-        fontSize: 15,
-        fontWeight: '600',
-        color: '#2D2D2D',
-        marginBottom: 8,
-    },
-    input: {
-        backgroundColor: 'rgba(249, 247, 244, 0.5)',
-        borderWidth: 1,
-        borderColor: '#E8E5E1',
-        borderRadius: 12,
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        fontSize: 16,
-        color: '#2D2D2D',
-    },
-    primaryButton: {
-        backgroundColor: '#697D59',
-        borderRadius: 16,
-        paddingVertical: 18,
-        alignItems: 'center',
-        marginTop: 12,
-        marginBottom: 24,
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    footerTextContainer: {
-        alignItems: 'center',
-    },
-    footerText: {
-        fontSize: 14,
-        color: '#8A8A8A',
-    },
-    linkText: {
-        color: '#697D59',
-        fontWeight: 'bold',
-    },
-    indicatorContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        marginTop: 40,
-        gap: 8,
-    },
-    dot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: '#E8E5E1',
-    },
-    activeDot: {
-        backgroundColor: '#697D59',
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 24,
-    },
-    modalContent: {
-        backgroundColor: '#fff',
-        borderRadius: 32,
-        padding: 32,
-        width: '100%',
-        alignItems: 'center',
-    },
-    modalIcon: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: '#F9F7F4',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 24,
-    },
-    modalTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#2D2D2D',
-        marginBottom: 16,
-    },
-    modalBody: {
-        fontSize: 16,
-        color: '#5A5A5A',
-        textAlign: 'center',
-        lineHeight: 24,
-        marginBottom: 32,
-    },
-    confirmButton: {
-        backgroundColor: '#697D59',
-        width: '100%',
-        paddingVertical: 16,
-        borderRadius: 16,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    confirmText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    skipButton: {
-        paddingVertical: 12,
-    },
-    skipText: {
-        color: '#8A8A8A',
-        fontSize: 16,
-        fontWeight: '500',
-    }
-});
+const styles = StyleSheet.create({});
+

@@ -1,4 +1,4 @@
-# NailArt Mobile App 💅✨
+# Colorfloww 💅✨
 
 A premium AI-powered virtual nail color try-on application built with **Expo**, **React Native**, and **Skia**.
 

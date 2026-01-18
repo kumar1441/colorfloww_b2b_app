@@ -36,12 +36,14 @@ export const NotificationService = {
                 title: "💅 Ready for a fresh look?",
                 body: "Don't break your streak! Try on a new nail color today.",
                 data: { url: '/(main)/community' },
+                ...(Platform.OS === 'android' ? { channelId: 'default' } : {}),
             },
             trigger: {
+                type: 'calendar',
                 hour: 10,
                 minute: 0,
                 repeats: true,
-            },
+            } as Notifications.CalendarTriggerInput,
         });
     }
 };

@@ -4,6 +4,8 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
+import { LucideX, LucideRefreshCcw, LucideImage, LucideCircle } from 'lucide-react-native';
+import { BlurView } from 'expo-blur';
 
 /**
  * CameraScreen provides the interface for capturing nail photos 
@@ -17,13 +19,18 @@ export default function CameraScreen() {
     const params = useLocalSearchParams();
     const selectedColor = params.color as string || '#FF0000';
 
-    if (!permission) return <View style={styles.container} />;
+    if (!permission) return <View className="flex-1 bg-black" />;
 
     if (!permission.granted) {
         return (
-            <View style={styles.permissionContainer}>
-                <Text style={styles.permissionText}>We need your permission to show the camera</Text>
-                <Button onPress={requestPermission} title="Grant Permission" />
+            <View className="flex-1 justify-center items-center bg-zinc-900 p-6">
+                <Text className="text-white text-center text-lg mb-6">We need your permission to show the camera</Text>
+                <TouchableOpacity
+                    onPress={requestPermission}
+                    className="bg-brand-sage px-8 py-4 rounded-2xl"
+                >
+                    <Text className="text-white font-bold">Grant Permission</Text>
+                </TouchableOpacity>
             </View>
         );
     }
@@ -52,7 +59,7 @@ export default function CameraScreen() {
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ImagePicker.MediaType.Images,
             allowsEditing: true,
             quality: 1,
         });
@@ -66,37 +73,77 @@ export default function CameraScreen() {
     };
 
     return (
-        <View style={styles.container}>
-            {/* 1. Camera Feed Layer */}
-            <CameraView style={StyleSheet.absoluteFill} facing={facing} ref={cameraRef} />
+        <View style={StyleSheet.absoluteFill} className="bg-black">
+            {/* Camera Feed */}
+            <CameraView
+                style={StyleSheet.absoluteFill}
+                facing={facing}
+                ref={cameraRef}
+                mode="picture"
+            />
 
-            {/* 2. UI Overlay Layer (Positioned absolutely over camera) */}
-            <SafeAreaView style={StyleSheet.absoluteFill} pointerEvents="box-none">
-                <View style={styles.overlay} pointerEvents="box-none">
-                    {/* Header Controls */}
-                    <View style={styles.header} pointerEvents="box-none">
-                        <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
-                            <Text style={styles.iconText}>Cancel</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={toggleCameraFacing} style={styles.iconButton}>
-                            <Text style={styles.iconText}>Flip</Text>
-                        </TouchableOpacity>
-                    </View>
+            {/* UI Overlay - Using absolute positioning for high priority touch areas */}
+            <SafeAreaView
+                edges={['top']}
+                style={styles.topControls}
+                pointerEvents="box-none"
+            >
+                <View style={styles.headerRow} pointerEvents="box-none">
+                    <TouchableOpacity
+                        onPress={() => {
+                            console.log("Cancel pressed - returning");
+                            router.back();
+                        }}
+                        style={styles.controlCircle}
+                        activeOpacity={0.6}
+                    >
+                        <LucideX color="white" size={26} />
+                    </TouchableOpacity>
 
-                    {/* Bottom Controls */}
-                    <View style={styles.footer} pointerEvents="auto">
-                        <TouchableOpacity onPress={pickImage} style={styles.galleryButton}>
-                            <Text style={styles.galleryText}>Gallery</Text>
-                        </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => {
+                            console.log("Flip pressed");
+                            toggleCameraFacing();
+                        }}
+                        style={styles.controlCircle}
+                        activeOpacity={0.6}
+                    >
+                        <LucideRefreshCcw color="white" size={26} />
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
 
-                        <TouchableOpacity
-                            onPress={takePicture}
-                            style={styles.captureButton}
-                        >
-                            <View style={styles.captureButtonInner} />
-                        </TouchableOpacity>
+            <SafeAreaView
+                edges={['bottom']}
+                style={styles.bottomControls}
+                pointerEvents="box-none"
+            >
+                <View style={styles.footerRow} pointerEvents="box-none">
+                    {/* Gallery */}
+                    <TouchableOpacity
+                        onPress={pickImage}
+                        style={styles.sideButton}
+                        activeOpacity={0.6}
+                    >
+                        <LucideImage color="white" size={30} />
+                        <Text style={styles.sideButtonText}>Library</Text>
+                    </TouchableOpacity>
 
-                        <View style={styles.placeholder} />
+                    {/* Shutter */}
+                    <TouchableOpacity
+                        onPress={takePicture}
+                        activeOpacity={0.8}
+                        style={styles.shutterButton}
+                    >
+                        <View style={styles.shutterInner} />
+                    </TouchableOpacity>
+
+                    {/* Color Info */}
+                    <View style={styles.sideButton}>
+                        <View
+                            style={[styles.colorPreview, { backgroundColor: selectedColor }]}
+                        />
+                        <Text style={styles.sideButtonText}>Active</Text>
                     </View>
                 </View>
             </SafeAreaView>
@@ -105,73 +152,80 @@ export default function CameraScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#000',
+    topControls: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
     },
-    permissionContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#111',
-        padding: 24,
+    bottomControls: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
     },
-    permissionText: {
-        color: '#fff',
-        textAlign: 'center',
-        fontSize: 16,
-        marginBottom: 20,
-    },
-    overlay: {
-        flex: 1,
-        justifyContent: 'space-between',
-    },
-    header: {
+    headerRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        padding: 20,
+        paddingHorizontal: 28,
+        paddingTop: 24,
     },
-    iconButton: {
-        padding: 10,
-    },
-    iconText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: '700',
-    },
-    footer: {
+    footerRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 32,
-        paddingBottom: 40,
-        paddingTop: 20,
-        backgroundColor: 'rgba(0,0,0,0.3)',
+        paddingBottom: 60,
+        paddingTop: 24,
     },
-    galleryButton: {
-        padding: 10,
-    },
-    galleryText: {
-        color: '#fff',
-        fontSize: 16,
-    },
-    captureButton: {
-        width: 84,
-        height: 84,
-        borderRadius: 42,
-        borderWidth: 6,
-        borderColor: '#fff',
-        justifyContent: 'center',
+    controlCircle: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: 'rgba(0,0,0,0.4)',
         alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
     },
-    captureButtonInner: {
+    shutterButton: {
+        width: 88,
+        height: 88,
+        borderRadius: 44,
+        borderWidth: 5,
+        borderColor: 'white',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+    },
+    shutterInner: {
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        backgroundColor: 'white',
+        opacity: 0.9,
+    },
+    sideButton: {
         width: 64,
-        height: 64,
-        borderRadius: 32,
-        backgroundColor: '#fff',
-        opacity: 0.8,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    placeholder: {
-        width: 60,
+    sideButtonText: {
+        color: 'white',
+        fontSize: 10,
+        fontWeight: 'bold',
+        marginTop: 4,
+        textTransform: 'uppercase',
+    },
+    colorPreview: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        borderWidth: 2,
+        borderColor: 'white',
     }
 });
+
+

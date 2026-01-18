@@ -32,36 +32,35 @@ export default function CommunityScreen() {
     };
 
     const renderItem = ({ item, index }: { item: typeof mockColors[0], index: number }) => (
-        <View
-            style={styles.card}
-        >
+        <View className="bg-white dark:bg-brand-charcoal rounded-[24px] border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 overflow-hidden shadow-sm mb-5" style={{ width: COLUMN_WIDTH }}>
             <TouchableOpacity
                 onPress={() => handleColorSelect(item.color)}
                 activeOpacity={0.9}
-                style={[styles.colorBox, { backgroundColor: item.color }]}
+                className="w-full aspect-square justify-center items-center"
+                style={{ backgroundColor: item.color }}
             >
-                <View style={styles.tryOnBadge}>
-                    <Text style={styles.tryOnText}>Try On</Text>
+                <View className="bg-black/40 px-4 py-2 rounded-full">
+                    <Text className="text-white text-[13px] font-semibold">Try On</Text>
                 </View>
             </TouchableOpacity>
 
-            <View style={styles.cardInfo}>
-                <Text style={styles.colorName}>{item.name}</Text>
-                <Text style={styles.author}>by {item.author}</Text>
+            <View className="p-3">
+                <Text className="text-[15px] font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-0.5">{item.name}</Text>
+                <Text className="text-xs text-brand-charcoal-light dark:text-brand-charcoal-light/60 mb-2">by {item.author}</Text>
 
-                <View style={styles.cardFooter}>
-                    <Text style={styles.hexText}>{item.color}</Text>
-                    <View style={styles.actions}>
-                        <TouchableOpacity style={styles.iconBtn}>
+                <View className="flex-row justify-between items-center">
+                    <Text className="text-[10px] text-brand-charcoal-light dark:text-brand-charcoal-light/60 font-mono">{item.color}</Text>
+                    <View className="flex-row items-center gap-x-3">
+                        <TouchableOpacity className="flex-row items-center gap-x-1">
                             <LucideHeart size={16} color={item.isLiked ? '#FF6B9D' : '#8A8A8A'} fill={item.isLiked ? '#FF6B9D' : 'transparent'} />
-                            <Text style={styles.likesCount}>{item.likes}</Text>
+                            <Text className="text-xs text-brand-charcoal-light dark:text-brand-charcoal-light/60">{item.likes}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={styles.iconBtn}
+                            className="flex-row items-center"
                             onPress={() => {
                                 import('react-native').then(({ Share }) => {
                                     Share.share({
-                                        message: `Check out this gorgeous nail color: ${item.name} (${item.color})! Found on NailArt.`,
+                                        message: `Check out this gorgeous nail color: ${item.name} (${item.color})! Found on Colorfloww.`,
                                         title: 'Share Nail Color'
                                     });
                                 });
@@ -76,22 +75,22 @@ export default function CommunityScreen() {
     );
 
     return (
-        <View style={styles.container}>
-            <SafeAreaView edges={['top']} style={styles.header}>
-                <View style={styles.headerContent}>
-                    <View style={styles.titleRow}>
+        <View className="flex-1 bg-brand-cream dark:bg-brand-cream-dark">
+            <SafeAreaView edges={['top']} className="bg-brand-cream/80 dark:bg-brand-cream-dark/80">
+                <View className="px-6 pt-4 pb-5">
+                    <View className="flex-row items-center gap-x-3 mb-5">
                         <LucideTrendingUp size={32} color="#697D59" strokeWidth={1.5} />
-                        <Text style={styles.title}>Community Colors</Text>
+                        <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Community</Text>
                     </View>
 
-                    <View style={styles.searchBar}>
-                        <LucideSearch size={20} color="#8A8A8A" style={styles.searchIcon} />
+                    <View className="flex-row items-center bg-white/60 dark:bg-brand-charcoal/40 rounded-2xl border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 px-4 h-[52px]">
+                        <LucideSearch size={20} color="#8A8A8A" className="mr-2" />
                         <TextInput
                             value={searchQuery}
                             onChangeText={setSearchQuery}
                             placeholder="Search colors or creators..."
                             placeholderTextColor="#8A8A8A"
-                            style={styles.searchInput}
+                            className="flex-1 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
                         />
                     </View>
                 </View>
@@ -102,130 +101,13 @@ export default function CommunityScreen() {
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id}
                 numColumns={2}
-                contentContainerStyle={styles.listContent}
-                columnWrapperStyle={styles.columnWrapper}
+                contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
+                columnWrapperStyle={{ justifyContent: 'space-between' }}
                 showsVerticalScrollIndicator={false}
             />
         </View>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F9F7F4',
-    },
-    header: {
-        backgroundColor: 'rgba(249, 247, 244, 0.8)',
-    },
-    headerContent: {
-        paddingHorizontal: 24,
-        paddingTop: 16,
-        paddingBottom: 20,
-    },
-    titleRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        marginBottom: 20,
-    },
-    title: {
-        fontSize: 28,
-        color: '#2D2D2D',
-        fontWeight: '700',
-    },
-    searchBar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.6)',
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.4)',
-        paddingHorizontal: 16,
-        height: 52,
-    },
-    searchIcon: {
-        marginRight: 10,
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: 16,
-        color: '#2D2D2D',
-    },
-    listContent: {
-        padding: 24,
-        paddingBottom: 100,
-    },
-    columnWrapper: {
-        justifyContent: 'space-between',
-        marginBottom: 20,
-    },
-    card: {
-        width: COLUMN_WIDTH,
-        backgroundColor: 'rgba(255, 255, 255, 0.6)',
-        borderRadius: 24,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.4)',
-        overflow: 'hidden',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 3,
-    },
-    colorBox: {
-        width: '100%',
-        aspectRatio: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    tryOnBadge: {
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-    },
-    tryOnText: {
-        color: '#fff',
-        fontSize: 13,
-        fontWeight: '600',
-    },
-    cardInfo: {
-        padding: 12,
-    },
-    colorName: {
-        fontSize: 15,
-        fontWeight: '700',
-        color: '#2D2D2D',
-        marginBottom: 2,
-    },
-    author: {
-        fontSize: 12,
-        color: '#8A8A8A',
-        marginBottom: 8,
-    },
-    cardFooter: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    hexText: {
-        fontSize: 10,
-        color: '#8A8A8A',
-        fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    },
-    actions: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
-    iconBtn: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    likesCount: {
-        fontSize: 12,
-        color: '#8A8A8A',
-    }
-});
+const styles = StyleSheet.create({});
+

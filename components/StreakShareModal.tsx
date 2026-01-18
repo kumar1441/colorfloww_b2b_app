@@ -24,34 +24,34 @@ export default function StreakShareModal({ visible, streak, onClose }: StreakSha
 
     return (
         <Modal visible={visible} transparent animationType="slide">
-            <View style={styles.overlay}>
-                <View style={styles.container}>
-                    <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
-                        <LucideX size={24} color="#2D2D2D" />
+            <View className="flex-1 bg-black/80 justify-center items-center p-6">
+                <View className="w-full items-center">
+                    <TouchableOpacity className="absolute -top-16 right-0 bg-white dark:bg-brand-charcoal w-11 h-11 rounded-full justify-center items-center" onPress={onClose}>
+                        <LucideX size={24} color="#2D2D2D" className="dark:text-brand-charcoal-dark" />
                     </TouchableOpacity>
 
-                    <View style={styles.card}>
-                        <View style={styles.flameContainer}>
+                    <View className="w-full bg-white dark:bg-brand-charcoal rounded-[32px] p-10 items-center">
+                        <View className="relative mb-5">
                             <LucideFlame size={80} color="#F97316" fill="#F97316" />
-                            <View style={styles.streakBadge}>
-                                <Text style={styles.streakNumber}>{streak}</Text>
+                            <View className="absolute bottom-2.5 left-1/2 -ml-5 bg-white dark:bg-brand-charcoal w-10 h-10 rounded-full border-3 border-[#F97316] justify-center items-center">
+                                <Text className="text-lg font-bold text-brand-charcoal dark:text-brand-charcoal-dark">{streak}</Text>
                             </View>
                         </View>
 
-                        <Text style={styles.title}>day streak</Text>
-                        <Text style={styles.subtitle}>
+                        <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-4">day streak</Text>
+                        <Text className="text-base text-brand-charcoal/70 dark:text-brand-charcoal-light/80 text-center leading-6 mb-10">
                             I've made a habit of visualizing new nail colors every day!
                         </Text>
 
-                        <View style={styles.branding}>
-                            <View style={styles.logoDot} />
-                            <Text style={styles.brandText}>nailart.app</Text>
+                        <View className="flex-row items-center bg-brand-cream dark:bg-brand-cream-dark/20 px-4 py-2 rounded-xl">
+                            <View className="w-3 h-3 rounded-full bg-brand-charcoal dark:bg-brand-charcoal-dark mr-2" />
+                            <Text className="text-sm font-semibold text-brand-charcoal dark:text-brand-charcoal-dark">nailart.app</Text>
                         </View>
                     </View>
 
-                    <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-                        <LucideShare2 size={20} color="#fff" style={{ marginRight: 8 }} />
-                        <Text style={styles.shareText}>Share Streak</Text>
+                    <TouchableOpacity className="bg-brand-sage dark:bg-brand-sage-dark w-full py-4.5 rounded-2xl flex-row justify-center items-center mt-6 shadow-lg" onPress={handleShare}>
+                        <LucideShare2 size={20} color="#fff" className="mr-2" />
+                        <Text className="text-white text-lg font-bold">Share Streak</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -59,105 +59,4 @@ export default function StreakShareModal({ visible, streak, onClose }: StreakSha
     );
 }
 
-const styles = StyleSheet.create({
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.8)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 24,
-    },
-    container: {
-        width: '100%',
-        alignItems: 'center',
-    },
-    closeBtn: {
-        position: 'absolute',
-        top: -60,
-        right: 0,
-        backgroundColor: '#fff',
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    card: {
-        width: '100%',
-        backgroundColor: '#fff',
-        borderRadius: 32,
-        padding: 40,
-        alignItems: 'center',
-    },
-    flameContainer: {
-        position: 'relative',
-        marginBottom: 20,
-    },
-    streakBadge: {
-        position: 'absolute',
-        bottom: 10,
-        left: '50%',
-        transform: [{ translateX: -20 }],
-        backgroundColor: '#fff',
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        borderWidth: 3,
-        borderColor: '#F97316',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    streakNumber: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#2D2D2D',
-    },
-    title: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#2D2D2D',
-        marginBottom: 16,
-    },
-    subtitle: {
-        fontSize: 16,
-        color: '#5A5A5A',
-        textAlign: 'center',
-        lineHeight: 24,
-        marginBottom: 40,
-    },
-    branding: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#F9F7F4',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 12,
-    },
-    logoDot: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: '#2D2D2D',
-        marginRight: 8,
-    },
-    brandText: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#2D2D2D',
-    },
-    shareButton: {
-        backgroundColor: '#697D59',
-        width: '100%',
-        paddingVertical: 18,
-        borderRadius: 16,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 24,
-    },
-    shareText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    }
-});
+const styles = StyleSheet.create({});

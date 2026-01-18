@@ -29,13 +29,13 @@ export default function WelcomeScreen() {
         }
     };
 
-    if (isLoading) return <View style={styles.container} />;
+    if (isLoading) return <View className="flex-1 bg-brand-cream dark:bg-brand-cream-dark" />;
 
     return (
-        <View style={styles.container}>
-            <SafeAreaView style={styles.content}>
-                <View style={styles.logoContainer}>
-                    <View style={styles.logoCircle}>
+        <View className="flex-1 bg-brand-cream dark:bg-brand-cream-dark">
+            <SafeAreaView className="flex-1 items-center justify-center p-6">
+                <View className="mb-12">
+                    <View className="w-32 h-32 bg-white dark:bg-brand-charcoal rounded-full items-center justify-center shadow-xl">
                         <LucideSparkles
                             size={64}
                             color="#697D59"
@@ -44,23 +44,23 @@ export default function WelcomeScreen() {
                     </View>
                 </View>
 
-                <View style={styles.textContainer}>
-                    <Text style={styles.title}>NailArt</Text>
-                    <Text style={styles.subtitle}>
+                <View className="items-center max-w-xs">
+                    <Text className="text-6xl font-light text-brand-charcoal dark:text-brand-charcoal-dark mb-4">Colorfloww</Text>
+                    <Text className="text-lg text-[#5A5A5A] dark:text-brand-charcoal-light/80 text-center leading-relaxed mb-12">
                         Visualize your perfect nail polish color with AI-powered virtual try-on
                     </Text>
                 </View>
 
-                <View style={styles.footer}>
+                <View className="w-full items-center">
                     <TouchableOpacity
                         onPress={() => router.push('/onboarding')}
                         activeOpacity={0.8}
-                        style={styles.button}
+                        className="w-full bg-brand-sage dark:bg-brand-sage-dark py-5 rounded-full items-center shadow-lg"
                     >
-                        <Text style={styles.buttonText}>Get Started</Text>
+                        <Text className="text-white text-lg font-bold">Get Started</Text>
                     </TouchableOpacity>
 
-                    <Text style={styles.caption}>
+                    <Text className="mt-6 text-brand-charcoal-light text-sm">
                         Join thousands of users discovering their perfect shade
                     </Text>
                 </View>
@@ -69,74 +69,4 @@ export default function WelcomeScreen() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F9F7F4', // Base cream color
-    },
-    content: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 24,
-    },
-    logoContainer: {
-        marginBottom: 48,
-    },
-    logoCircle: {
-        width: 128,
-        height: 128,
-        backgroundColor: '#fff',
-        borderRadius: 64,
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.1,
-        shadowRadius: 20,
-        elevation: 10,
-    },
-    textContainer: {
-        alignItems: 'center',
-        maxWidth: 320,
-    },
-    title: {
-        fontSize: 56,
-        color: '#2D2D2D',
-        fontWeight: '300',
-        marginBottom: 16,
-    },
-    subtitle: {
-        fontSize: 18,
-        color: '#5A5A5A',
-        textAlign: 'center',
-        lineHeight: 26,
-        marginBottom: 48,
-    },
-    footer: {
-        width: '100%',
-        alignItems: 'center',
-    },
-    button: {
-        width: '100%',
-        backgroundColor: '#697D59',
-        paddingVertical: 18,
-        borderRadius: 32,
-        alignItems: 'center',
-        shadowColor: "#697D59",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-        elevation: 6,
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: '700',
-    },
-    caption: {
-        marginTop: 24,
-        color: '#8A8A8A',
-        fontSize: 14,
-    }
-});
+const styles = StyleSheet.create({});
