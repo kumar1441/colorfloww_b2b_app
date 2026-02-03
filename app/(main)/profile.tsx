@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { LucideUser, LucideSettings, LucideTrophy, LucideLogOut, LucideChevronRight, LucideFlame } from 'lucide-react-native';
+import { AuthService } from '../../services/auth';
 import { GamificationService } from '../../services/gamification';
 import StreakCard from '../../components/StreakCard';
 import StreakShareModal from '../../components/StreakShareModal';
@@ -19,7 +20,8 @@ export default function ProfileScreen() {
         GamificationService.getStreak().then(setStreak);
     }, []);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        await AuthService.logout();
         router.replace('/');
     };
 

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { LucideArrowRight, LucideSparkles } from 'lucide-react-native';
+import { LucideArrowRight, LucideSparkles, LucideLogOut } from 'lucide-react-native';
+import { AuthService } from '../../services/auth';
+import { useIsFocused } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
@@ -28,12 +30,25 @@ const topCreators = [
 
 export default function HomeScreen() {
     const router = useRouter();
+    const isFocused = useIsFocused();
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-    const handleColorSelect = (color: string) => {
-        router.push({
-            pathname: "/camera",
-            params: { color }
-        });
+    useEffect(() => {
+        AuthService.isLoggedIn().then(setIsLoggedIn);
+    }, [isFocused]);
+
+    const handleColorSelect = async (color: string) => {
+        if (isLoggedIn) {
+            router.push({
+                pathname: "/camera",
+                params: { color }
+            });
+        } else {
+            router.push({
+                pathname: "/signup",
+                params: { returnTo: "/camera", color }
+            });
+        }
     };
 
     const renderHeader = (title: string, subtitle: string, onSeeAll: () => void) => (

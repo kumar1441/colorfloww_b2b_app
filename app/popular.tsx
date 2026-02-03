@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { LucideChevronLeft, LucideHeart, LucideShare2 } from 'lucide-react-native';
+import { AuthService } from '../services/auth';
 
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = (width - 64) / 2;
@@ -21,11 +22,20 @@ const popularColors = [
 export default function PopularScreen() {
     const router = useRouter();
 
-    const handleColorSelect = (color: string) => {
-        router.push({
-            pathname: "/camera",
-            params: { color }
-        });
+    const handleColorSelect = async (color: string) => {
+        const loggedIn = await AuthService.isLoggedIn();
+        if (loggedIn) {
+            router.push({
+                pathname: "/camera",
+                params: { color }
+            });
+        } else {
+            router.push({
+                //@ts-ignore
+                pathname: "/signup",
+                params: { returnTo: "/camera", color }
+            });
+        }
     };
 
     const renderItem = ({ item }: { item: typeof popularColors[0] }) => (

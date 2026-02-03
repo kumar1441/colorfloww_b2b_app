@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { LucideChevronLeft, LucideUsers, LucideArrowRight } from 'lucide-react-native';
+import { AuthService } from '../services/auth';
 
 const topCreators = [
     { id: "1", name: "Sarah M.", colorsCount: 45, followers: "2.3k", initial: "S" },

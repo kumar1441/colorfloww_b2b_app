@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import Slider from '@react-native-community/slider';
 // import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
 import { LucidePalette, LucideSliders, LucideUpload, LucideSparkles } from 'lucide-react-native';
+import { AuthService } from '../../services/auth';
 
 export default function ColorCustomizer() {
     const router = useRouter();
@@ -26,7 +27,16 @@ export default function ColorCustomizer() {
         setRgb(prev => ({ ...prev, [channel]: value }));
     };
 
-    const handleTryOn = () => {
+    const handleTryOn = async () => {
+        const loggedIn = await AuthService.isLoggedIn();
+        if (!loggedIn) {
+            router.push({
+                pathname: "/signup",
+                params: { returnTo: "/camera", color: currentColor }
+            });
+            return;
+        }
+
         if (!showNameInput && !colorName) {
             setShowNameInput(true);
         } else {

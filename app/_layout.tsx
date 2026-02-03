@@ -38,6 +38,8 @@ export default function Layout() {
                 <Stack.Screen name="popular" />
                 <Stack.Screen name="bold" />
                 <Stack.Screen name="creators" />
+                <Stack.Screen name="signup" options={{ presentation: 'fullScreenModal' }} />
+                <Stack.Screen name="login" options={{ presentation: 'fullScreenModal' }} />
             </Stack>
             <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
         </SafeAreaProvider>
