@@ -1,132 +1,153 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-// import Animated, { FadeInUp } from 'react-native-reanimated';
-import { LucideHistory, LucideChevronRight } from 'lucide-react-native';
+import { LucideHistory, LucideTrash2, LucideShare2 } from 'lucide-react-native';
+import { HistoryService, HistoryItem, IntentTag } from '../../services/history';
 
 const { width } = Dimensions.get('window');
 
-// Mock history data (Ported from original concept)
-const mockHistory = [
-    { id: "1", color: "#FF6B9D", colorName: "Rose Whisper", date: "2 hours ago", nails: 4 },
-    { id: "2", color: "#697D59", colorName: "Sage Forest", date: "Yesterday", nails: 5 },
-    { id: "3", color: "#2DD4BF", colorName: "Teal Dream", date: "3 days ago", nails: 3 },
-    { id: "4", color: "#A78BFA", colorName: "Lilac Sky", date: "Last week", nails: 5 },
-];
+const intentIcons: Record<IntentTag, string> = {
+    Everyday: '☀️',
+    Work: '💼',
+    Experiment: '🎨',
+    Trend: '✨',
+    Event: '🎉',
+};
 
 export default function HistoryScreen() {
-    const renderItem = ({ item, index }: { item: typeof mockHistory[0], index: number }) => (
-        <View
-            style={styles.card}
+    const [history, setHistory] = useState<HistoryItem[]>([]);
+    const [filter, setFilter] = useState<IntentTag | 'All'>('All');
+    const [isLoading, setIsLoading] = useState(true);
+
+    const loadHistory = async () => {
+        setIsLoading(true);
+        const data = await HistoryService.getHistory();
+        setHistory(data);
+        setIsLoading(false);
+    };
+
+    useEffect(() => {
+        loadHistory();
+    }, []);
+
+    const handleDelete = (id: string) => {
+        Alert.alert(
+            "Delete Record",
+            "Are you sure you want to remove this attempt?",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        await HistoryService.deleteItem(id);
+                        loadHistory();
+                    }
+                }
+            ]
+        );
+    };
+
+    const filteredHistory = filter === 'All'
+        ? history
+        : history.filter(item => item.intent === filter);
+
+    const renderFilterItem = (label: IntentTag | 'All', icon?: string) => (
+        <TouchableOpacity
+            key={label}
+            onPress={() => setFilter(label)}
+            className={`px-5 py-2.5 rounded-full mr-2 flex-row items-center border ${filter === label
+                    ? 'bg-brand-sage border-brand-sage shadow-md'
+                    : 'bg-white border-brand-charcoal-light/10 shadow-sm'
+                }`}
         >
-            <View style={[styles.colorChip, { backgroundColor: item.color }]} />
-            <View style={styles.info}>
-                <Text style={styles.colorName}>{item.colorName || 'Unnamed Color'}</Text>
-                <Text style={styles.details}>{item.date} • {item.nails} nails detected</Text>
-            </View>
-            <TouchableOpacity style={styles.actionBtn}>
-                <LucideChevronRight size={24} color="#E8E5E1" />
-            </TouchableOpacity>
-        </View>
+            {icon && <Text className="mr-1.5">{icon}</Text>}
+            <Text className={`font-semibold ${filter === label ? 'text-white' : 'text-brand-charcoal-light'}`}>
+                {label}
+            </Text>
+        </TouchableOpacity>
     );
 
-    return (
-        <View style={styles.container}>
-            <SafeAreaView edges={['top']} style={styles.header}>
-                <View style={styles.headerContent}>
-                    <View style={styles.titleRow}>
-                        <LucideHistory size={32} color="#697D59" strokeWidth={1.5} />
-                        <Text style={styles.title}>History</Text>
+    const renderItem = ({ item }: { item: HistoryItem }) => {
+        const dateObj = new Date(item.date);
+        const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+        return (
+            <View className="bg-white dark:bg-brand-charcoal rounded-[28px] p-5 mb-5 flex-row items-center border border-brand-charcoal-light/5 shadow-sm">
+                {/* Color Block */}
+                <View
+                    style={{ backgroundColor: item.color }}
+                    className="w-20 h-20 rounded-2xl shadow-inner border border-brand-charcoal-light/10"
+                />
+
+                {/* Info */}
+                <View className="flex-1 ml-5">
+                    <Text className="text-lg font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-1">
+                        {item.color.toUpperCase()}
+                    </Text>
+                    <View className="flex-row items-center">
+                        <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60">
+                            {intentIcons[item.intent]} {item.intent} • {formattedDate}
+                        </Text>
                     </View>
+                </View>
+
+                {/* Actions */}
+                <View className="flex-row gap-x-4">
+                    <TouchableOpacity>
+                        <LucideShare2 size={20} color="#8A8A8A" />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                        <LucideTrash2 size={20} color="#EF4444" />
+                    </TouchableOpacity>
+                </View>
+            </View>
+        );
+    };
+
+    return (
+        <View className="flex-1 bg-brand-cream dark:bg-brand-cream-dark">
+            <SafeAreaView edges={['top']} className="bg-brand-cream/80 dark:bg-brand-cream-dark/80">
+                <View className="px-6 pt-4 pb-6">
+                    <View className="flex-row items-center gap-x-3 mb-6">
+                        <LucideHistory size={32} color="#697D59" strokeWidth={1.5} />
+                        <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark">My History</Text>
+                    </View>
+
+                    {/* Filter Bar */}
+                    <FlatList
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        data={['All', 'Everyday', 'Work', 'Experiment', 'Trend', 'Event'] as const}
+                        renderItem={({ item }) => renderFilterItem(
+                            item,
+                            item !== 'All' ? intentIcons[item as IntentTag] : undefined
+                        )}
+                        keyExtractor={(item) => item}
+                        className="py-1"
+                    />
                 </View>
             </SafeAreaView>
 
             <FlatList
-                data={mockHistory}
+                data={filteredHistory}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.listContent}
+                contentContainerStyle={{ padding: 24, paddingBottom: 120 }}
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyText}>No looks saved yet.</Text>
+                    <View className="mt-20 items-center justify-center px-10">
+                        <LucideHistory size={64} color="#8A8A8A" opacity={0.2} className="mb-4" />
+                        <Text className="text-[#8A8A8A] text-lg text-center font-medium">
+                            {filter === 'All'
+                                ? "No looks saved yet. Start painting your nails to see them here!"
+                                : `No looks tagged as "${filter}" yet.`}
+                        </Text>
                     </View>
                 }
+                onRefresh={loadHistory}
+                refreshing={isLoading}
             />
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F9F7F4',
-    },
-    header: {
-        backgroundColor: 'rgba(249, 247, 244, 0.8)',
-    },
-    headerContent: {
-        paddingHorizontal: 24,
-        paddingTop: 16,
-        paddingBottom: 20,
-    },
-    titleRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-    },
-    title: {
-        fontSize: 28,
-        color: '#2D2D2D',
-        fontWeight: '700',
-    },
-    listContent: {
-        padding: 24,
-        paddingBottom: 100,
-    },
-    card: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.6)',
-        borderRadius: 24,
-        padding: 16,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.4)',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 2,
-    },
-    colorChip: {
-        width: 56,
-        height: 56,
-        borderRadius: 16,
-    },
-    info: {
-        flex: 1,
-        marginLeft: 16,
-    },
-    colorName: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#2D2D2D',
-        marginBottom: 4,
-    },
-    details: {
-        fontSize: 14,
-        color: '#8A8A8A',
-    },
-    actionBtn: {
-        padding: 8,
-    },
-    emptyContainer: {
-        alignItems: 'center',
-        marginTop: 100,
-    },
-    emptyText: {
-        color: '#8A8A8A',
-        fontSize: 16,
-    }
-});

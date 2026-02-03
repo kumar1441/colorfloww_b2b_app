@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { GamificationService } from '../services/gamification';
 import { detectNails, Nail } from '../services/nailDetection';
 import { NailOverlaySkia } from '../components/NailOverlaySkia';
+import { HistoryService, IntentTag } from '../services/history';
 
 /**
  * ResultScreen: Logic for updating streaks and displaying try-on results.
@@ -15,6 +16,15 @@ function ResultScreen() {
 
     const [nails, setNails] = React.useState<Nail[]>([]);
     const [isDetecting, setIsDetecting] = React.useState(true);
+    const [selectedIntent, setSelectedIntent] = React.useState<IntentTag>('Everyday');
+
+    const intents: { label: IntentTag, icon: string }[] = [
+        { label: 'Everyday', icon: '☀️' },
+        { label: 'Work', icon: '💼' },
+        { label: 'Experiment', icon: '🎨' },
+        { label: 'Trend', icon: '✨' },
+        { label: 'Event', icon: '🎉' },
+    ];
 
     useEffect(() => {
         if (params.imageUri) {
@@ -43,6 +53,20 @@ function ResultScreen() {
             console.error("Detection handling error:", e);
         } finally {
             setIsDetecting(false);
+        }
+    };
+
+    const handleDone = async () => {
+        try {
+            await HistoryService.saveTryOn({
+                color: (params.selectedColor as string) || '#697D59',
+                intent: selectedIntent,
+                nailsCount: nails.length,
+            });
+            router.dismissAll();
+        } catch (e) {
+            console.error("Save history error:", e);
+            router.dismissAll(); // Dismiss anyway but log error
         }
     };
 
@@ -77,9 +101,33 @@ function ResultScreen() {
                         </View>
 
                         <Text className="text-lg text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Selected Shade</Text>
-                        <Text className="text-base text-brand-charcoal-light dark:text-brand-charcoal-light/60 font-mono mb-8">
-                            {params.selectedColor}
-                        </Text>
+                        <View className="flex-row items-center mb-6">
+                            <View
+                                style={{ backgroundColor: (params.selectedColor as string) || '#697D59' }}
+                                className="w-4 h-4 rounded-full mr-2 border border-brand-charcoal-light/10"
+                            />
+                            <Text className="text-base text-brand-charcoal-light dark:text-brand-charcoal-light/60 font-mono">
+                                {params.selectedColor}
+                            </Text>
+                        </View>
+
+                        <Text className="text-base font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-4">Tag your intent</Text>
+                        <View className="flex-row flex-wrap justify-center gap-2 mb-8">
+                            {intents.map((item) => (
+                                <TouchableOpacity
+                                    key={item.label}
+                                    onPress={() => setSelectedIntent(item.label)}
+                                    className={`px-4 py-2 rounded-full border ${selectedIntent === item.label
+                                        ? 'bg-brand-sage border-brand-sage'
+                                        : 'bg-white border-brand-charcoal-light/20'
+                                        }`}
+                                >
+                                    <Text className={selectedIntent === item.label ? 'text-white font-bold' : 'text-brand-charcoal-light'}>
+                                        {item.icon} {item.label}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
 
                         <TouchableOpacity
                             onPress={() => router.back()}
@@ -89,7 +137,7 @@ function ResultScreen() {
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            onPress={() => router.dismissAll()}
+                            onPress={handleDone}
                             className="mt-6"
                         >
                             <Text className="text-brand-sage dark:text-brand-sage-dark text-base font-semibold">Done</Text>
