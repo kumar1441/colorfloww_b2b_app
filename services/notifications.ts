@@ -39,11 +39,10 @@ export const NotificationService = {
                 ...(Platform.OS === 'android' ? { channelId: 'default' } : {}),
             },
             trigger: {
-                type: 'calendar',
-                hour: 10,
-                minute: 0,
+                type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+                seconds: 60 * 60 * 24, // 24 hours
                 repeats: true,
-            } as Notifications.CalendarTriggerInput,
+            },
         });
     }
 };

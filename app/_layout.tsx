@@ -5,7 +5,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useEffect } from "react";
 import { trackEvent, incrementSessionCount } from "../services/analytics";
 import { AuthService } from "../services/auth";
-import { NotificationService } from "../services/notifications";
+// import { NotificationService } from "../services/notifications";
 import { useColorScheme } from "react-native";
 import { useColorScheme as useNativeWindColorScheme } from "nativewind";
 import "../global.css";
@@ -17,7 +17,7 @@ export default function Layout() {
     useEffect(() => {
         incrementSessionCount();
         trackEvent("APP_OPEN");
-        NotificationService.setupDailyReminders();
+        // NotificationService.setupDailyReminders();
     }, []);
 
     // Sync NativeWind theme with system theme

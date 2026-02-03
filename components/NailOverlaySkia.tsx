@@ -1,5 +1,5 @@
 import React from 'react';
-import { Canvas, Path, Image, useImage, Skia, Group, BlurMask } from "@shopify/react-native-skia";
+import { Canvas, Path, Image, useImage, Skia, Group, BlurMask, SkImage } from "@shopify/react-native-skia";
 import { View, StyleSheet } from "react-native";
 import { Nail } from "../services/nailDetection";
 
@@ -14,7 +14,50 @@ interface Props {
  */
 export function NailOverlaySkia({ imageUri, nails, selectedColor }: Props) {
     const [containerSize, setContainerSize] = React.useState({ width: 0, height: 0 });
-    const image = useImage(imageUri);
+    const [image, setImage] = React.useState<SkImage | null>(null);
+
+    React.useEffect(() => {
+        let isMounted = true;
+        const loadImage = async () => {
+            if (!imageUri) {
+                console.warn("[NailOverlay] No imageUri provided");
+                return;
+            }
+            try {
+                // Method 3: Fetch API (Standard, Native)
+                // This bypasses expo-file-system and uses the native bridge to read the file
+                const response = await fetch(imageUri);
+                const buffer = await response.arrayBuffer();
+                const bytes = new Uint8Array(buffer);
+                const data = Skia.Data.fromBytes(bytes);
+
+                if (!data) {
+                    console.error("[NailOverlay] Failed to create SkData from bytes");
+                    return;
+                }
+
+                const img = Skia.Image.MakeImageFromEncoded(data);
+
+                if (img) {
+                    if (isMounted) {
+                        setImage(img);
+                    }
+                } else {
+                    console.error("[NailOverlay] Failed to create SkImage from encoded data");
+                }
+            } catch (e) {
+                console.error("[NailOverlay] Error loading image:", e);
+                // @ts-ignore
+                if (e?.stack) console.error(e.stack);
+            }
+        };
+
+        loadImage();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [imageUri]);
 
     if (!image) {
         return <View style={styles.placeholder} />;

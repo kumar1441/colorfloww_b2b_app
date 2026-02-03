@@ -2,13 +2,14 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { LucideUser, LucideSettings, LucideTrophy, LucideLogOut, LucideChevronRight, LucideFlame, LucideCamera, LucideMail, LucideEdit3 } from 'lucide-react-native';
+import { LucideUser, LucideSettings, LucideTrophy, LucideLogOut, LucideChevronRight, LucideFlame, LucideCamera, LucideMail, LucideEdit3, LucideMessageSquare } from 'lucide-react-native';
 import { AuthService } from '../../services/auth';
 import { GamificationService } from '../../services/gamification';
 import StreakCard from '../../components/StreakCard';
 import StreakShareModal from '../../components/StreakShareModal';
 import * as ImagePicker from 'expo-image-picker';
 import { BlurView } from 'expo-blur';
+import { FeedbackModal } from '../../components/FeedbackModal';
 
 /**
  * ProfileScreen: Displays user info and gamification stats (streaks, awards).
@@ -18,6 +19,7 @@ export default function ProfileScreen() {
     const [userProfile, setUserProfile] = useState<any>(null);
     const [stats, setStats] = useState({ streak: 0, looks: 0, awards: 0 });
     const [isShareModalVisible, setShareModalVisible] = useState(false);
+    const [isFeedbackModalVisible, setFeedbackModalVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
     const loadData = async () => {
@@ -197,6 +199,19 @@ export default function ProfileScreen() {
                     </TouchableOpacity>
 
                     <TouchableOpacity
+                        className="flex-row items-center justify-between p-5 border-b border-brand-cream dark:border-brand-cream-dark/20"
+                        onPress={() => setFeedbackModalVisible(true)}
+                    >
+                        <View className="flex-row items-center gap-x-4">
+                            <View className="w-10 h-10 rounded-2xl bg-brand-sage/10 items-center justify-center">
+                                <LucideMessageSquare size={20} color="#697D59" />
+                            </View>
+                            <Text className="text-base font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Give Feedback</Text>
+                        </View>
+                        <LucideChevronRight size={20} color="#A1A1A1" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
                         onPress={handleLogout}
                         className="flex-row items-center justify-between p-5"
                     >
@@ -209,6 +224,11 @@ export default function ProfileScreen() {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
+
+            <FeedbackModal
+                visible={isFeedbackModalVisible}
+                onClose={() => setFeedbackModalVisible(false)}
+            />
         </View>
     );
 }

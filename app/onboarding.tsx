@@ -1,226 +1,290 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Dimensions, Modal } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Dimensions, Animated, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { LucideArrowLeft, LucideShieldCheck, LucideCheck } from 'lucide-react-native';
-import { AuthService } from '../services/auth';
+import * as SecureStore from 'expo-secure-store';
+import { LucideChevronRight, LucideCamera, LucidePalette, LucideUsers, LucideSparkles } from 'lucide-react-native';
 
 const { width, height } = Dimensions.get('window');
 
-/**
- * OnboardingScreen: Matches the user-provided design reference precisely.
- * Features a multi-step flow for account creation and profile details.
- */
+const ONBOARDING_DATA = [
+    {
+        id: '1',
+        title: 'Virtual Try-On',
+        description: 'Snap a photo of your hands and see how any nail color looks on you in real-time with AI-powered nail detection.',
+        image: require('../assets/onboarding-try-on.png'),
+        tag: 'See colors on your hands instantly',
+        icon: <LucideCamera size={24} color="#000000" />,
+        accent: '#697D59'
+    },
+    {
+        id: '2',
+        title: 'Create & Customize',
+        description: 'Mix custom colors with RGB sliders, browse trending shades, and save your favorites. Name your creations and build your personal collection.',
+        image: require('../assets/onboarding-customize.png'),
+        tag: 'Your perfect shade awaits',
+        icon: <LucidePalette size={24} color="#000000" />,
+        accent: '#A3B18A'
+    },
+    {
+        id: '3',
+        title: 'Share & Discover',
+        description: 'Share your looks on social media, discover colors from top creators, earn achievements, and inspire others with your style.',
+        image: require('../assets/onboarding-community.png'),
+        tag: 'Join the community',
+        icon: <LucideUsers size={24} color="#000000" />,
+        accent: '#333333'
+    },
+];
+
 export default function OnboardingScreen() {
     const router = useRouter();
-    const [step, setStep] = useState(1);
-    const [showConsent, setShowConsent] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const scrollX = useRef(new Animated.Value(0)).current;
+    const slidesRef = useRef<FlatList>(null);
 
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        password: "",
-        age: "",
-        gender: "",
-        city: "",
-        zipcode: ""
-    });
+    const viewableItemsChanged = useRef(({ viewableItems }: any) => {
+        if (viewableItems && viewableItems.length > 0) {
+            setCurrentIndex(viewableItems[0].index);
+        }
+    }).current;
 
-    const handleContinue = () => {
-        if (step === 1) {
-            setStep(2);
+    const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
+
+    const scrollToNext = () => {
+        if (currentIndex < ONBOARDING_DATA.length - 1) {
+            slidesRef.current?.scrollToIndex({ index: currentIndex + 1 });
         } else {
-            setShowConsent(true);
+            completeOnboarding();
         }
     };
 
-    const handleBack = () => {
-        if (step === 2) {
-            setStep(1);
-        } else {
-            router.back();
+    const completeOnboarding = async () => {
+        try {
+            await SecureStore.setItemAsync('has_seen_onboarding', 'true');
+            router.replace('/(main)/community');
+        } catch (error) {
+            console.error('Error saving onboarding state:', error);
+            router.replace('/(main)/community');
         }
     };
 
-    const finalizeOnboarding = async () => {
-        await AuthService.login(formData);
-        setShowConsent(false);
-        router.push('/(main)/community');
+    const renderItem = ({ item }: { item: typeof ONBOARDING_DATA[0] }) => {
+        return (
+            <View style={styles.slide}>
+                {/* Image Container */}
+                <View style={styles.imageWrapper}>
+                    <Image source={item.image} style={styles.image} resizeMode="cover" />
+                    <View style={styles.floatingIcon}>
+                        {item.icon}
+                    </View>
+                </View>
+
+                {/* Content */}
+                <View style={styles.contentContainer}>
+                    <View style={styles.tagContainer}>
+                        <LucideSparkles size={14} color="#697D59" style={{ marginRight: 6 }} />
+                        <Text style={styles.tagText}>{item.tag}</Text>
+                    </View>
+
+                    <Text style={styles.title}>{item.title}</Text>
+                    <Text style={styles.description}>{item.description}</Text>
+                </View>
+            </View>
+        );
     };
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            className="flex-1 bg-brand-cream dark:bg-brand-cream-dark"
-        >
-            <SafeAreaView className="flex-1">
-                <View className="px-6 pt-4">
-                    <TouchableOpacity onPress={handleBack} className="flex-row items-center">
-                        <LucideArrowLeft size={20} color="#697D59" />
-                        <Text className="ml-2 text-brand-sage dark:text-brand-sage-dark text-lg font-medium">Back</Text>
-                    </TouchableOpacity>
+        <SafeAreaView style={styles.container}>
+            <TouchableOpacity style={styles.skipButton} onPress={completeOnboarding}>
+                <Text style={styles.skipText}>Skip</Text>
+            </TouchableOpacity>
+
+            <FlatList
+                data={ONBOARDING_DATA}
+                renderItem={renderItem}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                pagingEnabled
+                bounces={false}
+                keyExtractor={(item) => item.id}
+                onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
+                    useNativeDriver: false,
+                })}
+                onViewableItemsChanged={viewableItemsChanged}
+                viewabilityConfig={viewConfig}
+                scrollEventThrottle={32}
+                ref={slidesRef}
+            />
+
+            {/* Bottom Section */}
+            <View style={styles.bottomContainer}>
+                {/* Pagination Dots */}
+                <View style={styles.pagination}>
+                    {ONBOARDING_DATA.map((_, i) => {
+                        const inputRange = [(i - 1) * width, i * width, (i + 1) * width];
+                        const dotWidth = scrollX.interpolate({
+                            inputRange,
+                            outputRange: [10, 20, 10],
+                            extrapolate: 'clamp',
+                        });
+                        const opacity = scrollX.interpolate({
+                            inputRange,
+                            outputRange: [0.3, 1, 0.3],
+                            extrapolate: 'clamp',
+                        });
+
+                        return (
+                            <Animated.View
+                                style={[styles.dot, { width: dotWidth, opacity }]}
+                                key={i.toString()}
+                            />
+                        );
+                    })}
                 </View>
 
-                <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }} keyboardShouldPersistTaps="handled">
-                    <View className="bg-white dark:bg-brand-charcoal rounded-[32px] p-8 shadow-xl">
-                        <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">
-                            {step === 1 ? "Create Account" : "About You"}
-                        </Text>
-                        <Text className="text-base text-brand-charcoal-light dark:text-brand-charcoal-light/60 mb-8">
-                            {step === 1 ? "Let's get you started" : "Help us personalize your experience"}
-                        </Text>
-
-                        {step === 1 ? (
-                            <>
-                                <View className="mb-5">
-                                    <Text className="text-[15px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Full Name</Text>
-                                    <TextInput
-                                        className="bg-brand-cream/50 dark:bg-brand-cream-dark/30 border border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 rounded-xl py-3 px-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
-                                        placeholder="Enter your name"
-                                        placeholderTextColor="#A1A1A1"
-                                        value={formData.name}
-                                        onChangeText={(v) => setFormData({ ...formData, name: v })}
-                                    />
-                                </View>
-
-                                <View className="mb-5">
-                                    <Text className="text-[15px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Email</Text>
-                                    <TextInput
-                                        className="bg-brand-cream/50 dark:bg-brand-cream-dark/30 border border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 rounded-xl py-3 px-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
-                                        placeholder="your@email.com"
-                                        placeholderTextColor="#A1A1A1"
-                                        keyboardType="email-address"
-                                        autoCapitalize="none"
-                                        value={formData.email}
-                                        onChangeText={(v) => setFormData({ ...formData, email: v })}
-                                    />
-                                </View>
-
-                                <View className="mb-5">
-                                    <Text className="text-[15px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Password</Text>
-                                    <TextInput
-                                        className="bg-brand-cream/50 dark:bg-brand-cream-dark/30 border border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 rounded-xl py-3 px-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
-                                        placeholder="Create a password"
-                                        placeholderTextColor="#A1A1A1"
-                                        secureTextEntry
-                                        value={formData.password}
-                                        onChangeText={(v) => setFormData({ ...formData, password: v })}
-                                    />
-                                </View>
-                            </>
-                        ) : (
-                            <>
-                                <View className="flex-row gap-4">
-                                    <View className="flex-1 mb-5">
-                                        <Text className="text-[15px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Age</Text>
-                                        <TextInput
-                                            className="bg-brand-cream/50 dark:bg-brand-cream-dark/30 border border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 rounded-xl py-3 px-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
-                                            placeholder="25"
-                                            placeholderTextColor="#A1A1A1"
-                                            keyboardType="numeric"
-                                            value={formData.age}
-                                            onChangeText={(v) => setFormData({ ...formData, age: v })}
-                                        />
-                                    </View>
-                                    <View className="flex-1 mb-5">
-                                        <Text className="text-[15px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Gender</Text>
-                                        <TextInput
-                                            className="bg-brand-cream/50 dark:bg-brand-cream-dark/30 border border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 rounded-xl py-3 px-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
-                                            placeholder="Female"
-                                            placeholderTextColor="#A1A1A1"
-                                            value={formData.gender}
-                                            onChangeText={(v) => setFormData({ ...formData, gender: v })}
-                                        />
-                                    </View>
-                                </View>
-
-                                <View className="mb-5">
-                                    <Text className="text-[15px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">City Name</Text>
-                                    <TextInput
-                                        className="bg-brand-cream/50 dark:bg-brand-cream-dark/30 border border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 rounded-xl py-3 px-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
-                                        placeholder="New York"
-                                        placeholderTextColor="#A1A1A1"
-                                        value={formData.city}
-                                        onChangeText={(v) => setFormData({ ...formData, city: v })}
-                                    />
-                                </View>
-
-                                <View className="mb-5">
-                                    <Text className="text-[15px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Zipcode</Text>
-                                    <TextInput
-                                        className="bg-brand-cream/50 dark:bg-brand-cream-dark/30 border border-brand-charcoal-light/20 dark:border-brand-charcoal-light/10 rounded-xl py-3 px-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
-                                        placeholder="10001"
-                                        placeholderTextColor="#A1A1A1"
-                                        keyboardType="numeric"
-                                        value={formData.zipcode}
-                                        onChangeText={(v) => setFormData({ ...formData, zipcode: v })}
-                                    />
-                                </View>
-                            </>
-                        )}
-
-                        <TouchableOpacity
-                            onPress={handleContinue}
-                            activeOpacity={0.8}
-                            className="bg-brand-sage dark:bg-brand-sage-dark rounded-2xl py-5 items-center mt-3 mb-6 shadow-md"
-                        >
-                            <Text className="text-white text-lg font-bold">
-                                {step === 1 ? "Continue" : "Finish Set Up"}
-                            </Text>
-                        </TouchableOpacity>
-
-                        {step === 1 && (
-                            <View className="items-center">
-                                <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60">
-                                    Already have an account? <Text className="text-brand-sage dark:text-brand-sage-dark font-bold" onPress={() => router.replace('/login')}>Log in</Text>
-                                </Text>
-                            </View>
-                        )}
-                    </View>
-
-                    <View className="flex-row justify-center mt-10 gap-x-2">
-                        <View className={`w-2 h-2 rounded-full ${step === 1 ? 'bg-brand-sage dark:bg-brand-sage-dark' : 'bg-brand-charcoal-light/20'}`} />
-                        <View className={`w-2 h-2 rounded-full ${step === 2 ? 'bg-brand-sage dark:bg-brand-sage-dark' : 'bg-brand-charcoal-light/20'}`} />
-                    </View>
-                </ScrollView>
-            </SafeAreaView>
-
-            {/* Consent Modal */}
-            <Modal
-                visible={showConsent}
-                transparent={true}
-                animationType="fade"
-            >
-                <View className="flex-1 bg-black/50 justify-center items-center p-6">
-                    <View className="bg-white dark:bg-brand-charcoal rounded-[32px] p-8 w-full items-center shadow-2xl">
-                        <View className="w-20 h-20 rounded-full bg-brand-cream dark:bg-brand-cream-dark/20 justify-center items-center mb-6">
-                            <LucideShieldCheck size={48} color="#697D59" />
-                        </View>
-                        <Text className="text-2xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-4">Data Privacy</Text>
-                        <Text className="text-base text-brand-charcoal/70 dark:text-brand-charcoal-light/80 text-center leading-6 mb-8">
-                            We value your privacy. Can we collect anonymized data to improve the virtual try-on experience? This data is encrypted and never linked to your personal identity.
-                        </Text>
-
-                        <TouchableOpacity
-                            className="bg-brand-sage dark:bg-brand-sage-dark w-full py-4 rounded-2xl flex-row justify-center items-center mb-3"
-                            onPress={finalizeOnboarding}
-                        >
-                            <LucideCheck size={20} color="#fff" className="mr-2" />
-                            <Text className="text-white text-lg font-bold">I Agree</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            className="py-3"
-                            onPress={finalizeOnboarding}
-                        >
-                            <Text className="text-brand-charcoal-light dark:text-brand-charcoal-light/60 text-base font-medium">Maybe Later</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-        </KeyboardAvoidingView>
+                {/* Action Button */}
+                <TouchableOpacity style={styles.button} onPress={scrollToNext}>
+                    <Text style={styles.buttonText}>
+                        {currentIndex === ONBOARDING_DATA.length - 1 ? 'Get Started' : 'Next'}
+                    </Text>
+                    <LucideChevronRight size={20} color="#FFFFFF" strokeWidth={3} />
+                </TouchableOpacity>
+            </View>
+        </SafeAreaView>
     );
 }
 
-const styles = StyleSheet.create({});
-
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#FAF9F6', // brand-cream
+    },
+    skipButton: {
+        position: 'absolute',
+        top: 60,
+        right: 24,
+        zIndex: 10,
+        padding: 8,
+    },
+    skipText: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#666666',
+    },
+    slide: {
+        width,
+        alignItems: 'center',
+        paddingHorizontal: 24,
+    },
+    imageWrapper: {
+        width: width * 0.85,
+        height: height * 0.45,
+        borderRadius: 40,
+        overflow: 'hidden',
+        marginTop: 100,
+        backgroundColor: '#FFFFFF',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 10,
+        borderWidth: 2,
+        borderColor: '#000000',
+    },
+    image: {
+        width: '100%',
+        height: '100%',
+    },
+    floatingIcon: {
+        position: 'absolute',
+        bottom: 24,
+        left: 24,
+        width: 56,
+        height: 56,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2.5,
+        borderColor: '#000000',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    contentContainer: {
+        alignItems: 'center',
+        marginTop: 40,
+        paddingHorizontal: 10,
+    },
+    tagContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(105, 125, 89, 0.08)',
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 99,
+        marginBottom: 20,
+    },
+    tagText: {
+        fontSize: 13,
+        fontWeight: '800',
+        color: '#697D59',
+        letterSpacing: 0.5,
+    },
+    title: {
+        fontSize: 36,
+        fontWeight: '900',
+        color: '#000000',
+        textAlign: 'center',
+        marginBottom: 16,
+        letterSpacing: -1,
+    },
+    description: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#4A4A4A',
+        textAlign: 'center',
+        lineHeight: 24,
+        paddingHorizontal: 10,
+    },
+    bottomContainer: {
+        paddingHorizontal: 24,
+        paddingBottom: 40,
+        alignItems: 'center',
+    },
+    pagination: {
+        flexDirection: 'row',
+        height: 64,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    dot: {
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: '#697D59',
+        marginHorizontal: 4,
+    },
+    button: {
+        backgroundColor: '#697D59',
+        width: '100%',
+        height: 72,
+        borderRadius: 24,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#697D59',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 15,
+        elevation: 8,
+    },
+    buttonText: {
+        color: '#FFFFFF',
+        fontSize: 18,
+        fontWeight: '900',
+        marginRight: 8,
+        letterSpacing: 0.5,
+    },
+});
