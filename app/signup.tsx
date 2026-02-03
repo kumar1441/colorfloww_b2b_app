@@ -10,8 +10,12 @@ const { width } = Dimensions.get('window');
 export default function SignupScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
+
+    // State
     const [step, setStep] = useState(1);
     const [showConsent, setShowConsent] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -25,13 +29,24 @@ export default function SignupScreen() {
 
     const handleContinue = () => {
         if (step === 1) {
+            if (!formData.email || !formData.password || !formData.name) {
+                setError("Please fill in all fields");
+                return;
+            }
+            setError(null);
             setStep(2);
         } else {
+            if (!formData.age || !formData.gender || !formData.city || !formData.zipcode) {
+                setError("Please fill in all details");
+                return;
+            }
+            setError(null);
             setShowConsent(true);
         }
     };
 
     const handleBack = () => {
+        setError(null);
         if (step === 2) {
             setStep(1);
         } else {
@@ -40,19 +55,40 @@ export default function SignupScreen() {
     };
 
     const finalizeSignup = async () => {
-        await AuthService.login(formData);
-        setShowConsent(false);
+        console.log(`[SignupScreen] Starting finalizeSignup for: ${formData.email}`);
+        setLoading(true);
+        setError(null);
+        try {
+            // 1. Auth Sign Up
+            const user = await AuthService.signUp(formData.email, formData.password, formData.name);
+            console.log(`[SignupScreen] Auth signup successful. User ID: ${user?.id}`);
 
-        // If they came from a color selection, they might want to continue to camera
-        // For simplicity, we just go back to home or the previous screen
-        if (params.returnTo) {
-            router.replace({
-                //@ts-ignore
-                pathname: params.returnTo,
-                params: { color: params.color }
-            });
-        } else {
-            router.replace('/(main)/community');
+            // 2. Save User Profile - pass user?.id directly to handle cases where session might not be ready
+            await AuthService.saveUserProfile({
+                gender: formData.gender,
+                age_range: formData.age,
+                zipcode: formData.zipcode,
+                city: formData.city
+            }, user?.id);
+
+            console.log(`[SignupScreen] Profile and location saved successfully`);
+            setShowConsent(false);
+
+            if (params.returnTo) {
+                router.replace({
+                    //@ts-ignore
+                    pathname: params.returnTo,
+                    params: { color: params.color }
+                });
+            } else {
+                router.replace('/(main)/community');
+            }
+        } catch (err: any) {
+            console.error(`[SignupScreen] Signup error:`, err);
+            setError(err.message || "An error occurred during signup");
+            setShowConsent(false);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -74,9 +110,16 @@ export default function SignupScreen() {
                         <Text className="text-4xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">
                             {step === 1 ? "Create Account" : "Tell us about yourself"}
                         </Text>
-                        <Text className="text-lg text-brand-charcoal-light dark:text-brand-charcoal-light/60 mb-10 leading-6">
+
+                        <Text className="text-lg text-brand-charcoal-light dark:text-brand-charcoal-light/60 mb-6 leading-6">
                             {step === 1 ? "Let's get you started" : "Help us personalize your experience"}
                         </Text>
+
+                        {error && (
+                            <View className="bg-red-50 p-4 rounded-2xl mb-6 border border-red-100">
+                                <Text className="text-red-600 text-center font-medium">{error}</Text>
+                            </View>
+                        )}
 
                         {step === 1 ? (
                             <>
@@ -120,15 +163,17 @@ export default function SignupScreen() {
                             <>
                                 <View className="mb-6">
                                     <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Gender</Text>
-                                    <TouchableOpacity
-                                        className="bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/10 rounded-2xl py-4 px-5 flex-row justify-between items-center"
-                                        activeOpacity={0.7}
-                                    >
-                                        <Text className={`text-lg ${formData.gender ? 'text-brand-charcoal dark:text-brand-charcoal-dark' : 'text-[#A1A1A1]'}`}>
-                                            {formData.gender || "Select gender"}
-                                        </Text>
-                                        <LucideChevronDown size={20} color="#697D59" />
-                                    </TouchableOpacity>
+                                    <View className="flex-row gap-x-2">
+                                        {["Female", "Male", "Other"].map((g) => (
+                                            <TouchableOpacity
+                                                key={g}
+                                                onPress={() => setFormData({ ...formData, gender: g })}
+                                                className={`flex-1 py-4 rounded-2xl border items-center transition-colors ${formData.gender === g ? 'bg-brand-sage border-brand-sage' : 'bg-transparent border-brand-charcoal-light/10'}`}
+                                            >
+                                                <Text className={`font-bold ${formData.gender === g ? 'text-white' : 'text-brand-charcoal-light'}`}>{g}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
                                 </View>
 
                                 <View className="mb-6">
@@ -171,10 +216,11 @@ export default function SignupScreen() {
                         <TouchableOpacity
                             onPress={handleContinue}
                             activeOpacity={0.8}
-                            className="bg-[#697D59] rounded-2xl py-6 items-center shadow-lg"
+                            disabled={loading}
+                            className={`bg-[#697D59] rounded-2xl py-6 items-center shadow-lg ${loading ? 'opacity-70' : ''}`}
                         >
                             <Text className="text-white text-xl font-bold">
-                                {step === 1 ? "Continue" : "Complete"}
+                                {loading ? "Processing..." : (step === 1 ? "Continue" : "Complete")}
                             </Text>
                         </TouchableOpacity>
 
@@ -211,16 +257,18 @@ export default function SignupScreen() {
                         </Text>
 
                         <TouchableOpacity
-                            className="bg-brand-sage dark:bg-brand-sage-dark w-full py-5 rounded-2xl flex-row justify-center items-center mb-4 shadow-md"
+                            className={`bg-brand-sage dark:bg-brand-sage-dark w-full py-5 rounded-2xl flex-row justify-center items-center mb-4 shadow-md ${loading ? 'opacity-70' : ''}`}
                             onPress={finalizeSignup}
+                            disabled={loading}
                         >
                             <LucideCheck size={24} color="#fff" className="mr-3" />
-                            <Text className="text-white text-xl font-bold">I Agree</Text>
+                            <Text className="text-white text-xl font-bold">{loading ? "Signing up..." : "I Agree"}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
                             className="py-4"
                             onPress={finalizeSignup}
+                            disabled={loading}
                         >
                             <Text className="text-brand-charcoal-light dark:text-brand-charcoal-light/60 text-lg font-medium">Maybe Later</Text>
                         </TouchableOpacity>

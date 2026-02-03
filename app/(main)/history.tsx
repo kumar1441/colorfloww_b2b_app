@@ -57,8 +57,8 @@ export default function HistoryScreen() {
             key={label}
             onPress={() => setFilter(label)}
             className={`px-5 py-2.5 rounded-full mr-2 flex-row items-center border ${filter === label
-                    ? 'bg-brand-sage border-brand-sage shadow-md'
-                    : 'bg-white border-brand-charcoal-light/10 shadow-sm'
+                ? 'bg-brand-sage border-brand-sage shadow-md'
+                : 'bg-white border-brand-charcoal-light/10 shadow-sm'
                 }`}
         >
             {icon && <Text className="mr-1.5">{icon}</Text>}
@@ -83,7 +83,7 @@ export default function HistoryScreen() {
                 {/* Info */}
                 <View className="flex-1 ml-5">
                     <Text className="text-lg font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-1">
-                        {item.color.toUpperCase()}
+                        {item.color_details?.name || item.color.toUpperCase()}
                     </Text>
                     <View className="flex-row items-center">
                         <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60">

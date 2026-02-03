@@ -1,34 +1,65 @@
 import * as SecureStore from 'expo-secure-store';
-
 import * as LocalAuthentication from 'expo-local-authentication';
+import { supabase } from '../lib/supabase';
 
-const AUTH_KEY = 'user_session_token';
 const BIOMETRIC_ENABLED_KEY = 'biometric_enabled';
 
 /**
- * AuthService: Manages basic authentication state persistence locally.
+ * AuthService: Manages authentication using Supabase.
  */
 export const AuthService = {
     /**
-     * Set the logged-in status (simulated session).
+     * Sign up a new user.
      */
-    async login(userData: any) {
-        // For now, we store a stringified placeholder. Later link to real DB/JWT.
-        await SecureStore.setItemAsync(AUTH_KEY, JSON.stringify(userData));
+    async signUp(email: string, password: string, fullName: string) {
+        console.log(`[AuthService] Attempting signUp for: ${email}`);
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: {
+                    full_name: fullName,
+                }
+            }
+        });
+        if (error) {
+            console.error(`[AuthService] signUp error:`, error);
+            throw error;
+        }
+        console.log(`[AuthService] signUp success for user: ${data.user?.id}`);
+        return data.user;
+    },
+
+    /**
+     * Log in an existing user.
+     */
+    async login(email: string, password: string) {
+        console.log(`[AuthService] Attempting login for: ${email}`);
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+        if (error) {
+            console.error(`[AuthService] login error:`, error);
+            throw error;
+        }
+        console.log(`[AuthService] login success for user: ${data.user?.id}`);
+        return data.user;
     },
 
     /**
      * Remove the session token.
      */
     async logout() {
-        await SecureStore.deleteItemAsync(AUTH_KEY);
+        console.log(`[AuthService] Logging out...`);
+        await supabase.auth.signOut();
     },
 
     /**
      * Check if a session exists.
      */
     async isLoggedIn(): Promise<boolean> {
-        const session = await SecureStore.getItemAsync(AUTH_KEY);
+        const { data: { session } } = await supabase.auth.getSession();
         return !!session;
     },
 
@@ -36,8 +67,60 @@ export const AuthService = {
      * Get the current user data.
      */
     async getCurrentUser(): Promise<any | null> {
-        const session = await SecureStore.getItemAsync(AUTH_KEY);
-        return session ? JSON.parse(session) : null;
+        const { data: { user } } = await supabase.auth.getUser();
+        return user;
+    },
+
+    /**
+     * Save user profile details to Supabase.
+     */
+    async saveUserProfile(details: { gender: string, age_range: string, zipcode: string, city: string }, userId?: string) {
+        console.log(`[AuthService] Saving user profile for: ${userId || 'current user'}`);
+
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log(`[AuthService] Current session status: ${session ? 'Authenticated' : 'UNAUTHENTICATED'}`);
+        if (session) {
+            console.log(`[AuthService] Session User ID: ${session.user.id}`);
+        }
+
+        let finalUserId = userId;
+        if (!finalUserId) {
+            const user = await this.getCurrentUser();
+            if (!user) {
+                console.error(`[AuthService] saveUserProfile failed: No authenticated user found`);
+                throw new Error("No authenticated user found");
+            }
+            finalUserId = user.id;
+        }
+
+        const { error } = await supabase
+            .from('user_profile')
+            .upsert({
+                id: finalUserId,
+                gender: details.gender,
+                age_range: details.age_range,
+                zipcode: details.zipcode,
+            });
+
+        if (error) {
+            console.error(`[AuthService] Error upserting user_profile:`, error);
+            throw error;
+        }
+
+        // Save location data separately
+        const { error: locError } = await supabase
+            .from('user_location')
+            .upsert({
+                user_id: finalUserId,
+                city: details.city,
+                source: 'signup'
+            });
+
+        if (locError) {
+            console.error(`[AuthService] Error upserting user_location:`, locError);
+            throw locError;
+        }
+        console.log(`[AuthService] Profile and location saved successfully`);
     },
 
     /**

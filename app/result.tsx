@@ -56,17 +56,23 @@ function ResultScreen() {
         }
     };
 
+    const [isSaving, setIsSaving] = React.useState(false);
+
     const handleDone = async () => {
+        setIsSaving(true);
         try {
             await HistoryService.saveTryOn({
-                color: (params.selectedColor as string) || '#697D59',
+                colorHex: (params.selectedColor as string) || '#697D59',
+                colorName: (params.colorName as string) || 'Custom Shade',
                 intent: selectedIntent,
                 nailsCount: nails.length,
             });
             router.dismissAll();
         } catch (e) {
             console.error("Save history error:", e);
-            router.dismissAll(); // Dismiss anyway but log error
+            Alert.alert("Error", "Could not save your session to the cloud. Please try again.");
+        } finally {
+            setIsSaving(false);
         }
     };
 

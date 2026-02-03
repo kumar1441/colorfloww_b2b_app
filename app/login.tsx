@@ -13,11 +13,25 @@ export default function LoginScreen() {
         email: "",
         password: ""
     });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const handleLogin = async () => {
-        // Mock login
-        await AuthService.login({ email: formData.email, name: "Returning User" });
-        router.replace('/(main)/community');
+        if (!formData.email || !formData.password) {
+            setError("Please fill in all fields");
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+        try {
+            await AuthService.login(formData.email, formData.password);
+            router.replace('/(main)/community');
+        } catch (err: any) {
+            setError(err.message || "Invalid email or password");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -42,6 +56,12 @@ export default function LoginScreen() {
                             <Text className="text-4xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Welcome Back</Text>
                             <Text className="text-lg text-brand-charcoal-light dark:text-brand-charcoal-light/60">Log in to your account</Text>
                         </View>
+
+                        {error && (
+                            <View className="bg-red-50 p-4 rounded-2xl mb-6 border border-red-100">
+                                <Text className="text-red-600 text-center font-medium">{error}</Text>
+                            </View>
+                        )}
 
                         <View className="mb-6">
                             <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Email</Text>
@@ -71,9 +91,10 @@ export default function LoginScreen() {
                         <TouchableOpacity
                             onPress={handleLogin}
                             activeOpacity={0.8}
-                            className="bg-[#697D59] rounded-2xl py-6 items-center shadow-lg"
+                            disabled={loading}
+                            className={`bg-[#697D59] rounded-2xl py-6 items-center shadow-lg ${loading ? 'opacity-70' : ''}`}
                         >
-                            <Text className="text-white text-xl font-bold">Log In</Text>
+                            <Text className="text-white text-xl font-bold">{loading ? "Logging in..." : "Log In"}</Text>
                         </TouchableOpacity>
 
                         <View className="items-center mt-8">

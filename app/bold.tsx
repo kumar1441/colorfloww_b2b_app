@@ -22,18 +22,25 @@ const boldColors = [
 export default function BoldScreen() {
     const router = useRouter();
 
-    const handleColorSelect = async (color: string) => {
+    const handleColorSelect = async (color: string, name: string) => {
         const loggedIn = await AuthService.isLoggedIn();
         if (loggedIn) {
             router.push({
                 pathname: "/camera",
-                params: { color }
+                params: {
+                    color,
+                    colorName: name
+                }
             });
         } else {
             router.push({
                 //@ts-ignore
                 pathname: "/signup",
-                params: { returnTo: "/camera", color }
+                params: {
+                    returnTo: "/camera",
+                    color,
+                    colorName: name
+                }
             });
         }
     };
@@ -41,7 +48,7 @@ export default function BoldScreen() {
     const renderItem = ({ item }: { item: typeof boldColors[0] }) => (
         <View className="bg-white dark:bg-brand-charcoal rounded-[24px] border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 overflow-hidden shadow-sm mb-5" style={{ width: COLUMN_WIDTH }}>
             <TouchableOpacity
-                onPress={() => handleColorSelect(item.color)}
+                onPress={() => handleColorSelect(item.color, item.name)}
                 activeOpacity={0.9}
                 className="w-full aspect-square justify-center items-center"
                 style={{ backgroundColor: item.color }}

@@ -48,7 +48,11 @@ export default function CameraScreen() {
                 if (photo) {
                     router.push({
                         pathname: "/result",
-                        params: { imageUri: photo.uri, selectedColor }
+                        params: {
+                            imageUri: photo.uri,
+                            selectedColor,
+                            colorName: params.colorName
+                        }
                     });
                 }
             } catch (e) {
@@ -68,7 +72,11 @@ export default function CameraScreen() {
         if (!result.canceled) {
             router.push({
                 pathname: "/result",
-                params: { imageUri: result.assets[0].uri, selectedColor }
+                params: {
+                    imageUri: result.assets[0].uri,
+                    selectedColor,
+                    colorName: params.colorName
+                }
             });
         }
     };
