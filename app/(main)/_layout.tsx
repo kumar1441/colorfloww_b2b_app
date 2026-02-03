@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { LucideLayoutGrid, LucidePalette, LucideHistory, LucideUser } from 'lucide-react-native';
+import { LucideHome, LucidePalette, LucideHistory, LucideUser } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { Platform, StyleSheet } from 'react-native';
 
@@ -26,8 +26,8 @@ export default function MainLayout() {
             <Tabs.Screen
                 name="community"
                 options={{
-                    title: 'Community',
-                    tabBarIcon: ({ color, size }) => <LucideLayoutGrid size={size} color={color} />,
+                    title: 'Home',
+                    tabBarIcon: ({ color, size }) => <LucideHome size={size} color={color} />,
                 }}
             />
             <Tabs.Screen

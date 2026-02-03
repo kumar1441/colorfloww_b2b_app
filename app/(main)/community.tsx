@@ -1,28 +1,33 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Dimensions, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-// import Animated, { FadeInUp } from 'react-native-reanimated';
-import { LucideSearch, LucideTrendingUp, LucideHeart, LucideShare2 } from 'lucide-react-native';
+import { LucideArrowRight, LucideSparkles } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
-const COLUMN_WIDTH = (width - 64) / 2;
 
-const mockColors = [
-    { id: "1", color: "#FF6B9D", name: "Blushing Rose", author: "Sarah M.", likes: 234, isLiked: false },
-    { id: "2", color: "#A78BFA", name: "Lavender Dream", author: "Emma K.", likes: 189, isLiked: true },
-    { id: "3", color: "#697D59", name: "Sage Serenity", author: "Olivia P.", likes: 312, isLiked: false },
-    { id: "4", color: "#F97316", name: "Sunset Coral", author: "Maya L.", likes: 156, isLiked: false },
-    { id: "5", color: "#2DD4BF", name: "Ocean Breeze", author: "Sophie T.", likes: 267, isLiked: true },
-    { id: "6", color: "#DC2626", name: "Cherry Bomb", author: "Isabella R.", likes: 198, isLiked: false },
-    { id: "7", color: "#FBBF24", name: "Golden Hour", author: "Ava S.", likes: 145, isLiked: false },
-    { id: "8", color: "#C084FC", name: "Violet Velvet", author: "Mia W.", likes: 223, isLiked: false },
+const popularColors = [
+    { id: "1", color: "#FF6B9D", name: "Rose Quartz" },
+    { id: "2", color: "#D1B2A1", name: "Dusty Mauve" },
+    { id: "3", color: "#F9A8D4", name: "Pink Blush" },
+    { id: "4", color: "#E5E5E5", name: "Soft Pearl" },
 ];
 
-export default function CommunityScreen() {
+const boldColors = [
+    { id: "1", color: "#DC2626", name: "Crimson Red" },
+    { id: "2", color: "#EC4899", name: "Deep Pink" },
+    { id: "3", color: "#6D28D9", name: "Royal Purple" },
+    { id: "4", color: "#1F2937", name: "Midnight" },
+];
+
+const topCreators = [
+    { id: "1", name: "Sarah M.", colors: 45, followers: "2.3k", initial: "S" },
+    { id: "2", name: "Emma K.", colors: 38, followers: "1.8k", initial: "E" },
+    { id: "3", name: "Olivia P.", colors: 52, followers: "3.1k", initial: "O" },
+];
+
+export default function HomeScreen() {
     const router = useRouter();
-    const [searchQuery, setSearchQuery] = useState("");
-    const [colors, setColors] = useState(mockColors);
 
     const handleColorSelect = (color: string) => {
         router.push({
@@ -31,83 +36,125 @@ export default function CommunityScreen() {
         });
     };
 
-    const renderItem = ({ item, index }: { item: typeof mockColors[0], index: number }) => (
-        <View className="bg-white dark:bg-brand-charcoal rounded-[24px] border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 overflow-hidden shadow-sm mb-5" style={{ width: COLUMN_WIDTH }}>
-            <TouchableOpacity
-                onPress={() => handleColorSelect(item.color)}
-                activeOpacity={0.9}
-                className="w-full aspect-square justify-center items-center"
-                style={{ backgroundColor: item.color }}
-            >
-                <View className="bg-black/40 px-4 py-2 rounded-full">
-                    <Text className="text-white text-[13px] font-semibold">Try On</Text>
-                </View>
-            </TouchableOpacity>
-
-            <View className="p-3">
-                <Text className="text-[15px] font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-0.5">{item.name}</Text>
-                <Text className="text-xs text-brand-charcoal-light dark:text-brand-charcoal-light/60 mb-2">by {item.author}</Text>
-
-                <View className="flex-row justify-between items-center">
-                    <Text className="text-[10px] text-brand-charcoal-light dark:text-brand-charcoal-light/60 font-mono">{item.color}</Text>
-                    <View className="flex-row items-center gap-x-3">
-                        <TouchableOpacity className="flex-row items-center gap-x-1">
-                            <LucideHeart size={16} color={item.isLiked ? '#FF6B9D' : '#8A8A8A'} fill={item.isLiked ? '#FF6B9D' : 'transparent'} />
-                            <Text className="text-xs text-brand-charcoal-light dark:text-brand-charcoal-light/60">{item.likes}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            className="flex-row items-center"
-                            onPress={() => {
-                                import('react-native').then(({ Share }) => {
-                                    Share.share({
-                                        message: `Check out this gorgeous nail color: ${item.name} (${item.color})! Found on Colorfloww.`,
-                                        title: 'Share Nail Color'
-                                    });
-                                });
-                            }}
-                        >
-                            <LucideShare2 size={16} color="#8A8A8A" />
-                        </TouchableOpacity>
-                    </View>
-                </View>
+    const renderHeader = (title: string, subtitle: string, onSeeAll: () => void) => (
+        <View className="flex-row justify-between items-center px-6 mb-6">
+            <View>
+                <Text className="text-2xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark">{title}</Text>
+                <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60">{subtitle}</Text>
             </View>
+            <TouchableOpacity
+                onPress={onSeeAll}
+                className="w-10 h-10 rounded-full bg-white dark:bg-brand-charcoal items-center justify-center shadow-sm border border-brand-charcoal-light/10"
+            >
+                <LucideArrowRight size={20} color="#697D59" />
+            </TouchableOpacity>
         </View>
     );
 
     return (
-        <View className="flex-1 bg-brand-cream dark:bg-brand-cream-dark">
-            <SafeAreaView edges={['top']} className="bg-brand-cream/80 dark:bg-brand-cream-dark/80">
-                <View className="px-6 pt-4 pb-5">
-                    <View className="flex-row items-center gap-x-3 mb-5">
-                        <LucideTrendingUp size={32} color="#697D59" strokeWidth={1.5} />
-                        <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Community</Text>
-                    </View>
-
-                    <View className="flex-row items-center bg-white/60 dark:bg-brand-charcoal/40 rounded-2xl border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 px-4 h-[52px]">
-                        <LucideSearch size={20} color="#8A8A8A" className="mr-2" />
-                        <TextInput
-                            value={searchQuery}
-                            onChangeText={setSearchQuery}
-                            placeholder="Search colors or creators..."
-                            placeholderTextColor="#8A8A8A"
-                            className="flex-1 text-base text-brand-charcoal dark:text-brand-charcoal-dark"
-                        />
+        <View className="flex-1 bg-white dark:bg-brand-cream-dark">
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+                {/* Hero Section */}
+                <View className="relative w-full h-[450px]">
+                    <Image
+                        source={require('../../assets/hero.png')}
+                        className="w-full h-full"
+                        resizeMode="cover"
+                    />
+                    <View className="absolute inset-0 bg-black/30 justify-center items-center p-8">
+                        <LucideSparkles color="white" size={48} className="mb-4" />
+                        <Text className="text-4xl font-bold text-white text-center mb-4">Try On Nails</Text>
+                        <Text className="text-white text-center text-lg leading-6 font-medium">
+                            For the first time, you can try before you buy. Virtually explore millions of shades on your fingers and see how gorgeous they look.
+                        </Text>
                     </View>
                 </View>
-            </SafeAreaView>
 
-            <FlatList
-                data={colors}
-                renderItem={renderItem}
-                keyExtractor={(item) => item.id}
-                numColumns={2}
-                contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
-                columnWrapperStyle={{ justifyContent: 'space-between' }}
-                showsVerticalScrollIndicator={false}
-            />
+                {/* Popular Choices */}
+                <View className="pt-10">
+                    {renderHeader("Popular Choices", "What's trending right now", () => router.push('/popular'))}
+                    <FlatList
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        data={popularColors}
+                        contentContainerStyle={{ paddingLeft: 24, paddingRight: 8 }}
+                        keyExtractor={(item) => item.id}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                onPress={() => handleColorSelect(item.color)}
+                                className="mr-4 items-center"
+                            >
+                                <View
+                                    className="w-24 h-24 rounded-full shadow-md mb-3 border-2 border-white"
+                                    style={{ backgroundColor: item.color }}
+                                />
+                                <Text className="text-[13px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark">{item.name}</Text>
+                            </TouchableOpacity>
+                        )}
+                    />
+                </View>
+
+                {/* Bold Category */}
+                <View className="pt-12">
+                    {renderHeader("Bold", "Make a statement", () => router.push('/bold'))}
+                    <FlatList
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        data={boldColors}
+                        contentContainerStyle={{ paddingLeft: 24, paddingRight: 8 }}
+                        keyExtractor={(item) => item.id}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                onPress={() => handleColorSelect(item.color)}
+                                className="mr-4 items-center"
+                            >
+                                <View
+                                    className="w-24 h-24 rounded-full shadow-md mb-3 border-2 border-white"
+                                    style={{ backgroundColor: item.color }}
+                                />
+                                <Text className="text-[13px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark">{item.name}</Text>
+                            </TouchableOpacity>
+                        )}
+                    />
+                </View>
+
+                {/* Top Creators */}
+                <View className="pt-12">
+                    {renderHeader("Top Creators", "Discover curated collections", () => router.push('/creators'))}
+                    <FlatList
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        data={topCreators}
+                        contentContainerStyle={{ paddingLeft: 24, paddingRight: 8 }}
+                        keyExtractor={(item) => item.id}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                className="mr-4 bg-white dark:bg-brand-charcoal rounded-[24px] p-6 border border-brand-charcoal-light/10 shadow-sm items-center w-36"
+                            >
+                                <View className="w-16 h-16 rounded-full bg-brand-sage dark:bg-brand-sage-dark items-center justify-center mb-4">
+                                    <Text className="text-white text-xl font-bold">{item.initial}</Text>
+                                </View>
+                                <Text className="text-[15px] font-bold text-center text-brand-charcoal dark:text-brand-charcoal-dark mb-1">{item.name}</Text>
+                                <Text className="text-[11px] text-brand-charcoal-light dark:text-brand-charcoal-light/60 text-center mb-1">{item.colors} colors</Text>
+                                <Text className="text-[11px] text-brand-sage dark:text-brand-sage-dark font-bold text-center">{item.followers} followers</Text>
+                            </TouchableOpacity>
+                        )}
+                    />
+                </View>
+
+                {/* Create Your Own CTA */}
+                <TouchableOpacity
+                    onPress={() => router.push('/(main)/custom')}
+                    className="mx-6 mt-16 bg-brand-sage dark:bg-brand-sage-dark rounded-[32px] p-10 items-center shadow-lg"
+                >
+                    <LucideSparkles color="white" size={40} className="mb-4" />
+                    <Text className="text-2xl font-bold text-white mb-2 text-center">Create Your Own</Text>
+                    <Text className="text-white/80 text-center mb-8 px-2">Mix and match to create your perfect shade</Text>
+                    <View className="bg-white px-8 py-3 rounded-full">
+                        <Text className="text-brand-sage font-bold">Start Creating</Text>
+                    </View>
+                </TouchableOpacity>
+            </ScrollView>
         </View>
     );
 }
-
-const styles = StyleSheet.create({});
-

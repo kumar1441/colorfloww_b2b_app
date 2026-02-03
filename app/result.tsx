@@ -89,7 +89,7 @@ function ResultScreen() {
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            onPress={() => router.push('/(main)/community')}
+                            onPress={() => router.dismissAll()}
                             className="mt-6"
                         >
                             <Text className="text-brand-sage dark:text-brand-sage-dark text-base font-semibold">Done</Text>

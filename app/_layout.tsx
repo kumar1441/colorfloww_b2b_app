@@ -35,6 +35,9 @@ export default function Layout() {
                 <Stack.Screen name="(main)" />
                 <Stack.Screen name="camera" options={{ presentation: 'fullScreenModal' }} />
                 <Stack.Screen name="result" options={{ presentation: 'fullScreenModal' }} />
+                <Stack.Screen name="popular" />
+                <Stack.Screen name="bold" />
+                <Stack.Screen name="creators" />
             </Stack>
             <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
         </SafeAreaProvider>
