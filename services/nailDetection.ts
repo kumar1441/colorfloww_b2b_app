@@ -31,42 +31,58 @@ export const detectNails = async (imageUri: string): Promise<Nail[]> => {
     const SPACE_URL = "https://nblvprasad-nailsegmentation.hf.space/gradio_api/call/predict";
 
     console.log("Starting Step 1: POST to Gradio Queue...");
-    // Step 1: POST to initiate the task and get an event_id
-    const postResponse = await fetch(SPACE_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        data: [
-          {
-            url: base64Image,
-            orig_name: "nail_capture.jpg",
-            meta: { _type: "gradio.FileData" }
-          }
-        ]
-      })
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000); // Increased to 20s timeout
 
-    if (!postResponse.ok) {
-      const errorText = await postResponse.text();
-      throw new Error(`Queue initiation failed: ${postResponse.status} ${errorText}`);
+    let event_id: string;
+
+    try {
+      const postResponse = await fetch(SPACE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          data: [
+            {
+              url: base64Image,
+              orig_name: "nail_capture.jpg",
+              meta: { _type: "gradio.FileData" }
+            }
+          ]
+        })
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!postResponse.ok) {
+        const errorText = await postResponse.text();
+        console.error(`Step 1 Failed: ${postResponse.status} ${errorText}`);
+        throw new Error(`Queue initiation failed: ${postResponse.status} ${errorText}`);
+      }
+
+      const postJson = await postResponse.json();
+      event_id = postJson.event_id;
+      console.log(`Step 1 Success. Event ID: ${event_id}`);
+    } catch (e: any) {
+      if (e.name === 'AbortError') {
+        console.error("Step 1 Timeout: The Hugging Face Space might be sleeping or slow.");
+      }
+      throw e;
     }
 
-    const { event_id } = await postResponse.json();
-    console.log(`Step 1 Success. Event ID: ${event_id}`);
-
-    // Step 2: GET the result. We use await response.text() which will wait 
-    // for the stream to complete. Since prediction is fast, the server 
-    // will send the result and close the connection.
+    // Step 2: GET the result.
     console.log("Starting Step 2: Fetching result from stream...");
     const resultUrl = `${SPACE_URL}/${event_id}`;
     const getResponse = await fetch(resultUrl);
 
     if (!getResponse.ok) {
+      const errorText = await getResponse.text();
+      console.error(`Step 2 Failed: ${getResponse.status} ${errorText}`);
       throw new Error(`Result fetch failed: ${getResponse.status}`);
     }
 
     const streamText = await getResponse.text();
-    console.log("Stream received fully.");
+    console.log(`Stream received fully. Length: ${streamText.length}`);
 
     // Parse the SSE stream text manually for "event: complete" and its associated data
     const lines = streamText.split('\n');

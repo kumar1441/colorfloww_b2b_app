@@ -59,7 +59,8 @@ export default function CameraScreen() {
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaType.Images,
+            // Fallback for different Expo versions
+            mediaTypes: ['images'],
             allowsEditing: true,
             quality: 1,
         });
