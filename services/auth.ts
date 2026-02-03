@@ -124,6 +124,95 @@ export const AuthService = {
     },
 
     /**
+     * Get full user details for profile page.
+     */
+    async getFullUserProfile() {
+        const user = await this.getCurrentUser();
+        if (!user) return null;
+
+        const { data: profile } = await supabase
+            .from('user_profile')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+        return {
+            id: user.id,
+            email: user.email,
+            fullName: user.user_metadata?.full_name || 'Nail Enthusiast',
+            avatarUrl: profile?.avatar_url,
+            gender: profile?.gender,
+            ageRange: profile?.age_range,
+        };
+    },
+
+    /**
+     * Update user avatar in Supabase.
+     */
+    async updateAvatar(base64Image: string) {
+        const user = await this.getCurrentUser();
+        if (!user) return;
+
+        // Convert base64 to Blob/ArrayBuffer for upload
+        const fileName = `${user.id}/${Date.now()}.png`;
+        const filePath = `avatars/${fileName}`;
+
+        // Use a simpler approach for base64 to buffer if needed, 
+        // but Supabase storage can handle it with decode
+        const { decode } = require('base64-arraybuffer');
+
+        const { data, error } = await supabase.storage
+            .from('avatars')
+            .upload(fileName, decode(base64Image), {
+                contentType: 'image/png',
+                upsert: true
+            });
+
+        if (error) {
+            console.error('[AuthService] Avatar upload error:', error);
+            throw error;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(fileName);
+
+        const { error: updateError } = await supabase
+            .from('user_profile')
+            .update({ avatar_url: publicUrl })
+            .eq('id', user.id);
+
+        if (updateError) throw updateError;
+
+        return publicUrl;
+    },
+
+    /**
+     * Update user profile fields.
+     */
+    async updateUserProfile(details: { fullName?: string, gender?: string }) {
+        const user = await this.getCurrentUser();
+        if (!user) throw new Error("No authenticated user found");
+
+        // 1. Update Auth Metadata (for fullName)
+        if (details.fullName) {
+            const { error: authError } = await supabase.auth.updateUser({
+                data: { full_name: details.fullName }
+            });
+            if (authError) throw authError;
+        }
+
+        // 2. Update public.user_profile (for gender)
+        if (details.gender) {
+            const { error: profileError } = await supabase
+                .from('user_profile')
+                .update({ gender: details.gender })
+                .eq('id', user.id);
+            if (profileError) throw profileError;
+        }
+    },
+
+    /**
      * Biometrics: Check if device supports local authentication.
      */
     async isBiometricsSupported(): Promise<boolean> {

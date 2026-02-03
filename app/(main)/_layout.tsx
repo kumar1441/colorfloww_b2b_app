@@ -51,6 +51,12 @@ export default function MainLayout() {
                     tabBarIcon: ({ color, size }) => <LucideUser size={size} color={color} />,
                 }}
             />
+            <Tabs.Screen
+                name="edit-profile"
+                options={{
+                    href: null,
+                }}
+            />
         </Tabs>
     );
 }

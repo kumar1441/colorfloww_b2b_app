@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { AuthService } from './auth';
+import { GamificationService } from './gamification';
 
 export type IntentTag = 'Everyday' | 'Work' | 'Experiment' | 'Trend' | 'Event';
 
@@ -58,6 +59,11 @@ export const HistoryService = {
                     color_id: colorData.id,
                     intent_tag: item.intent
                 });
+
+            // 4. Update streaks and check awards
+            await GamificationService.updateStreak();
+            await GamificationService.checkAndGrantAwards();
+
         } catch (e) {
             console.error("Error saving to Supabase:", e);
             throw e;
@@ -88,7 +94,7 @@ export const HistoryService = {
 
             if (error) throw error;
 
-            return (data || []).map(item => ({
+            return (data || []).map((item: any) => ({
                 id: item.id.toString(),
                 color: (item.colors as any)?.rgb || '#000000',
                 intent: item.intent as IntentTag,
