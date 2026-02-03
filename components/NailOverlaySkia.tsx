@@ -1,5 +1,5 @@
 import React from 'react';
-import { Canvas, Path, Image, useImage, Skia, Group } from "@shopify/react-native-skia";
+import { Canvas, Path, Image, useImage, Skia, Group, BlurMask } from "@shopify/react-native-skia";
 import { View, StyleSheet } from "react-native";
 import { Nail } from "../services/nailDetection";
 
@@ -93,13 +93,19 @@ export function NailOverlaySkia({ imageUri, nails, selectedColor }: Props) {
                     return (
                         <Group key={index}>
                             {/* 1. Base Layer: Multiply preserves the underlying nail texture/shadows */}
-                            <Path path={path} color={selectedColor} blendMode="multiply" />
+                            <Path path={path} color={selectedColor} blendMode="multiply" opacity={0.8}>
+                                <BlurMask blur={1.5} style="normal" />
+                            </Path>
 
-                            {/* 2. Color Pop: Overlay adds vibrancy */}
-                            <Path path={path} color={selectedColor} blendMode="overlay" opacity={0.5} />
+                            {/* 2. Color Pop: Overlay/SoftLight adds vibrancy while respecting texture */}
+                            <Path path={path} color={selectedColor} blendMode="softLight" opacity={0.6}>
+                                <BlurMask blur={1.5} style="normal" />
+                            </Path>
 
                             {/* 3. Gloss Layer: Screen adds realistic highlights */}
-                            <Path path={path} color="white" blendMode="screen" opacity={0.1} />
+                            <Path path={path} color="white" blendMode="screen" opacity={0.15}>
+                                <BlurMask blur={2} style="normal" />
+                            </Path>
                         </Group>
                     );
                 })}

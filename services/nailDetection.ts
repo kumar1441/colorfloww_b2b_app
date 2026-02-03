@@ -119,6 +119,8 @@ export const detectNails = async (imageUri: string): Promise<Nail[]> => {
       return [];
     }
 
+    console.log("First detection object structure:", JSON.stringify(bboxData[0]));
+
     return bboxData.map((det: any) => {
       const width = det.x2 - det.x1;
       const height = det.y2 - det.y1;
@@ -128,7 +130,26 @@ export const detectNails = async (imageUri: string): Promise<Nail[]> => {
       const rx = width / 2;
       const ry = height / 2;
 
-      const mask = `M ${cx - rx} ${cy} A ${rx} ${ry} 0 1 0 ${cx + rx} ${cy} A ${rx} ${ry} 0 1 0 ${cx - rx} ${cy} Z`;
+      // Use polygon segments if available for a natural shape, fallback to ellipse
+      let mask = '';
+      if (det.segments && Array.isArray(det.segments) && det.segments.length > 0) {
+        const points = det.segments;
+        mask = `M ${points[0].x} ${points[0].y}`;
+        for (let j = 1; j < points.length; j++) {
+          mask += ` L ${points[j].x} ${points[j].y}`;
+        }
+        mask += ' Z';
+      } else if (det.segmentation && Array.isArray(det.segmentation) && det.segmentation.length > 0) {
+        const points = det.segmentation;
+        mask = `M ${points[0][0]} ${points[0][1]}`;
+        for (let j = 1; j < points.length; j++) {
+          mask += ` L ${points[j][0]} ${points[j][1]}`;
+        }
+        mask += ' Z';
+      } else {
+        // Fallback: Ellipse mask
+        mask = `M ${cx - rx} ${cy} A ${rx} ${ry} 0 1 0 ${cx + rx} ${cy} A ${rx} ${ry} 0 1 0 ${cx - rx} ${cy} Z`;
+      }
 
       return {
         box: { x: det.x1, y: det.y1, width, height },
