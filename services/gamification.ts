@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase';
 import { AuthService } from './auth';
 
 /**
- * GamificationService: Tracks daily usage streaks and awards via Supabase.
+ * GamificationService: Tracks daily usage streaks, awards, XP, and currencies via Supabase.
  */
 export const GamificationService = {
     /**
@@ -15,7 +15,7 @@ export const GamificationService = {
         const today = new Date().toISOString().split('T')[0];
 
         // 1. Get current streak data
-        const { data: streakData, error } = await supabase
+        const { data: streakData } = await supabase
             .from('user_streaks')
             .select('*')
             .eq('user_id', user.id)
@@ -53,30 +53,129 @@ export const GamificationService = {
                 updated_at: new Date().toISOString()
             });
 
-        // 3. Check for milestones / awards
+        // 3. Award XP for daily activity
+        await this.awardXP(10, 'daily_streak');
+
+        // 4. Check for milestones / awards
         let reachedMilestone = false;
         if (currentStreak === 5) {
             reachedMilestone = true;
             await this.grantAward('streak_5');
+            await this.awardXP(100, 'milestone_streak_5');
         }
 
         return { streak: currentStreak, reachedMilestone };
     },
 
     /**
-     * Get the current streak count.
+     * Award XP to the user and handle level-up logic.
      */
-    async getStreak(): Promise<number> {
+    async awardXP(amount: number, reason: string): Promise<{ newTotal: number, leveledUp: boolean }> {
         const user = await AuthService.getCurrentUser();
-        if (!user) return 0;
+        if (!user) return { newTotal: 0, leveledUp: false };
 
-        const { data } = await supabase
-            .from('user_streaks')
-            .select('current_streak')
-            .eq('user_id', user.id)
+        const { data: profile } = await supabase
+            .from('user_profile')
+            .select('xp, level')
+            .eq('id', user.id)
             .single();
 
-        return data?.current_streak || 0;
+        const currentXP = profile?.xp || 0;
+        const currentLevel = profile?.level || 1;
+        const newXP = currentXP + amount;
+
+        // Simple leveling logic: Level = floor(sqrt(XP / 100)) + 1
+        const newLevel = Math.floor(Math.sqrt(newXP / 100)) + 1;
+        const leveledUp = newLevel > currentLevel;
+
+        await supabase
+            .from('user_profile')
+            .update({ xp: newXP, level: newLevel })
+            .eq('id', user.id);
+
+        console.log(`[Gamification] Awarded ${amount} XP for ${reason}. New Level: ${newLevel}`);
+
+        // Log transaction for audit
+        await supabase.from('xp_transactions').insert({
+            user_id: user.id,
+            amount,
+            reason
+        });
+
+        return { newTotal: newXP, leveledUp };
+    },
+
+    /**
+     * Award Gems (Premium Currency)
+     */
+    async awardGems(amount: number, reason: string): Promise<void> {
+        const user = await AuthService.getCurrentUser();
+        if (!user) return;
+
+        const { data: profile } = await supabase
+            .from('user_profile')
+            .select('gems')
+            .eq('id', user.id)
+            .single();
+
+        const newGems = (profile?.gems || 0) + amount;
+
+        await supabase
+            .from('user_profile')
+            .update({ gems: newGems })
+            .eq('id', user.id);
+
+        await supabase.from('gem_transactions').insert({
+            user_id: user.id,
+            amount,
+            reason
+        });
+    },
+
+    /**
+     * Award Karma (Social/Regional Currency)
+     */
+    async awardKarma(amount: number, city: string, reason: string): Promise<void> {
+        const user = await AuthService.getCurrentUser();
+        if (!user) return;
+
+        await supabase.from('karma_points').insert({
+            user_id: user.id,
+            amount,
+            city,
+            reason
+        });
+
+        console.log(`[Gamification] Awarded ${amount} Karma in ${city} for ${reason}`);
+    },
+
+    /**
+     * Award Royalties (UGC Ownership)
+     */
+    async awardRoyalties(creatorId: string, colorId: number, consumerId: string): Promise<void> {
+        if (creatorId === consumerId) return; // No royalties for self-use
+
+        await supabase.from('color_royalties').insert({
+            creator_id: creatorId,
+            consumer_id: consumerId,
+            color_id: colorId,
+            points: 5 // Non-monetary points
+        });
+
+        // Also award some XP to the creator
+        await this.awardXP(20, 'color_royalty_earned');
+    },
+
+    /**
+     * Grant a special badge / award.
+     */
+    async grantAward(awardType: string): Promise<void> {
+        const user = await AuthService.getCurrentUser();
+        if (!user) return;
+
+        await supabase
+            .from('user_awards')
+            .upsert({ user_id: user.id, award_type: awardType }, { onConflict: 'user_id,award_type' });
     },
 
     /**
@@ -93,26 +192,30 @@ export const GamificationService = {
 
         const sessionCount = count || 0;
 
-        if (sessionCount >= 1) {
+        if (sessionCount === 1) {
             await this.grantAward('first_session');
+            await this.awardXP(50, 'first_try_on');
         }
-        if (sessionCount >= 5) {
+        if (sessionCount === 5) {
             await this.grantAward('session_5');
+            await this.awardXP(200, 'try_on_veteran');
         }
-
-        // Streak award is handled in updateStreak
     },
 
     /**
-     * Grant an award to the user.
+     * Get the current streak count.
      */
-    async grantAward(awardType: string): Promise<void> {
+    async getStreak(): Promise<number> {
         const user = await AuthService.getCurrentUser();
-        if (!user) return;
+        if (!user) return 0;
 
-        await supabase
-            .from('user_awards')
-            .upsert({ user_id: user.id, award_type: awardType }, { onConflict: 'user_id,award_type' });
+        const { data } = await supabase
+            .from('user_streaks')
+            .select('current_streak')
+            .eq('user_id', user.id)
+            .single();
+
+        return data?.current_streak || 0;
     },
 
     /**
@@ -143,5 +246,35 @@ export const GamificationService = {
             .eq('user_id', user.id);
 
         return count || 0;
+    },
+
+    /**
+     * Get user's current progress.
+     */
+    async getPlayerStats() {
+        const user = await AuthService.getCurrentUser();
+        if (!user) return null;
+
+        const { data: profile } = await supabase
+            .from('user_profile')
+            .select('xp, level, gems')
+            .eq('id', user.id)
+            .single();
+
+        const { data: karma } = await supabase
+            .from('karma_points')
+            .select('amount')
+            .eq('user_id', user.id);
+
+        const totalKarma = karma?.reduce((acc, curr) => acc + curr.amount, 0) || 0;
+
+        return {
+            xp: profile?.xp || 0,
+            level: profile?.level || 1,
+            gems: profile?.gems || 0,
+            karma: totalKarma,
+            nextLevelXP: Math.pow(profile?.level || 1, 2) * 100
+        };
     }
 };
+

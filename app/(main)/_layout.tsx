@@ -1,21 +1,26 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { LucideHome, LucidePalette, LucideHistory, LucideUser } from 'lucide-react-native';
+import { LucideHome, LucidePalette, LucideHistory, LucideUser, LucideSparkles, LucideTrophy } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { Platform, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-/**
- * Main Layout: Provides the bottom tab navigation.
- * Uses BlurView for a premium glassmorphism effect on iOS.
- */
 export default function MainLayout() {
+    const insets = useSafeAreaInsets();
+
     return (
         <Tabs
             screenOptions={{
                 headerShown: false,
                 tabBarActiveTintColor: '#697D59',
                 tabBarInactiveTintColor: '#8A8A8A',
-                tabBarStyle: styles.tabBar,
+                tabBarStyle: [
+                    styles.tabBar,
+                    {
+                        height: 64 + insets.bottom,
+                        paddingBottom: insets.bottom > 0 ? insets.bottom : 12,
+                    }
+                ],
                 tabBarBackground: () => (
                     Platform.OS === 'ios' ? (
                         <BlurView intensity={80} style={StyleSheet.absoluteFill} tint="light" />
@@ -31,6 +36,13 @@ export default function MainLayout() {
                 }}
             />
             <Tabs.Screen
+                name="spotlight"
+                options={{
+                    title: 'Spotlight',
+                    tabBarIcon: ({ color, size }) => <LucideSparkles size={size} color={color} />,
+                }}
+            />
+            <Tabs.Screen
                 name="custom"
                 options={{
                     title: 'Mix',
@@ -38,16 +50,22 @@ export default function MainLayout() {
                 }}
             />
             <Tabs.Screen
+                name="leaderboard"
+                options={{
+                    title: 'Ranks',
+                    tabBarIcon: ({ color, size }) => <LucideTrophy size={size} color={color} />,
+                }}
+            />
+            <Tabs.Screen
                 name="history"
                 options={{
-                    title: 'History',
-                    tabBarIcon: ({ color, size }) => <LucideHistory size={size} color={color} />,
+                    href: null, // Move history to profile or hide from tabs to make room
                 }}
             />
             <Tabs.Screen
                 name="profile"
                 options={{
-                    title: 'Profile',
+                    title: 'Me',
                     tabBarIcon: ({ color, size }) => <LucideUser size={size} color={color} />,
                 }}
             />

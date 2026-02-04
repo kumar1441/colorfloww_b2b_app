@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Dimensions, Modal } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { LucideArrowLeft, LucideShieldCheck, LucideCheck, LucideChevronDown } from 'lucide-react-native';
 import { AuthService } from '../services/auth';
+import { GamificationService } from '../services/gamification';
 
 const { width } = Dimensions.get('window');
 
 export default function SignupScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
+    const insets = useSafeAreaInsets();
 
     // State
     const [step, setStep] = useState(1);
@@ -74,6 +76,10 @@ export default function SignupScreen() {
             console.log(`[SignupScreen] Profile and location saved successfully`);
             setShowConsent(false);
 
+            // 3. Grant Gamification Rewards
+            await GamificationService.grantAward('verified_artist');
+            await GamificationService.awardXP(150, 'studio_calibration_complete');
+
             if (params.returnTo) {
                 router.replace({
                     //@ts-ignore
@@ -105,14 +111,14 @@ export default function SignupScreen() {
                     </TouchableOpacity>
                 </View>
 
-                <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }} keyboardShouldPersistTaps="handled">
+                <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24, paddingBottom: 24 + insets.bottom }} keyboardShouldPersistTaps="handled">
                     <View className="bg-white dark:bg-brand-charcoal rounded-[40px] p-10 shadow-2xl">
                         <Text className="text-4xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">
-                            {step === 1 ? "Create Account" : "Tell us about yourself"}
+                            {step === 1 ? "Create Account" : "Studio Calibration"}
                         </Text>
 
                         <Text className="text-lg text-brand-charcoal-light dark:text-brand-charcoal-light/60 mb-6 leading-6">
-                            {step === 1 ? "Let's get you started" : "Help us personalize your experience"}
+                            {step === 1 ? "Start your journey" : "Calibrate our AI to match your unique skin tone and lighting for a professional finish."}
                         </Text>
 
                         {error && (

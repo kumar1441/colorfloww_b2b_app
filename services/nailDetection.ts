@@ -1,3 +1,5 @@
+import * as ImageManipulator from 'expo-image-manipulator';
+
 export interface Nail {
   box: { x: number; y: number; width: number; height: number };
   // Path2D compatible string (SVG path data) or simplified polygon points
@@ -10,29 +12,44 @@ export interface Nail {
  * Calls the Hugging Face YOLOv8 Nail Segmentation API.
  * Uses a manual two-step FETCH process to avoid Node.js dependencies in React Native.
  */
-export const detectNails = async (imageUri: string): Promise<Nail[]> => {
+export const detectNails = async (imageUri: string, signal?: AbortSignal): Promise<Nail[]> => {
+  const logPrefix = `[NailDetection ${new Date().toISOString().split('T')[1].split('.')[0]}]`;
+  console.log(`${logPrefix} Starting detection for image: ${imageUri.substring(0, 50)}...`);
+
   try {
-    // 1. Prepare the image as a Base64 data URI
+    // 1. Prepare and Optimize the image
+    console.log(`${logPrefix} Step 1: Optimizing image...`);
+
     let base64Image: string;
-    if (imageUri.startsWith('data:')) {
-      base64Image = imageUri;
-    } else {
-      console.log("Preparing image for API: fetching URI...");
-      const resp = await fetch(imageUri);
-      const blob = await resp.blob();
-      base64Image = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
+
+    // Resize image to max 1024px to prevent OOM and speed up upload
+    const manipulated = await ImageManipulator.manipulateAsync(
+      imageUri,
+      [{ resize: { width: 1024 } }],
+      { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+    );
+
+    if (!manipulated.base64) {
+      throw new Error("Image manipulation failed: No base64 output.");
     }
+
+    base64Image = `data:image/jpeg;base64,${manipulated.base64}`;
+    console.log(`${logPrefix} Image optimized. New dimensions: ${manipulated.width}x${manipulated.height}`);
 
     const SPACE_URL = "https://nblvprasad-nailsegmentation.hf.space/gradio_api/call/predict";
 
-    console.log("Starting Step 1: POST to Gradio Queue...");
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000); // Increased to 20s timeout
+    console.log(`${logPrefix} Step 2: POST to Gradio Queue...`);
+
+    // Use the passed signal or create a default timeout signal
+    let localController: AbortController | null = null;
+    let requestSignal = signal;
+
+    if (!requestSignal) {
+      localController = new AbortController();
+      requestSignal = localController.signal;
+      // Default 15s timeout
+      setTimeout(() => localController?.abort(), 15000);
+    }
 
     let event_id: string;
 
@@ -40,7 +57,7 @@ export const detectNails = async (imageUri: string): Promise<Nail[]> => {
       const postResponse = await fetch(SPACE_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        signal: controller.signal,
+        signal: requestSignal,
         body: JSON.stringify({
           data: [
             {
@@ -52,74 +69,92 @@ export const detectNails = async (imageUri: string): Promise<Nail[]> => {
         })
       });
 
-      clearTimeout(timeoutId);
-
       if (!postResponse.ok) {
         const errorText = await postResponse.text();
-        console.error(`Step 1 Failed: ${postResponse.status} ${errorText}`);
-        throw new Error(`Queue initiation failed: ${postResponse.status} ${errorText}`);
+        console.error(`${logPrefix} Step 2 Failed: ${postResponse.status} ${errorText}`);
+        throw new Error(`Queue initiation failed: ${postResponse.status}`);
       }
 
       const postJson = await postResponse.json();
       event_id = postJson.event_id;
-      console.log(`Step 1 Success. Event ID: ${event_id}`);
+      console.log(`${logPrefix} Step 2 Success. Event ID: ${event_id}`);
     } catch (e: any) {
-      if (e.name === 'AbortError') {
-        console.error("Step 1 Timeout: The Hugging Face Space might be sleeping or slow.");
+      if (e.name === 'AbortError' || (signal && signal.aborted)) {
+        console.warn(`${logPrefix} Step 2 Aborted by user or timeout.`);
+        throw new Error("Detection timed out or was cancelled.");
       }
       throw e;
     }
 
-    // Step 2: GET the result.
-    console.log("Starting Step 2: Fetching result from stream...");
+    // Step 3: GET the result.
+    console.log(`${logPrefix} Step 3: Fetching result from stream...`);
     const resultUrl = `${SPACE_URL}/${event_id}`;
-    const getResponse = await fetch(resultUrl);
+
+    const getResponse = await fetch(resultUrl, { signal: requestSignal });
 
     if (!getResponse.ok) {
+      // Check if it's a 500 error immediately
+      if (getResponse.status === 500) {
+        throw new Error("Server error (500). The model might be overloaded.");
+      }
       const errorText = await getResponse.text();
-      console.error(`Step 2 Failed: ${getResponse.status} ${errorText}`);
+      console.error(`${logPrefix} Step 3 Failed: ${getResponse.status} ${errorText}`);
       throw new Error(`Result fetch failed: ${getResponse.status}`);
     }
 
     const streamText = await getResponse.text();
-    console.log(`Stream received fully. Length: ${streamText.length}`);
+    console.log(`${logPrefix} Stream received fully. Length: ${streamText.length}`);
 
-    // Parse the SSE stream text manually for "event: complete" and its associated data
+    // Parse the SSE stream text manually for "event: complete"
     const lines = streamText.split('\n');
     let jsonData = null;
 
     for (let i = 0; i < lines.length; i++) {
-      if (lines[i].trim().startsWith('event: complete')) {
+      const line = lines[i].trim();
+      if (line.startsWith('event: complete')) {
+        // The data usually follows immediately
         const dataLine = lines[i + 1];
         if (dataLine && dataLine.trim().startsWith('data: ')) {
           const jsonStr = dataLine.replace('data: ', '').trim();
-          jsonData = JSON.parse(jsonStr);
+          try {
+            jsonData = JSON.parse(jsonStr);
+          } catch (parseError) {
+            console.error(`${logPrefix} JSON Parse Error on complete event:`, parseError);
+          }
           break;
         }
       }
     }
 
+    // Fallback search
     if (!jsonData || !Array.isArray(jsonData)) {
-      console.log("No result data found in stream. Check Space status.");
-      // Improved fallback search for data: in any line
+      console.log(`${logPrefix} No standard 'event: complete' found. Scanning all lines...`);
       const dataLineFallback = lines.find(l => l.trim().startsWith('data: ['));
       if (dataLineFallback) {
-        jsonData = JSON.parse(dataLineFallback.replace('data: ', '').trim());
-      } else {
-        console.log("Full Stream Text Snippet:", streamText.substring(0, 300));
-        return [];
+        try {
+          jsonData = JSON.parse(dataLineFallback.replace('data: ', '').trim());
+        } catch (e) {
+          console.error(`${logPrefix} Fallback JSON Parse Error:`, e);
+        }
       }
+    }
+
+    if (!jsonData) {
+      // Log a snippet for debugging
+      console.warn(`${logPrefix} FAILED to extract JSON from stream. Snippet: ${streamText.substring(0, 200)}`);
+      // Return empty array instead of throwing to avoid crashing everything, but log it as severe
+      return [];
     }
 
     // result.data[1] is the JSON list of detected nail coordinates
     const bboxData = jsonData[1];
 
     if (!bboxData || !Array.isArray(bboxData)) {
-      console.log("No nail predictions found in JSON data:", JSON.stringify(jsonData));
+      console.log(`${logPrefix} No nail predictions found in JSON data.`);
       return [];
     }
 
-    console.log("First detection object structure:", JSON.stringify(bboxData[0]));
+    console.log(`${logPrefix} Found ${bboxData.length} nails.`);
 
     return bboxData.map((det: any) => {
       const width = det.x2 - det.x1;
@@ -157,8 +192,12 @@ export const detectNails = async (imageUri: string): Promise<Nail[]> => {
         confidence: det.confidence
       };
     });
-  } catch (error) {
-    console.error("Nail Detection Error:", error);
-    return [];
+  } catch (error: any) {
+    if (error.name === 'AbortError' || (signal && signal.aborted)) {
+      console.warn(`${logPrefix} Detection process cancelled.`);
+      throw new Error("Cancelled");
+    }
+    console.error(`${logPrefix} Critical Error:`, error);
+    throw error;
   }
 };

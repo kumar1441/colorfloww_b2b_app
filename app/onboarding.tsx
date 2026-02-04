@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Dimensions, Animated, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Dimensions, Animated } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { LucideChevronRight, LucideCamera, LucidePalette, LucideUsers, LucideSparkles } from 'lucide-react-native';
@@ -38,6 +39,7 @@ const ONBOARDING_DATA = [
 
 export default function OnboardingScreen() {
     const router = useRouter();
+    const insets = useSafeAreaInsets();
     const [currentIndex, setCurrentIndex] = useState(0);
     const scrollX = useRef(new Animated.Value(0)).current;
     const slidesRef = useRef<FlatList>(null);
@@ -117,7 +119,7 @@ export default function OnboardingScreen() {
             />
 
             {/* Bottom Section */}
-            <View style={styles.bottomContainer}>
+            <View style={[styles.bottomContainer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
                 {/* Pagination Dots */}
                 <View style={styles.pagination}>
                     {ONBOARDING_DATA.map((_, i) => {
