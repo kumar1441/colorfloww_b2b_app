@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Dimensions, Alert } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { LucideArrowLeft, LucideSparkles } from 'lucide-react-native';
 import { AuthService } from '../services/auth';
+import { AnalyticsService } from '../services/analytics';
 
 const { width } = Dimensions.get('window');
 
 export default function LoginScreen() {
     const router = useRouter();
+    const insets = useSafeAreaInsets();
     const [formData, setFormData] = useState({
         email: "",
         password: ""
@@ -26,6 +28,7 @@ export default function LoginScreen() {
         setError(null);
         try {
             await AuthService.login(formData.email, formData.password);
+            await AnalyticsService.identify();
             router.replace('/(main)/community');
         } catch (err: any) {
             setError(err.message || "Invalid email or password");
@@ -39,8 +42,8 @@ export default function LoginScreen() {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             className="flex-1 bg-brand-cream dark:bg-brand-cream-dark"
         >
-            <SafeAreaView className="flex-1">
-                <View className="px-6 pt-4">
+            <SafeAreaView className="flex-1" edges={['bottom', 'left', 'right']}>
+                <View style={{ paddingTop: Math.max(insets.top, 16) }} className="px-6">
                     <TouchableOpacity onPress={() => router.back()} className="flex-row items-center">
                         <LucideArrowLeft size={20} color="#697D59" />
                         <Text className="ml-2 text-brand-sage dark:text-brand-sage-dark text-lg font-medium">Back</Text>
@@ -77,7 +80,23 @@ export default function LoginScreen() {
                         </View>
 
                         <View className="mb-10">
-                            <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Password</Text>
+                            <View className="flex-row justify-between items-center mb-3">
+                                <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark">Password</Text>
+                                <TouchableOpacity onPress={async () => {
+                                    if (!formData.email) {
+                                        setError("Please enter your email first");
+                                        return;
+                                    }
+                                    try {
+                                        await AuthService.resetPassword(formData.email);
+                                        Alert.alert("Reset Link Sent", "Check your email for instructions to reset your password.");
+                                    } catch (err: any) {
+                                        setError(err.message || "Failed to send reset link");
+                                    }
+                                }}>
+                                    <Text className="text-brand-sage dark:text-brand-sage-dark font-semibold text-sm">Forgot Password?</Text>
+                                </TouchableOpacity>
+                            </View>
                             <TextInput
                                 className="bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/10 rounded-2xl py-4 px-5 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
                                 placeholder="Enter your password"

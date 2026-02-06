@@ -3,6 +3,8 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import { supabase } from '../lib/supabase';
 
 const BIOMETRIC_ENABLED_KEY = 'biometric_enabled';
+const NUDGE_COUNT_KEY = 'pn_c';
+const SESSION_DATA_KEY = 'sh_v1';
 
 /**
  * AuthService: Manages authentication using Supabase.
@@ -56,6 +58,21 @@ export const AuthService = {
     },
 
     /**
+     * Send a password reset email.
+     */
+    async resetPassword(email: string) {
+        console.log(`[AuthService] Attempting password reset for: ${email}`);
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: 'colorfloww://reset-password',
+        });
+        if (error) {
+            console.error(`[AuthService] resetPassword error:`, error);
+            throw error;
+        }
+        console.log(`[AuthService] resetPassword email sent to: ${email}`);
+    },
+
+    /**
      * Check if a session exists.
      */
     async isLoggedIn(): Promise<boolean> {
@@ -74,14 +91,11 @@ export const AuthService = {
     /**
      * Save user profile details to Supabase.
      */
-    async saveUserProfile(details: { gender: string, age_range: string, zipcode: string, city: string }, userId?: string) {
+    async saveUserProfile(details: { email: string, fullName?: string, gender?: string, age_range?: string, zipcode?: string, city?: string, data_consent?: boolean, referral_code?: string }, userId?: string) {
         console.log(`[AuthService] Saving user profile for: ${userId || 'current user'}`);
 
         const { data: { session } } = await supabase.auth.getSession();
         console.log(`[AuthService] Current session status: ${session ? 'Authenticated' : 'UNAUTHENTICATED'}`);
-        if (session) {
-            console.log(`[AuthService] Session User ID: ${session.user.id}`);
-        }
 
         let finalUserId = userId;
         if (!finalUserId) {
@@ -93,13 +107,25 @@ export const AuthService = {
             finalUserId = user.id;
         }
 
+        // 1. Update Auth Metadata if fullName provided
+        if (details.fullName) {
+            await supabase.auth.updateUser({
+                data: { full_name: details.fullName }
+            });
+        }
+
+        // 2. Upsert Profile
         const { error } = await supabase
             .from('user_profile')
             .upsert({
                 id: finalUserId,
+                email: details.email,
                 gender: details.gender,
                 age_range: details.age_range,
                 zipcode: details.zipcode,
+                data_consent: details.data_consent,
+                referral_code: details.referral_code,
+                updated_at: new Date().toISOString()
             });
 
         if (error) {
@@ -107,20 +133,126 @@ export const AuthService = {
             throw error;
         }
 
-        // Save location data separately
-        const { error: locError } = await supabase
-            .from('user_location')
-            .upsert({
-                user_id: finalUserId,
-                city: details.city,
-                source: 'signup'
-            });
+        if (details.city) {
+            // Save location data separately
+            const { error: locError } = await supabase
+                .from('user_location')
+                .upsert({
+                    user_id: finalUserId,
+                    city: details.city,
+                    source: 'signup'
+                });
 
-        if (locError) {
-            console.error(`[AuthService] Error upserting user_location:`, locError);
-            throw locError;
+            if (locError) {
+                console.error(`[AuthService] Error upserting user_location:`, locError);
+                throw locError;
+            }
         }
         console.log(`[AuthService] Profile and location saved successfully`);
+    },
+
+    /**
+     * Check if user profile is considered "complete".
+     */
+    async isProfileComplete(): Promise<boolean> {
+        const user = await this.getCurrentUser();
+        if (!user) return true; // Don't nudge if not logged in
+
+        const { data: profile } = await supabase
+            .from('user_profile')
+            .select('gender, zipcode, data_consent')
+            .eq('id', user.id)
+            .single();
+
+        const hasName = !!user.user_metadata?.full_name;
+        const hasGender = !!profile?.gender;
+        const hasZip = !!profile?.zipcode;
+        const hasConsent = profile?.data_consent === true;
+
+        return !!(hasName && hasGender && hasZip && hasConsent);
+    },
+
+    /**
+     * Nudge tracking (Persistent)
+     */
+    async getNudgeCount(): Promise<number> {
+        try {
+            const val = await SecureStore.getItemAsync(NUDGE_COUNT_KEY);
+            return val ? parseInt(val, 10) : 0;
+        } catch (e) {
+            return 0;
+        }
+    },
+
+    async incrementNudgeCount(): Promise<number> {
+        const current = await this.getNudgeCount();
+        const next = current + 1;
+        await SecureStore.setItemAsync(NUDGE_COUNT_KEY, next.toString());
+        return next;
+    },
+
+    async resetNudgeCount(): Promise<void> {
+        await SecureStore.deleteItemAsync(NUDGE_COUNT_KEY);
+    },
+
+    /**
+     * Session tracking for usage limits.
+     */
+    async recordSession(): Promise<void> {
+        const today = new Date().toISOString().split('T')[0];
+        const data = await SecureStore.getItemAsync(SESSION_DATA_KEY);
+        let history: any = {};
+
+        if (data) {
+            try {
+                history = JSON.parse(data);
+            } catch (e) { }
+        }
+
+        history[today] = (history[today] || 0) + 1;
+
+        // Keep only last 5 days to save even more space
+        const dates = Object.keys(history).sort().reverse();
+        if (dates.length > 5) {
+            const trimmedHistory: any = {};
+            dates.slice(0, 5).forEach(d => trimmedHistory[d] = history[d]);
+            history = trimmedHistory;
+        }
+
+        await SecureStore.setItemAsync(SESSION_DATA_KEY, JSON.stringify(history));
+    },
+
+    async getSessionsToday(): Promise<number> {
+        const today = new Date().toISOString().split('T')[0];
+        try {
+            const data = await SecureStore.getItemAsync(SESSION_DATA_KEY);
+            if (!data) return 0;
+            const history = JSON.parse(data);
+            return history[today] || 0;
+        } catch (e) {
+            return 0;
+        }
+    },
+
+    /**
+     * Enforcement: Can the user perform a paint session?
+     */
+    async canPaint(): Promise<{ allowed: boolean, reason?: 'limit' | 'unauthorized' }> {
+        const user = await this.getCurrentUser();
+        if (!user) return { allowed: false, reason: 'unauthorized' };
+
+        const isComplete = await this.isProfileComplete();
+        if (isComplete) return { allowed: true };
+
+        const nudgeCount = await this.getNudgeCount();
+        const sessionsToday = await this.getSessionsToday();
+
+        // If declined 5+ times, limit to 1 session per day
+        if (nudgeCount >= 5 && sessionsToday >= 1) {
+            return { allowed: false, reason: 'limit' };
+        }
+
+        return { allowed: true };
     },
 
     /**
@@ -143,6 +275,11 @@ export const AuthService = {
             avatarUrl: profile?.avatar_url,
             gender: profile?.gender,
             ageRange: profile?.age_range,
+            referralCode: profile?.referral_code,
+            karma: profile?.karma || 0,
+            xp: profile?.xp || 0,
+            level: profile?.level || 1,
+            gems: profile?.gems || 0,
         };
     },
 
@@ -245,5 +382,34 @@ export const AuthService = {
     async getBiometricPreference(): Promise<boolean> {
         const pref = await SecureStore.getItemAsync(BIOMETRIC_ENABLED_KEY);
         return pref === 'true';
+    },
+
+    async deleteAccount() {
+        console.log('[AuthService] Attempting account deletion...');
+        const user = await this.getCurrentUser();
+        if (!user) throw new Error("No authenticated user found");
+
+        // Call the RPC to delete user data
+        const { error } = await supabase.rpc('delete_user_data');
+        if (error) {
+            console.error('[AuthService] Error calling delete_user_data RPC:', error);
+            throw error;
+        }
+
+        // Final sign out
+        await this.logout();
+        console.log('[AuthService] Account deletion and cleanup successful');
+    },
+
+    /**
+     * Generate a unique referral code.
+     */
+    generateReferralCode(): string {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 8; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
     }
 };

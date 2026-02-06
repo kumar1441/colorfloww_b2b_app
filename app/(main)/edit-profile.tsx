@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { LucideChevronLeft, LucideUser, LucideCheck, LucideChevronRight } from 'lucide-react-native';
+import { LucideChevronLeft, LucideUser, LucideCheck, LucideChevronRight, LucideTrash2 } from 'lucide-react-native';
 import { AuthService } from '../../services/auth';
 
 export default function EditProfileScreen() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const insets = useSafeAreaInsets();
 
     const [fullName, setFullName] = useState('');
     const [gender, setGender] = useState('');
@@ -59,6 +60,48 @@ export default function EditProfileScreen() {
         }
     };
 
+    const handleDeleteAccount = async () => {
+        // Step 1: Initial Warning
+        Alert.alert(
+            'Delete Account?',
+            'This will permanently delete your profile, karma, and all paint history. This action cannot be undone.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete Everything',
+                    style: 'destructive',
+                    onPress: () => {
+                        // Step 2: Final Confirmation
+                        Alert.alert(
+                            'Are you absolutely sure?',
+                            'One last check: everything will be gone. Type "Confirm" if you want to proceed.',
+                            [
+                                { text: 'Back', style: 'cancel' },
+                                {
+                                    text: 'Yes, Delete',
+                                    style: 'destructive',
+                                    onPress: async () => {
+                                        setIsSaving(true);
+                                        try {
+                                            await AuthService.deleteAccount();
+                                            Alert.alert('Deleted', 'Your account has been successfully removed.', [
+                                                { text: 'OK', onPress: () => router.replace('/') }
+                                            ]);
+                                        } catch (error) {
+                                            console.error('Delete error:', error);
+                                            Alert.alert('Error', 'Failed to delete account. Please try again later.');
+                                            setIsSaving(false);
+                                        }
+                                    }
+                                }
+                            ]
+                        );
+                    }
+                }
+            ]
+        );
+    };
+
     if (isLoading) {
         return (
             <View className="flex-1 bg-brand-cream dark:bg-brand-cream-dark items-center justify-center">
@@ -72,7 +115,7 @@ export default function EditProfileScreen() {
     return (
         <View className="flex-1 bg-brand-cream dark:bg-brand-cream-dark">
             <SafeAreaView edges={['top']} className="bg-brand-cream/80 dark:bg-brand-cream-dark/80">
-                <View className="px-6 py-4 flex-row items-center justify-between">
+                <View style={{ paddingTop: Math.max(insets.top, 0) }} className="px-6 py-4 flex-row items-center justify-between">
                     <View className="flex-row items-center">
                         <TouchableOpacity onPress={() => router.back()} className="mr-4">
                             <LucideChevronLeft size={28} color="#697D59" />
@@ -152,6 +195,14 @@ export default function EditProfileScreen() {
 
                 {/* Footer bit */}
                 <View className="mt-12 items-center">
+                    <TouchableOpacity
+                        onPress={handleDeleteAccount}
+                        disabled={isSaving}
+                        className="flex-row items-center gap-x-2 py-4 px-8 rounded-2xl border border-red-100 bg-red-50/30 mb-8"
+                    >
+                        <LucideTrash2 size={16} color="#DC2626" />
+                        <Text className="text-red-600 font-bold">Delete Account</Text>
+                    </TouchableOpacity>
                     <Text className="text-xs text-brand-charcoal-light opacity-40">Privacy Policy • Terms of Service</Text>
                 </View>
             </ScrollView>

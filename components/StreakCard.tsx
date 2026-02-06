@@ -4,10 +4,11 @@ import { LucideFlame, LucideShare2, LucideCheck } from 'lucide-react-native';
 
 interface StreakCardProps {
     streak: number;
+    activityData: boolean[]; // Array of 7 booleans for Sun-Sat
     onShare: () => void;
 }
 
-export default function StreakCard({ streak, onShare }: StreakCardProps) {
+export default function StreakCard({ streak, activityData, onShare }: StreakCardProps) {
     const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
     const currentDay = new Date().getDay();
 
@@ -32,12 +33,17 @@ export default function StreakCard({ streak, onShare }: StreakCardProps) {
 
             <View className="flex-row justify-between">
                 {days.map((day, index) => {
-                    const isCompleted = index <= currentDay;
+                    const isActive = activityData?.[index] ?? false;
+                    const isToday = index === currentDay;
+
                     return (
                         <View key={day} className="items-center">
-                            <Text className="text-sm text-brand-charcoal dark:text-brand-charcoal-dark font-semibold mb-2">{day}</Text>
-                            <View className={`w-8 h-8 rounded-full justify-center items-center ${isCompleted ? 'bg-brand-sage dark:bg-brand-sage-dark' : 'bg-brand-cream dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10'}`}>
-                                {isCompleted && <LucideCheck size={12} color="#fff" strokeWidth={3} />}
+                            <Text className={`text-sm font-semibold mb-2 ${isToday ? 'text-brand-sage dark:text-brand-sage-dark' : 'text-brand-charcoal dark:text-brand-charcoal-dark'}`}>
+                                {day}
+                            </Text>
+                            <View className={`w-8 h-8 rounded-full justify-center items-center ${isActive ? 'bg-brand-sage dark:bg-brand-sage-dark' : 'bg-brand-cream dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10'}`}>
+                                {isActive && <LucideCheck size={12} color="#fff" strokeWidth={3} />}
+                                {!isActive && isToday && <View className="w-1.5 h-1.5 rounded-full bg-brand-charcoal-light/30" />}
                             </View>
                         </View>
                     );

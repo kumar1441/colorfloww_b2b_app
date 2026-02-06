@@ -139,6 +139,7 @@ export const GamificationService = {
         const user = await AuthService.getCurrentUser();
         if (!user) return;
 
+        // 1. Insert into karma_points log
         await supabase.from('karma_points').insert({
             user_id: user.id,
             amount,
@@ -146,7 +147,21 @@ export const GamificationService = {
             reason
         });
 
-        console.log(`[Gamification] Awarded ${amount} Karma in ${city} for ${reason}`);
+        // 2. Sync to user_profile total
+        const { data: profile } = await supabase
+            .from('user_profile')
+            .select('karma')
+            .eq('id', user.id)
+            .single();
+
+        const newKarma = (profile?.karma || 0) + amount;
+
+        await supabase
+            .from('user_profile')
+            .update({ karma: newKarma })
+            .eq('id', user.id);
+
+        console.log(`[Gamification] Awarded ${amount} Karma in ${city} for ${reason}. New total: ${newKarma}`);
     },
 
     /**
@@ -249,6 +264,34 @@ export const GamificationService = {
     },
 
     /**
+     * Get user's activity for the current week (Sun-Sat).
+     * Returns an array of 7 booleans.
+     */
+    async getActivityForWeek(): Promise<boolean[]> {
+        const user = await AuthService.getCurrentUser();
+        if (!user) return new Array(7).fill(false);
+
+        const now = new Date();
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        const { data } = await supabase
+            .from('paint_sessions')
+            .select('created_at')
+            .eq('user_id', user.id)
+            .gte('created_at', startOfWeek.toISOString());
+
+        const activity = new Array(7).fill(false);
+        data?.forEach(session => {
+            const date = new Date(session.created_at);
+            activity[date.getDay()] = true;
+        });
+
+        return activity;
+    },
+
+    /**
      * Get user's current progress.
      */
     async getPlayerStats() {
@@ -257,22 +300,15 @@ export const GamificationService = {
 
         const { data: profile } = await supabase
             .from('user_profile')
-            .select('xp, level, gems')
+            .select('xp, level, gems, karma')
             .eq('id', user.id)
             .single();
-
-        const { data: karma } = await supabase
-            .from('karma_points')
-            .select('amount')
-            .eq('user_id', user.id);
-
-        const totalKarma = karma?.reduce((acc, curr) => acc + curr.amount, 0) || 0;
 
         return {
             xp: profile?.xp || 0,
             level: profile?.level || 1,
             gems: profile?.gems || 0,
-            karma: totalKarma,
+            karma: profile?.karma || 0,
             nextLevelXP: Math.pow(profile?.level || 1, 2) * 100
         };
     }

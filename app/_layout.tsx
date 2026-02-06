@@ -3,7 +3,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useEffect } from "react";
-import { trackEvent, incrementSessionCount } from "../services/analytics";
+import { trackEvent, incrementSessionCount, AnalyticsService } from "../services/analytics";
 import { AuthService } from "../services/auth";
 // import { NotificationService } from "../services/notifications";
 import { useColorScheme } from "react-native";
@@ -15,8 +15,10 @@ export default function Layout() {
     const { setColorScheme, colorScheme } = useNativeWindColorScheme();
 
     useEffect(() => {
+        AnalyticsService.init();
         incrementSessionCount();
         trackEvent("APP_OPEN");
+        AnalyticsService.identify();
         // NotificationService.setupDailyReminders();
     }, []);
 

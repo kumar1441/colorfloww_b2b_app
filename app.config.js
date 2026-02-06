@@ -2,7 +2,7 @@ export default {
   expo: {
     name: "Colorfloww",
     slug: "colorfloww",
-    version: "1.0.0",
+    version: "1.1.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
@@ -13,10 +13,19 @@ export default {
       backgroundColor: "#ffffff"
     },
     ios: {
-      supportsTablet: true
+      supportsTablet: true,
+      bundleIdentifier: "com.nailay.colorfloww",
+      buildNumber: "1",
+      infoPlist: {
+        NSCameraUsageDescription: "Allow Colorfloww to access your camera to create nail art.",
+        NSPhotoLibraryUsageDescription: "Allow Colorfloww to access your photos to select nail art references.",
+        NSFaceIDUsageDescription: "Allow Colorfloww to use FaceID for secure login.",
+        NSLocationWhenInUseUsageDescription: "Allow Colorfloww to access your location to improve local recommendations."
+      }
     },
     android: {
       package: "com.nailay.colorfloww",
+      versionCode: 1,
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff"
@@ -37,12 +46,22 @@ export default {
         projectId: "c6923db5-d7b0-4ad9-bc07-43f606d791b6"
       },
       supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
-      supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
+      supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+      privacyPolicyUrl: "https://colorfloww.com/privacy"
     },
     scheme: "colorfloww",
     plugins: [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "proguardRules": "./proguard-rules.pro"
+          }
+        }
+      ]
     ]
   }
 };

@@ -1,11 +1,13 @@
-import React, { useState, useRef } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Button } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, Button, ActivityIndicator } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import { LucideX, LucideRefreshCcw, LucideImage, LucideCircle } from 'lucide-react-native';
+import { LucideX, LucideRefreshCcw, LucideImage, LucideCircle, LucideShieldAlert, LucideArrowRight } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
+import { AuthService } from '../services/auth';
+import { ProfileNudgeModal } from '../components/ProfileNudgeModal';
 
 /**
  * CameraScreen provides the interface for capturing nail photos 
@@ -14,10 +16,77 @@ import { BlurView } from 'expo-blur';
 export default function CameraScreen() {
     const [permission, requestPermission] = useCameraPermissions();
     const [facing, setFacing] = useState<'back' | 'front'>('back');
+    const [isCheckingLimit, setIsCheckingLimit] = useState(true);
+    const [isBlocked, setIsBlocked] = useState(false);
+    const [showNudge, setShowNudge] = useState(false);
+
     const cameraRef = useRef<CameraView>(null);
     const router = useRouter();
     const params = useLocalSearchParams();
+    const insets = useSafeAreaInsets();
     const selectedColor = params.color as string || '#FF0000';
+
+    useEffect(() => {
+        checkLimit();
+    }, []);
+
+    const checkLimit = async () => {
+        setIsCheckingLimit(true);
+        try {
+            const { allowed } = await AuthService.canPaint();
+            setIsBlocked(!allowed);
+        } catch (err) {
+            console.error("[CameraScreen] Error checking limit:", err);
+        } finally {
+            setIsCheckingLimit(false);
+        }
+    };
+
+    if (isCheckingLimit) {
+        return (
+            <View className="flex-1 bg-black items-center justify-center">
+                <ActivityIndicator size="large" color="#697D59" />
+            </View>
+        );
+    }
+
+    if (isBlocked) {
+        return (
+            <View className="flex-1 bg-brand-charcoal items-center justify-center p-8">
+                <View className="w-24 h-24 rounded-full bg-brand-sage/20 items-center justify-center mb-8">
+                    <LucideShieldAlert size={56} color="#697D59" />
+                </View>
+                <Text className="text-3xl font-bold text-white text-center mb-4">Daily Limit Reached</Text>
+                <Text className="text-lg text-brand-charcoal-light/80 text-center mb-10 leading-6">
+                    You've reached your daily limit for personalized try-ons. Complete your profile to unlock unlimited high-quality sessions.
+                </Text>
+
+                <TouchableOpacity
+                    onPress={() => setShowNudge(true)}
+                    className="w-full bg-brand-sage py-5 rounded-2xl flex-row justify-center items-center shadow-lg mb-4"
+                >
+                    <Text className="text-white text-xl font-bold mr-2">Complete Profile</Text>
+                    <LucideArrowRight size={20} color="white" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    className="py-4"
+                >
+                    <Text className="text-brand-charcoal-light font-medium text-lg">Maybe Later</Text>
+                </TouchableOpacity>
+
+                <ProfileNudgeModal
+                    visible={showNudge}
+                    onClose={() => setShowNudge(false)}
+                    onComplete={() => {
+                        setShowNudge(false);
+                        setIsBlocked(false);
+                    }}
+                />
+            </View>
+        );
+    }
 
     if (!permission) return <View className="flex-1 bg-black" />;
 
@@ -97,7 +166,7 @@ export default function CameraScreen() {
                 style={styles.topControls}
                 pointerEvents="box-none"
             >
-                <View style={styles.headerRow} pointerEvents="box-none">
+                <View style={[styles.headerRow, { paddingTop: Math.max(insets.top, 16) }]} pointerEvents="box-none">
                     <TouchableOpacity
                         onPress={() => {
                             console.log("Cancel pressed - returning");

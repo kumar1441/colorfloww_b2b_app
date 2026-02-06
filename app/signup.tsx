@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Dimensions, Modal } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { LucideArrowLeft, LucideShieldCheck, LucideCheck, LucideChevronDown } from 'lucide-react-native';
+import { LucideArrowLeft } from 'lucide-react-native';
 import { AuthService } from '../services/auth';
 import { GamificationService } from '../services/gamification';
+import { AnalyticsService } from '../services/analytics';
 
 const { width } = Dimensions.get('window');
 
@@ -14,71 +15,52 @@ export default function SignupScreen() {
     const insets = useSafeAreaInsets();
 
     // State
-    const [step, setStep] = useState(1);
-    const [showConsent, setShowConsent] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
-        name: "",
         email: "",
-        password: "",
-        age: "",
-        gender: "",
-        city: "",
-        zipcode: ""
+        password: ""
     });
 
-    const handleContinue = () => {
-        if (step === 1) {
-            if (!formData.email || !formData.password || !formData.name) {
-                setError("Please fill in all fields");
-                return;
-            }
-            setError(null);
-            setStep(2);
-        } else {
-            if (!formData.age || !formData.gender || !formData.city || !formData.zipcode) {
-                setError("Please fill in all details");
-                return;
-            }
-            setError(null);
-            setShowConsent(true);
-        }
-    };
-
     const handleBack = () => {
-        setError(null);
-        if (step === 2) {
-            setStep(1);
-        } else {
-            router.back();
-        }
+        router.back();
     };
 
-    const finalizeSignup = async () => {
-        console.log(`[SignupScreen] Starting finalizeSignup for: ${formData.email}`);
+    const handleSignup = async () => {
+        if (!formData.email || !formData.password) {
+            setError("Please fill in all fields");
+            return;
+        }
+
+        console.log(`[SignupScreen] Starting signup for: ${formData.email}`);
         setLoading(true);
         setError(null);
         try {
             // 1. Auth Sign Up
-            const user = await AuthService.signUp(formData.email, formData.password, formData.name);
+            // Use email prefix as a default name
+            const defaultName = formData.email.split('@')[0];
+            const user = await AuthService.signUp(formData.email, formData.password, defaultName);
             console.log(`[SignupScreen] Auth signup successful. User ID: ${user?.id}`);
 
-            // 2. Save User Profile - pass user?.id directly to handle cases where session might not be ready
+            // 2. Save User Profile
+            const referralCode = AuthService.generateReferralCode();
             await AuthService.saveUserProfile({
-                gender: formData.gender,
-                age_range: formData.age,
-                zipcode: formData.zipcode,
-                city: formData.city
+                email: formData.email,
+                referral_code: referralCode
             }, user?.id);
 
-            console.log(`[SignupScreen] Profile and location saved successfully`);
-            setShowConsent(false);
+            await AnalyticsService.identify();
+
+            console.log(`[SignupScreen] Profile saved successfully`);
 
             // 3. Grant Gamification Rewards
-            await GamificationService.grantAward('verified_artist');
-            await GamificationService.awardXP(150, 'studio_calibration_complete');
+            try {
+                await GamificationService.grantAward('verified_artist');
+                await GamificationService.awardXP(150, 'studio_calibration_complete');
+            } catch (gamifyErr) {
+                console.error(`[SignupScreen] Gamification error (non-blocking):`, gamifyErr);
+            }
 
             if (params.returnTo) {
                 router.replace({
@@ -92,7 +74,6 @@ export default function SignupScreen() {
         } catch (err: any) {
             console.error(`[SignupScreen] Signup error:`, err);
             setError(err.message || "An error occurred during signup");
-            setShowConsent(false);
         } finally {
             setLoading(false);
         }
@@ -103,8 +84,8 @@ export default function SignupScreen() {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             className="flex-1 bg-brand-cream dark:bg-brand-cream-dark"
         >
-            <SafeAreaView className="flex-1">
-                <View className="px-6 pt-4">
+            <SafeAreaView className="flex-1" edges={['bottom', 'left', 'right']}>
+                <View style={{ paddingTop: Math.max(insets.top, 16) }} className="px-6">
                     <TouchableOpacity onPress={handleBack} className="flex-row items-center">
                         <LucideArrowLeft size={20} color="#697D59" />
                         <Text className="ml-2 text-brand-sage dark:text-brand-sage-dark text-lg font-medium">Back</Text>
@@ -114,11 +95,11 @@ export default function SignupScreen() {
                 <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24, paddingBottom: 24 + insets.bottom }} keyboardShouldPersistTaps="handled">
                     <View className="bg-white dark:bg-brand-charcoal rounded-[40px] p-10 shadow-2xl">
                         <Text className="text-4xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">
-                            {step === 1 ? "Create Account" : "Studio Calibration"}
+                            Create Account
                         </Text>
 
                         <Text className="text-lg text-brand-charcoal-light dark:text-brand-charcoal-light/60 mb-6 leading-6">
-                            {step === 1 ? "Start your journey" : "Calibrate our AI to match your unique skin tone and lighting for a professional finish."}
+                            Start your journey with just your email and password.
                         </Text>
 
                         {error && (
@@ -127,160 +108,50 @@ export default function SignupScreen() {
                             </View>
                         )}
 
-                        {step === 1 ? (
-                            <>
-                                <View className="mb-6">
-                                    <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Full Name</Text>
-                                    <TextInput
-                                        className="bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/10 rounded-2xl py-4 px-5 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
-                                        placeholder="Enter your name"
-                                        placeholderTextColor="#A1A1A1"
-                                        value={formData.name}
-                                        onChangeText={(v) => setFormData({ ...formData, name: v })}
-                                    />
-                                </View>
+                        <View className="mb-6">
+                            <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Email</Text>
+                            <TextInput
+                                className="bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/10 rounded-2xl py-4 px-5 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
+                                placeholder="your@email.com"
+                                placeholderTextColor="#A1A1A1"
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                                value={formData.email}
+                                onChangeText={(v) => setFormData({ ...formData, email: v })}
+                            />
+                        </View>
 
-                                <View className="mb-6">
-                                    <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Email</Text>
-                                    <TextInput
-                                        className="bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/10 rounded-2xl py-4 px-5 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
-                                        placeholder="your@email.com"
-                                        placeholderTextColor="#A1A1A1"
-                                        keyboardType="email-address"
-                                        autoCapitalize="none"
-                                        value={formData.email}
-                                        onChangeText={(v) => setFormData({ ...formData, email: v })}
-                                    />
-                                </View>
-
-                                <View className="mb-8">
-                                    <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Password</Text>
-                                    <TextInput
-                                        className="bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/10 rounded-2xl py-4 px-5 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
-                                        placeholder="Create a password"
-                                        placeholderTextColor="#A1A1A1"
-                                        secureTextEntry
-                                        value={formData.password}
-                                        onChangeText={(v) => setFormData({ ...formData, password: v })}
-                                    />
-                                </View>
-                            </>
-                        ) : (
-                            <>
-                                <View className="mb-6">
-                                    <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Gender</Text>
-                                    <View className="flex-row gap-x-2">
-                                        {["Female", "Male", "Other"].map((g) => (
-                                            <TouchableOpacity
-                                                key={g}
-                                                onPress={() => setFormData({ ...formData, gender: g })}
-                                                className={`flex-1 py-4 rounded-2xl border items-center transition-colors ${formData.gender === g ? 'bg-brand-sage border-brand-sage' : 'bg-transparent border-brand-charcoal-light/10'}`}
-                                            >
-                                                <Text className={`font-bold ${formData.gender === g ? 'text-white' : 'text-brand-charcoal-light'}`}>{g}</Text>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </View>
-                                </View>
-
-                                <View className="mb-6">
-                                    <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Age</Text>
-                                    <TextInput
-                                        className="bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/10 rounded-2xl py-4 px-5 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
-                                        placeholder="Enter your age"
-                                        placeholderTextColor="#A1A1A1"
-                                        keyboardType="numeric"
-                                        value={formData.age}
-                                        onChangeText={(v) => setFormData({ ...formData, age: v })}
-                                    />
-                                </View>
-
-                                <View className="mb-6">
-                                    <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">City</Text>
-                                    <TextInput
-                                        className="bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/10 rounded-2xl py-4 px-5 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
-                                        placeholder="Your city"
-                                        placeholderTextColor="#A1A1A1"
-                                        value={formData.city}
-                                        onChangeText={(v) => setFormData({ ...formData, city: v })}
-                                    />
-                                </View>
-
-                                <View className="mb-10">
-                                    <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Zipcode</Text>
-                                    <TextInput
-                                        className="bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/10 rounded-2xl py-4 px-5 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
-                                        placeholder="Enter zipcode"
-                                        placeholderTextColor="#A1A1A1"
-                                        keyboardType="numeric"
-                                        value={formData.zipcode}
-                                        onChangeText={(v) => setFormData({ ...formData, zipcode: v })}
-                                    />
-                                </View>
-                            </>
-                        )}
+                        <View className="mb-8">
+                            <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Password</Text>
+                            <TextInput
+                                className="bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/10 rounded-2xl py-4 px-5 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
+                                placeholder="Create a password"
+                                placeholderTextColor="#A1A1A1"
+                                secureTextEntry
+                                value={formData.password}
+                                onChangeText={(v) => setFormData({ ...formData, password: v })}
+                            />
+                        </View>
 
                         <TouchableOpacity
-                            onPress={handleContinue}
+                            onPress={handleSignup}
                             activeOpacity={0.8}
                             disabled={loading}
                             className={`bg-[#697D59] rounded-2xl py-6 items-center shadow-lg ${loading ? 'opacity-70' : ''}`}
                         >
                             <Text className="text-white text-xl font-bold">
-                                {loading ? "Processing..." : (step === 1 ? "Continue" : "Complete")}
+                                {loading ? "Signing up..." : "Complete"}
                             </Text>
                         </TouchableOpacity>
 
-                        {step === 1 && (
-                            <View className="items-center mt-8">
-                                <Text className="text-base text-brand-charcoal-light dark:text-brand-charcoal-light/60">
-                                    Already have an account? <Text className="text-brand-sage dark:text-brand-sage-dark font-bold underline" onPress={() => router.push('/login')}>Log in</Text>
-                                </Text>
-                            </View>
-                        )}
-                    </View>
-
-                    <View className="flex-row justify-center mt-12 gap-x-3">
-                        <View className={`w-3 h-3 rounded-full ${step === 1 ? 'bg-brand-sage dark:bg-brand-sage-dark' : 'bg-brand-charcoal-light/20'}`} />
-                        <View className={`w-3 h-3 rounded-full ${step === 2 ? 'bg-brand-sage dark:bg-brand-sage-dark' : 'bg-brand-charcoal-light/20'}`} />
+                        <View className="items-center mt-8">
+                            <Text className="text-base text-brand-charcoal-light dark:text-brand-charcoal-light/60">
+                                Already have an account? <Text className="text-brand-sage dark:text-brand-sage-dark font-bold underline" onPress={() => router.push('/login')}>Log in</Text>
+                            </Text>
+                        </View>
                     </View>
                 </ScrollView>
             </SafeAreaView>
-
-            {/* Consent Modal */}
-            <Modal
-                visible={showConsent}
-                transparent={true}
-                animationType="fade"
-            >
-                <View className="flex-1 bg-black/60 justify-center items-center p-6">
-                    <View className="bg-white dark:bg-brand-charcoal rounded-[40px] p-10 w-full items-center shadow-2xl">
-                        <View className="w-24 h-24 rounded-full bg-brand-cream dark:bg-brand-cream-dark/20 justify-center items-center mb-8 shadow-inner">
-                            <LucideShieldCheck size={56} color="#697D59" />
-                        </View>
-                        <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-4 text-center">Data Consent</Text>
-                        <Text className="text-lg text-brand-charcoal/70 dark:text-brand-charcoal-light/80 text-center leading-7 mb-10">
-                            Help us improve our AI! We collect anonymized try-on data to make color rendering even more accurate. Your personal details remain 100% private.
-                        </Text>
-
-                        <TouchableOpacity
-                            className={`bg-brand-sage dark:bg-brand-sage-dark w-full py-5 rounded-2xl flex-row justify-center items-center mb-4 shadow-md ${loading ? 'opacity-70' : ''}`}
-                            onPress={finalizeSignup}
-                            disabled={loading}
-                        >
-                            <LucideCheck size={24} color="#fff" className="mr-3" />
-                            <Text className="text-white text-xl font-bold">{loading ? "Signing up..." : "I Agree"}</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            className="py-4"
-                            onPress={finalizeSignup}
-                            disabled={loading}
-                        >
-                            <Text className="text-brand-charcoal-light dark:text-brand-charcoal-light/60 text-lg font-medium">Maybe Later</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
         </KeyboardAvoidingView>
     );
 }

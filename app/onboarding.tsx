@@ -96,8 +96,11 @@ export default function OnboardingScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <TouchableOpacity style={styles.skipButton} onPress={completeOnboarding}>
+        <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+            <TouchableOpacity
+                style={[styles.skipButton, { top: Math.max(insets.top, 20) }]}
+                onPress={completeOnboarding}
+            >
                 <Text style={styles.skipText}>Skip</Text>
             </TouchableOpacity>
 
@@ -116,6 +119,7 @@ export default function OnboardingScreen() {
                 viewabilityConfig={viewConfig}
                 scrollEventThrottle={32}
                 ref={slidesRef}
+                style={{ marginTop: insets.top }}
             />
 
             {/* Bottom Section */}

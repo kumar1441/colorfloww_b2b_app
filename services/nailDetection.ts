@@ -26,7 +26,7 @@ export const detectNails = async (imageUri: string, signal?: AbortSignal): Promi
     const manipulated = await ImageManipulator.manipulateAsync(
       imageUri,
       [{ resize: { width: 1024 } }],
-      { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+      { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG, base64: true }
     );
 
     if (!manipulated.base64) {
@@ -47,8 +47,8 @@ export const detectNails = async (imageUri: string, signal?: AbortSignal): Promi
     if (!requestSignal) {
       localController = new AbortController();
       requestSignal = localController.signal;
-      // Default 15s timeout
-      setTimeout(() => localController?.abort(), 15000);
+      // Increased timeout to 60s for cold starts/slow networks
+      setTimeout(() => localController?.abort(), 60000);
     }
 
     let event_id: string;
@@ -56,7 +56,10 @@ export const detectNails = async (imageUri: string, signal?: AbortSignal): Promi
     try {
       const postResponse = await fetch(SPACE_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         signal: requestSignal,
         body: JSON.stringify({
           data: [
