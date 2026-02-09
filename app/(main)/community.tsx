@@ -1,26 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, FlatList, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { LucideArrowRight, LucideSparkles, LucideLogOut } from 'lucide-react-native';
 import { AuthService } from '../../services/auth';
+import { ColorService, Color } from '../../services/color';
 import { useIsFocused } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
-
-const popularColors = [
-    { id: "1", color: "#FF6B9D", name: "Rose Quartz" },
-    { id: "2", color: "#D1B2A1", name: "Dusty Mauve" },
-    { id: "3", color: "#F9A8D4", name: "Pink Blush" },
-    { id: "4", color: "#E5E5E5", name: "Soft Pearl" },
-];
-
-const boldColors = [
-    { id: "1", color: "#DC2626", name: "Crimson Red" },
-    { id: "2", color: "#EC4899", name: "Deep Pink" },
-    { id: "3", color: "#6D28D9", name: "Royal Purple" },
-    { id: "4", color: "#1F2937", name: "Midnight" },
-];
 
 const topCreators = [
     { id: "1", name: "Sarah M.", colors: 45, followers: "2.3k", initial: "S" },
@@ -32,10 +19,31 @@ export default function HomeScreen() {
     const router = useRouter();
     const isFocused = useIsFocused();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [popularColors, setPopularColors] = useState<Color[]>([]);
+    const [boldColors, setBoldColors] = useState<Color[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         AuthService.isLoggedIn().then(setIsLoggedIn);
     }, [isFocused]);
+
+    useEffect(() => {
+        const fetchColors = async () => {
+            setIsLoading(true);
+            try {
+                const colors = await ColorService.getColors();
+                // Simple logic to split colors: first 5 are popular, next 5 are bold
+                setPopularColors(colors.slice(0, 5));
+                setBoldColors(colors.slice(5, 10));
+            } catch (error) {
+                console.error('Error fetching colors:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchColors();
+    }, []);
 
     const handleColorSelect = async (color: string) => {
         if (isLoggedIn) {
@@ -85,53 +93,61 @@ export default function HomeScreen() {
                     </View>
                 </View>
 
-                {/* Popular Choices */}
-                <View className="pt-10">
-                    {renderHeader("Popular Choices", "What's trending right now", () => router.push('/popular'))}
-                    <FlatList
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        data={popularColors}
-                        contentContainerStyle={{ paddingLeft: 24, paddingRight: 8 }}
-                        keyExtractor={(item) => item.id}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity
-                                onPress={() => handleColorSelect(item.color)}
-                                className="mr-4 items-center"
-                            >
-                                <View
-                                    className="w-24 h-24 rounded-full shadow-md mb-3 border-2 border-white"
-                                    style={{ backgroundColor: item.color }}
-                                />
-                                <Text className="text-[13px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark">{item.name}</Text>
-                            </TouchableOpacity>
-                        )}
-                    />
-                </View>
+                {isLoading ? (
+                    <View className="py-20 justify-center items-center">
+                        <ActivityIndicator size="large" color="#697D59" />
+                    </View>
+                ) : (
+                    <>
+                        {/* Popular Choices */}
+                        <View className="pt-10">
+                            {renderHeader("Popular Choices", "What's trending right now", () => router.push('/popular'))}
+                            <FlatList
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                data={popularColors}
+                                contentContainerStyle={{ paddingLeft: 24, paddingRight: 8 }}
+                                keyExtractor={(item) => item.id}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        onPress={() => handleColorSelect(item.rgb)}
+                                        className="mr-4 items-center"
+                                    >
+                                        <View
+                                            className="w-24 h-24 rounded-full shadow-md mb-3 border-2 border-white"
+                                            style={{ backgroundColor: item.rgb }}
+                                        />
+                                        <Text className="text-[13px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark">{item.name}</Text>
+                                    </TouchableOpacity>
+                                )}
+                            />
+                        </View>
 
-                {/* Bold Category */}
-                <View className="pt-12">
-                    {renderHeader("Bold", "Make a statement", () => router.push('/bold'))}
-                    <FlatList
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        data={boldColors}
-                        contentContainerStyle={{ paddingLeft: 24, paddingRight: 8 }}
-                        keyExtractor={(item) => item.id}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity
-                                onPress={() => handleColorSelect(item.color)}
-                                className="mr-4 items-center"
-                            >
-                                <View
-                                    className="w-24 h-24 rounded-full shadow-md mb-3 border-2 border-white"
-                                    style={{ backgroundColor: item.color }}
-                                />
-                                <Text className="text-[13px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark">{item.name}</Text>
-                            </TouchableOpacity>
-                        )}
-                    />
-                </View>
+                        {/* Bold Category */}
+                        <View className="pt-12">
+                            {renderHeader("Bold", "Make a statement", () => router.push('/bold'))}
+                            <FlatList
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                data={boldColors}
+                                contentContainerStyle={{ paddingLeft: 24, paddingRight: 8 }}
+                                keyExtractor={(item) => item.id}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        onPress={() => handleColorSelect(item.rgb)}
+                                        className="mr-4 items-center"
+                                    >
+                                        <View
+                                            className="w-24 h-24 rounded-full shadow-md mb-3 border-2 border-white"
+                                            style={{ backgroundColor: item.rgb }}
+                                        />
+                                        <Text className="text-[13px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark">{item.name}</Text>
+                                    </TouchableOpacity>
+                                )}
+                            />
+                        </View>
+                    </>
+                )}
 
                 {/* Top Creators */}
                 <View className="pt-12">
