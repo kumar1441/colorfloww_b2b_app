@@ -5,7 +5,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { LucideChevronLeft, LucideCheckCircle2, LucideShare2 } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { GamificationService } from '../services/gamification';
-import { detectNails, Nail } from '../services/nailDetection';
+import { detectNails, Nail, NailDetectionResult } from '../services/nailDetection';
 import { NailOverlaySkia } from '../components/NailOverlaySkia';
 import { HistoryService, IntentTag } from '../services/history';
 import { AuthService } from '../services/auth';
@@ -29,6 +29,7 @@ function ResultScreen() {
     const insets = useSafeAreaInsets();
 
     const [nails, setNails] = React.useState<Nail[]>([]);
+    const [processedImageUri, setProcessedImageUri] = React.useState<string>('');
     const [isDetecting, setIsDetecting] = React.useState(true);
     const [selectedIntent, setSelectedIntent] = React.useState<IntentTag>('Everyday');
     const [showNudge, setShowNudge] = useState(false);
@@ -62,11 +63,12 @@ function ResultScreen() {
         }, 60000);
 
         try {
-            const detectedNails = await detectNails(params.imageUri as string, controller.signal);
+            const result = await detectNails(params.imageUri as string, controller.signal);
             clearTimeout(timeoutId);
-            setNails(detectedNails);
+            setNails(result.nails);
+            setProcessedImageUri(result.processedImageUri);
 
-            if (detectedNails.length === 0) {
+            if (result.nails.length === 0) {
                 Alert.alert("No Nails Detected", "Try again with better lighting for a perfect rendering.", [{ text: "OK" }]);
             } else {
                 GamificationService.updateStreak().then(({ streak, reachedMilestone }) => {
@@ -158,7 +160,7 @@ function ResultScreen() {
                 {params.imageUri ? (
                     <View style={styles.full}>
                         <NailOverlaySkia
-                            imageUri={params.imageUri as string}
+                            imageUri={processedImageUri || params.imageUri as string}
                             nails={nails}
                             selectedColor={(params.selectedColor as string) || '#697D59'}
                         />
