@@ -86,10 +86,7 @@ export default function HomeScreen() {
                     />
                     <View className="absolute inset-0 bg-black/30 justify-center items-center p-8">
                         <LucideSparkles color="white" size={48} className="mb-4" />
-                        <Text className="text-4xl font-bold text-white text-center mb-4">Try On Nails</Text>
-                        <Text className="text-white text-center text-lg leading-6 font-medium">
-                            For the first time, you can try before you buy. Virtually explore millions of shades on your fingers and see how gorgeous they look.
-                        </Text>
+                        <Text className="text-4xl font-bold text-white text-center">Paint Your Imaginations</Text>
                     </View>
                 </View>
 
@@ -114,7 +111,7 @@ export default function HomeScreen() {
                                         className="mr-4 items-center"
                                     >
                                         <View
-                                            className="w-24 h-24 rounded-full shadow-md mb-3 border-2 border-white"
+                                            className="w-24 h-24 rounded-full mb-3 border-2 border-white"
                                             style={{ backgroundColor: item.rgb }}
                                         />
                                         <Text className="text-[13px] font-semibold text-brand-gray dark:text-brand-gray-light">{item.name}</Text>
@@ -138,7 +135,7 @@ export default function HomeScreen() {
                                         className="mr-4 items-center"
                                     >
                                         <View
-                                            className="w-24 h-24 rounded-full shadow-md mb-3 border-2 border-white"
+                                            className="w-24 h-24 rounded-full mb-3 border-2 border-white"
                                             style={{ backgroundColor: item.rgb }}
                                         />
                                         <Text className="text-[13px] font-semibold text-brand-gray dark:text-brand-gray-light">{item.name}</Text>

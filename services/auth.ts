@@ -14,7 +14,7 @@ export const AuthService = {
      * Sign up a new user.
      */
     async signUp(email: string, password: string, fullName: string) {
-        console.log(`[AuthService] Attempting signUp for: ${email}`);
+        // Create auth user
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
@@ -28,7 +28,6 @@ export const AuthService = {
             console.error(`[AuthService] signUp error:`, error);
             throw error;
         }
-        console.log(`[AuthService] signUp success for user: ${data.user?.id}`);
         return data.user;
     },
 
@@ -36,7 +35,7 @@ export const AuthService = {
      * Log in an existing user.
      */
     async login(email: string, password: string) {
-        console.log(`[AuthService] Attempting login for: ${email}`);
+        // Sign in user
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
@@ -45,7 +44,6 @@ export const AuthService = {
             console.error(`[AuthService] login error:`, error);
             throw error;
         }
-        console.log(`[AuthService] login success for user: ${data.user?.id}`);
         return data.user;
     },
 
@@ -53,7 +51,7 @@ export const AuthService = {
      * Remove the session token.
      */
     async logout() {
-        console.log(`[AuthService] Logging out...`);
+        // Sign out user
         await supabase.auth.signOut();
     },
 
@@ -61,7 +59,7 @@ export const AuthService = {
      * Send a password reset email.
      */
     async resetPassword(email: string) {
-        console.log(`[AuthService] Attempting password reset for: ${email}`);
+        // Password reset
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: 'colorfloww://reset-password',
         });
@@ -69,7 +67,6 @@ export const AuthService = {
             console.error(`[AuthService] resetPassword error:`, error);
             throw error;
         }
-        console.log(`[AuthService] resetPassword email sent to: ${email}`);
     },
 
     /**
@@ -92,10 +89,7 @@ export const AuthService = {
      * Save user profile details to Supabase.
      */
     async saveUserProfile(details: { email: string, fullName?: string, gender?: string, age_range?: string, zipcode?: string, city?: string, data_consent?: boolean, referral_code?: string, location_permission?: boolean }, userId?: string) {
-        console.log(`[AuthService] Saving user profile for: ${userId || 'current user'}`);
-
         const { data: { session } } = await supabase.auth.getSession();
-        console.log(`[AuthService] Current session status: ${session ? 'Authenticated' : 'UNAUTHENTICATED'}`);
 
         let finalUserId = userId;
         if (!finalUserId) {
@@ -149,7 +143,6 @@ export const AuthService = {
                 throw locError;
             }
         }
-        console.log(`[AuthService] Profile and location saved successfully`);
     },
 
     /**
@@ -386,7 +379,7 @@ export const AuthService = {
     },
 
     async deleteAccount() {
-        console.log('[AuthService] Attempting account deletion...');
+        // Account deletion and cleanup successful
         const user = await this.getCurrentUser();
         if (!user) throw new Error("No authenticated user found");
 
@@ -399,7 +392,7 @@ export const AuthService = {
 
         // Final sign out
         await this.logout();
-        console.log('[AuthService] Account deletion and cleanup successful');
+        return { success: true };
     },
 
     /**

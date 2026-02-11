@@ -48,7 +48,7 @@ export class SpotlightService {
                 return { success: false, error: 'User not authenticated' };
             }
 
-            console.log(`${logPrefix} Submitting to spotlight: ${colorName}`);
+            // Submitting to spotlight
 
             const { data, error } = await supabase
                 .from('spotlight_submissions')
@@ -68,7 +68,7 @@ export class SpotlightService {
                 return { success: false, error: error.message };
             }
 
-            console.log(`${logPrefix} Submission created: ${data.id}`);
+            // Submission created
 
             // Track analytics
             await AnalyticsService.track('spotlight_submission_created', {
@@ -102,7 +102,7 @@ export class SpotlightService {
                 return [];
             }
 
-            console.log(`${logPrefix} Fetching submissions (limit: ${limit})`);
+            // Fetching submissions
 
             // Get submission IDs user has already voted on
             const { data: votedSubmissions } = await supabase
@@ -111,7 +111,7 @@ export class SpotlightService {
                 .eq('voter_id', user.id);
 
             const votedIds = votedSubmissions?.map(v => v.submission_id) || [];
-            console.log(`${logPrefix} User has voted on ${votedIds.length} submissions`);
+            // User voted check
 
             // Build query - simplified without profiles join
             let query = supabase
@@ -144,7 +144,7 @@ export class SpotlightService {
                 username: 'ColorflowUser',
             }));
 
-            console.log(`${logPrefix} Fetched ${submissions.length} submissions`);
+            // Fetched submissions successfully
             return submissions;
         } catch (error) {
             console.error(`${logPrefix} Unexpected error:`, error);
@@ -169,7 +169,7 @@ export class SpotlightService {
                 return { success: false, error: 'User not authenticated' };
             }
 
-            console.log(`${logPrefix} Voting ${voteType} on submission: ${submissionId}`);
+            // Voting recorded
 
             const { error } = await supabase
                 .from('spotlight_votes')
@@ -189,7 +189,7 @@ export class SpotlightService {
                 return { success: false, error: error.message };
             }
 
-            console.log(`${logPrefix} Vote recorded successfully`);
+            // Vote recorded successfully
 
             // Track analytics
             await AnalyticsService.track(`spotlight_vote_${voteType}`, {

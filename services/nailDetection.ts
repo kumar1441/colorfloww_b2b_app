@@ -23,12 +23,10 @@ export const detectNails = async (
   signal?: AbortSignal
 ): Promise<NailDetectionResult> => {
 
-  const logPrefix = `[NailDetection ${new Date().toLocaleTimeString()}]`;
-  console.log(`${logPrefix} Starting detection`);
+  const logPrefix = `[NailDetection]`;
 
   try {
     // ---------- STEP 1: Image optimization ----------
-    console.log(`${logPrefix} Step 1: Optimizing image...`);
 
     const manipulated = await ImageManipulator.manipulateAsync(
       imageUri,
@@ -45,13 +43,11 @@ export const detectNails = async (
     }
 
     const base64Image = `data:image/jpeg;base64,${manipulated.base64}`;
-    console.log(`${logPrefix} Image optimized: ${manipulated.width}x${manipulated.height}`);
 
     const SPACE_URL =
-      "https://nblvprasad-nailsegmentation.hf.space/gradio_api/call/predict";
+      "https://nblvprasad-nailrecogniton-v2.hf.space/gradio_api/call/process_image";
 
     // ---------- STEP 2: POST ----------
-    console.log(`${logPrefix} Step 2: POST to Gradio queue...`);
 
     const controller = new AbortController();
     const requestSignal = signal ?? controller.signal;
@@ -84,10 +80,7 @@ export const detectNails = async (
     const { event_id } = await postRes.json();
     if (!event_id) throw new Error("No event_id returned");
 
-    console.log(`${logPrefix} POST success. Event ID: ${event_id}`);
-
     // ---------- STEP 3: GET STREAM ----------
-    console.log(`${logPrefix} Step 3: Fetching result stream...`);
 
     const streamRes = await fetch(`${SPACE_URL}/${event_id}`, {
       signal: requestSignal,
@@ -100,7 +93,6 @@ export const detectNails = async (
     }
 
     const streamText = await streamRes.text();
-    console.log(`${logPrefix} Stream received. Length: ${streamText.length}`);
 
     // ---------- STEP 4: SAFE SSE PARSING ----------
     const dataLines = streamText
@@ -125,7 +117,6 @@ export const detectNails = async (
     let resultJson: any;
     try {
       resultJson = JSON.parse(jsonStr);
-      console.log(`${logPrefix} Parsed JSON successfully`);
     } catch (e) {
       console.error(`${logPrefix} JSON parse failed`, jsonStr.substring(0, 200));
       return {
@@ -137,9 +128,29 @@ export const detectNails = async (
     }
 
     // ---------- STEP 5: VALIDATE SHAPE ----------
-    const detections = Array.isArray(resultJson)
-      ? resultJson[1]
-      : null;
+    // V2 API returns [annotated_image, json_metadata] tuple
+    // Extract detection data from the second element
+    let detections = null;
+
+    if (Array.isArray(resultJson)) {
+      // V2 format: resultJson[1] contains the detection metadata
+      const metadataElement = resultJson[1];
+
+      // The metadata could be a JSON string or already parsed object
+      if (typeof metadataElement === 'string') {
+        try {
+          const parsed = JSON.parse(metadataElement);
+          detections = Array.isArray(parsed) ? parsed : parsed.detections || null;
+        } catch (e) {
+          console.warn(`${logPrefix} Failed to parse metadata string`, e);
+        }
+      } else if (Array.isArray(metadataElement)) {
+        detections = metadataElement;
+      } else if (metadataElement && typeof metadataElement === 'object') {
+        // Check if it has a detections property
+        detections = metadataElement.detections || null;
+      }
+    }
 
     if (!Array.isArray(detections)) {
       console.warn(`${logPrefix} No detections found in response`);
@@ -150,8 +161,6 @@ export const detectNails = async (
         imageHeight: manipulated.height,
       };
     }
-
-    console.log(`${logPrefix} Found ${detections.length} nails`);
 
     // ---------- STEP 6: MAP TO Nail ----------
     const nails = detections.map((det: any) => {

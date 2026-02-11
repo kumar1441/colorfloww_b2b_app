@@ -93,7 +93,7 @@ export const GamificationService = {
             .update({ xp: newXP, level: newLevel })
             .eq('id', user.id);
 
-        console.log(`[Gamification] Awarded ${amount} XP for ${reason}. New Level: ${newLevel}`);
+        // Level updated successfully
 
         // Log transaction for audit
         await supabase.from('xp_transactions').insert({
@@ -161,7 +161,7 @@ export const GamificationService = {
             .update({ karma: newKarma })
             .eq('id', user.id);
 
-        console.log(`[Gamification] Awarded ${amount} Karma in ${city} for ${reason}. New total: ${newKarma}`);
+        // Karma updated successfully
     },
 
     /**

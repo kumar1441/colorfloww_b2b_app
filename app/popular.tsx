@@ -35,7 +35,7 @@ export default function PopularScreen() {
         const loggedIn = await AuthService.isLoggedIn();
         if (loggedIn) {
             router.push({
-                pathname: "/camera",
+                pathname: "/photo-instruction",
                 params: {
                     color,
                     colorName: name
@@ -45,7 +45,7 @@ export default function PopularScreen() {
             router.push({
                 pathname: "/signup",
                 params: {
-                    returnTo: "/camera",
+                    returnTo: "/photo-instruction",
                     color,
                     colorName: name
                 }

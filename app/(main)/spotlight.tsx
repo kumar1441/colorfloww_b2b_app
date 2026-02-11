@@ -176,7 +176,7 @@ export default function SpotlightScreen() {
                                 <TouchableOpacity
                                     style={styles.tryButton}
                                     onPress={() => router.push({
-                                        pathname: "/camera",
+                                        pathname: "/photo-instruction",
                                         params: { color: item.color_hex, colorName: item.color_name }
                                     })}
                                     activeOpacity={0.7}

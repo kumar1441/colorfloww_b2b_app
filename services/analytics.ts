@@ -43,7 +43,7 @@ export const trackEvent = async (eventType: string, data: any = {}) => {
     // --- 1. PostHog Tracking ---
     if (posthog) {
         posthog.capture(eventType, data);
-        console.log(`[PostHog] Tracked: ${eventType}`, data);
+        // Track event
     }
 
     // --- 2. Native Analytics Logic ---
@@ -73,7 +73,7 @@ export const trackEvent = async (eventType: string, data: any = {}) => {
 
         const key = await generateSessionKey();
         const encrypted = await encryptPayload(payload, key);
-        console.log(`[Native Analytics] ${eventType}`, encrypted);
+        // Native analytics track
     } catch (error) {
         console.error('[Analytics] Native tracking error:', error);
     }
@@ -93,7 +93,7 @@ export const AnalyticsService = {
             host: POSTHOG_HOST,
         });
 
-        console.log('[Analytics] Initialized PostHog');
+        // Initialized analytics
     },
 
     /**
@@ -108,7 +108,7 @@ export const AnalyticsService = {
                 email: user.email,
                 name: user.user_metadata?.full_name,
             });
-            console.log(`[Analytics] Identified user: ${user.id}`);
+            // Identified user
         }
     },
 

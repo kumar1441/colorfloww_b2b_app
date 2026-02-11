@@ -194,9 +194,14 @@ function ResultScreen() {
     const handleShare = async () => {
         try {
             const colorName = customName || params.colorName || 'Custom Shade';
+
+            // Capture the finished painted nails image
+            const base64Image = overlayRef.current?.capture();
+            const imageToShare = base64Image ? `data:image/jpeg;base64,${base64Image}` : (processedImageUri || params.imageUri as string);
+
             const result = await Share.share({
-                message: `Check out my new nail look with ${colorName}! Painted virtually using ColorFloww.`,
-                url: params.imageUri as string, // Note: Sharing local file URIs might not work on all platforms without base64 or sharing-plugins
+                message: `Check out my custom look painted by ColorFloww!\n\nhttps://colorfloww.com/app`,
+                url: imageToShare,
             });
         } catch (error: any) {
             Alert.alert(error.message);
