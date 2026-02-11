@@ -13,17 +13,17 @@ export default function StreakCard({ streak, activityData, onShare }: StreakCard
     const currentDay = new Date().getDay();
 
     return (
-        <View className="bg-white dark:bg-brand-charcoal rounded-[24px] p-6 w-full shadow-sm mb-6 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5">
+        <View className="bg-white dark:bg-brand-gray rounded-[24px] p-6 w-full shadow-sm mb-6 border border-brand-gray-medium/10 dark:border-brand-gray-medium/5">
             <View className="flex-row items-center mb-6">
                 <View className="relative mr-4">
                     <LucideFlame size={32} color="#F97316" fill="#F97316" />
-                    <View className="absolute -bottom-1 -right-1 bg-white dark:bg-brand-charcoal w-[18px] h-[18px] rounded-full border-1.5 border-[#F97316] justify-center items-center">
-                        <Text className="text-[10px] font-bold text-brand-charcoal dark:text-brand-charcoal-dark">{streak}</Text>
+                    <View className="absolute -bottom-1 -right-1 bg-white dark:bg-brand-gray w-[18px] h-[18px] rounded-full border-1.5 border-[#F97316] justify-center items-center">
+                        <Text className="text-[10px] font-bold text-brand-gray dark:text-brand-gray-light">{streak}</Text>
                     </View>
                 </View>
 
                 <View className="flex-1">
-                    <Text className="text-2xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Your streak</Text>
+                    <Text className="text-2xl font-bold text-brand-gray dark:text-brand-gray-light">Your streak</Text>
                 </View>
 
                 <TouchableOpacity onPress={onShare} className="p-1">
@@ -38,12 +38,12 @@ export default function StreakCard({ streak, activityData, onShare }: StreakCard
 
                     return (
                         <View key={day} className="items-center">
-                            <Text className={`text-sm font-semibold mb-2 ${isToday ? 'text-brand-sage dark:text-brand-sage-dark' : 'text-brand-charcoal dark:text-brand-charcoal-dark'}`}>
+                            <Text className={`text-sm font-semibold mb-2 ${isToday ? 'text-brand-teal dark:text-brand-teal-dark' : 'text-brand-gray dark:text-brand-gray-light'}`}>
                                 {day}
                             </Text>
-                            <View className={`w-8 h-8 rounded-full justify-center items-center ${isActive ? 'bg-brand-sage dark:bg-brand-sage-dark' : 'bg-brand-cream dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10'}`}>
+                            <View className={`w-8 h-8 rounded-full justify-center items-center ${isActive ? 'bg-brand-teal dark:bg-brand-teal-dark' : 'bg-brand-peach dark:bg-brand-peach-dark/20 border border-brand-gray-medium/10'}`}>
                                 {isActive && <LucideCheck size={12} color="#fff" strokeWidth={3} />}
-                                {!isActive && isToday && <View className="w-1.5 h-1.5 rounded-full bg-brand-charcoal-light/30" />}
+                                {!isActive && isToday && <View className="w-1.5 h-1.5 rounded-full bg-brand-gray-medium/30" />}
                             </View>
                         </View>
                     );

@@ -73,12 +73,12 @@ export default function HistoryScreen() {
             key={label}
             onPress={() => setFilter(label)}
             className={`px-5 py-2.5 rounded-full mr-2 flex-row items-center border ${filter === label
-                ? 'bg-brand-sage border-brand-sage shadow-md'
-                : 'bg-white border-brand-charcoal-light/10 shadow-sm'
+                ? 'bg-brand-teal border-brand-teal shadow-md'
+                : 'bg-white border-brand-gray-medium/10 shadow-sm'
                 }`}
         >
             {icon && <Text className="mr-1.5">{icon}</Text>}
-            <Text className={`font-semibold ${filter === label ? 'text-white' : 'text-brand-charcoal-light'}`}>
+            <Text className={`font-semibold ${filter === label ? 'text-white' : 'text-brand-gray-medium'}`}>
                 {label}
             </Text>
         </TouchableOpacity>
@@ -94,29 +94,29 @@ export default function HistoryScreen() {
             <TouchableOpacity
                 activeOpacity={hasImage ? 0.7 : 1}
                 onPress={() => toggleExpand(item.id, hasImage)}
-                className="bg-white dark:bg-brand-charcoal rounded-[28px] p-5 mb-5 border border-brand-charcoal-light/5 shadow-sm"
+                className="bg-white dark:bg-brand-gray rounded-[28px] p-5 mb-5 border border-brand-gray-medium/5 shadow-sm"
             >
                 <View className="flex-row items-center">
                     {/* Color Block with Camera Icon */}
                     <View className="relative">
                         <View
                             style={{ backgroundColor: item.color }}
-                            className="w-20 h-20 rounded-2xl shadow-inner border border-brand-charcoal-light/10"
+                            className="w-20 h-20 rounded-2xl shadow-inner border border-brand-gray-medium/10"
                         />
                         {hasImage && (
                             <View className="absolute top-1 right-1 w-6 h-6 rounded-full bg-white/90 items-center justify-center shadow-sm">
-                                <LucideCamera size={12} color="#697D59" />
+                                <LucideCamera size={12} color="#307b75" />
                             </View>
                         )}
                     </View>
 
                     {/* Info */}
                     <View className="flex-1 ml-5">
-                        <Text className="text-lg font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-1">
+                        <Text className="text-lg font-bold text-brand-gray dark:text-brand-gray-light mb-1">
                             {item.color_details?.name || item.color.toUpperCase()}
                         </Text>
                         <View className="flex-row items-center">
-                            <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60">
+                            <Text className="text-sm text-brand-gray-medium dark:text-brand-gray-medium/60">
                                 {intentIcons[item.intent]} {item.intent} • {formattedDate}
                             </Text>
                         </View>
@@ -135,8 +135,8 @@ export default function HistoryScreen() {
 
                 {/* Expanded Image View */}
                 {isExpanded && hasImage && (
-                    <View className="mt-5 pt-5 border-t border-brand-charcoal-light/10">
-                        <Text className="text-sm font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">
+                    <View className="mt-5 pt-5 border-t border-brand-gray-medium/10">
+                        <Text className="text-sm font-semibold text-brand-gray dark:text-brand-gray-light mb-3">
                             Your Virtual Look
                         </Text>
                         <Image
@@ -152,12 +152,12 @@ export default function HistoryScreen() {
     };
 
     return (
-        <View className="flex-1 bg-brand-cream dark:bg-brand-cream-dark">
-            <SafeAreaView edges={['top']} className="bg-brand-cream/80 dark:bg-brand-cream-dark/80">
+        <View className="flex-1 bg-brand-peach dark:bg-brand-peach-dark">
+            <SafeAreaView edges={['top']} className="bg-brand-peach/80 dark:bg-brand-peach-dark/80">
                 <View className="px-6 pt-4 pb-6">
                     <View className="flex-row items-center gap-x-3 mb-6">
-                        <LucideHistory size={32} color="#697D59" strokeWidth={1.5} />
-                        <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark">My History</Text>
+                        <LucideHistory size={32} color="#307b75" strokeWidth={1.5} />
+                        <Text className="text-3xl font-bold text-brand-gray dark:text-brand-gray-light">My History</Text>
                     </View>
 
                     {/* Filter Bar */}

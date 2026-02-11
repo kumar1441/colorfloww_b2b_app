@@ -120,7 +120,7 @@ function ResultScreen() {
     const handleSubmitToSpotlight = async () => {
         setIsSubmittingSpotlight(true);
         try {
-            const colorHex = (params.selectedColor as string) || '#697D59';
+            const colorHex = (params.selectedColor as string) || '#307b75';
             const finalName = customName.trim() || 'Custom Shade';
 
             // Capture the masterpiece!
@@ -156,7 +156,7 @@ function ResultScreen() {
     const handleDone = async () => {
         setIsSaving(true);
         try {
-            const colorHex = (params.selectedColor as string) || '#697D59';
+            const colorHex = (params.selectedColor as string) || '#307b75';
             const finalName = customName.trim() || 'Custom Shade';
 
             // Capture the processed image for history
@@ -213,7 +213,7 @@ function ResultScreen() {
                             ref={overlayRef}
                             imageUri={processedImageUri || params.imageUri as string}
                             nails={nails}
-                            selectedColor={(params.selectedColor as string) || '#697D59'}
+                            selectedColor={(params.selectedColor as string) || '#307b75'}
                         />
 
                         {isDetecting && (
@@ -281,7 +281,7 @@ function ResultScreen() {
                             />
                         </View>
                         <View
-                            style={[styles.backplateCircle, { backgroundColor: (params.selectedColor as string) || '#697D59' }]}
+                            style={[styles.backplateCircle, { backgroundColor: (params.selectedColor as string) || '#307b75' }]}
                         />
                     </View>
 
@@ -313,7 +313,7 @@ function ResultScreen() {
                             disabled={isSubmittingSpotlight || !customName.trim() || isDetecting}
                         >
                             {isSubmittingSpotlight ? (
-                                <ActivityIndicator color="#697D59" />
+                                <ActivityIndicator color="#307b75" />
                             ) : (
                                 <>
                                     <Text style={styles.spotlightButtonIcon}>✨</Text>
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
     controlsSection: {
         flex: 1,
         marginTop: -30,
-        backgroundColor: '#FBFBF9',
+        backgroundColor: '#f2f2f2',
         borderTopLeftRadius: 40,
         borderTopRightRadius: 40,
         paddingTop: 8,
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 11,
         fontWeight: 'bold',
-        color: '#697D59',
+        color: '#307b75',
         textTransform: 'uppercase',
         letterSpacing: 2,
         marginBottom: 4,
@@ -531,19 +531,19 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginBottom: 12,
         borderWidth: 2,
-        borderColor: '#697D59',
+        borderColor: '#307b75',
     },
     spotlightButtonIcon: {
         fontSize: 20,
         marginRight: 8,
     },
     spotlightButtonText: {
-        color: '#697D59',
+        color: '#307b75',
         fontSize: 17,
         fontWeight: '800',
     },
     spotlightButtonXP: {
-        color: '#697D59',
+        color: '#307b75',
         fontSize: 12,
         fontWeight: '600',
         marginLeft: 8,
@@ -551,11 +551,11 @@ const styles = StyleSheet.create({
     },
     saveButton: {
         width: '100%',
-        backgroundColor: '#697D59',
+        backgroundColor: '#307b75',
         paddingVertical: 20,
         borderRadius: 24,
         alignItems: 'center',
-        shadowColor: "#697D59",
+        shadowColor: "#307b75",
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.3,
         shadowRadius: 15,

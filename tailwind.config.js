@@ -6,18 +6,49 @@ module.exports = {
         extend: {
             colors: {
                 brand: {
+                    // Primary - Teal
+                    teal: {
+                        DEFAULT: "#307b75",
+                        light: "#cbe8e5",
+                        dark: "#1f5450",
+                    },
+                    // Accent - Coral
+                    coral: {
+                        DEFAULT: "#f45d48",
+                        light: "#ff8a7a",
+                        dark: "#d43d28",
+                    },
+                    // Secondary - Orange
+                    orange: {
+                        DEFAULT: "#fd7223",
+                        light: "#ff9d5c",
+                        dark: "#e55a0a",
+                    },
+                    // Backgrounds
+                    peach: {
+                        DEFAULT: "#f2f2f2",
+                        light: "#f9f9f9",
+                        dark: "#2a2a2a",
+                    },
+                    // Text & Neutrals
+                    gray: {
+                        DEFAULT: "#2a2a2a",
+                        light: "#f2f2f2",
+                        medium: "#8a8a8a",
+                    },
+                    // Legacy aliases for gradual migration
                     cream: {
-                        DEFAULT: "#F9F7F4",
-                        dark: "#121212",
+                        DEFAULT: "#ffe4cc",
+                        dark: "#2a2a2a",
                     },
                     sage: {
-                        DEFAULT: "#697D59",
-                        dark: "#4A5D3F",
+                        DEFAULT: "#307b75",
+                        dark: "#1f5450",
                     },
                     charcoal: {
-                        DEFAULT: "#2D2D2D",
-                        light: "#A1A1A1",
-                        dark: "#E8E5E1",
+                        DEFAULT: "#2a2a2a",
+                        light: "#8a8a8a",
+                        dark: "#f2f2f2",
                     }
                 }
             }

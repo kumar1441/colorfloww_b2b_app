@@ -172,15 +172,15 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1 bg-black/60 justify-end"
             >
-                <View className="bg-white dark:bg-brand-charcoal rounded-t-[40px] p-8 shadow-2xl">
+                <View className="bg-white dark:bg-brand-gray rounded-t-[40px] p-8 shadow-2xl">
                     <View className="flex-row justify-between items-center mb-6">
-                        <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Level Up Your Results</Text>
+                        <Text className="text-3xl font-bold text-brand-gray dark:text-brand-gray-light">Level Up Your Results</Text>
                         <TouchableOpacity onPress={handleMaybeLater}>
                             <LucideX size={24} color="#A1A1A1" />
                         </TouchableOpacity>
                     </View>
 
-                    <Text className="text-lg text-brand-charcoal-light dark:text-brand-charcoal-light/70 mb-8 leading-6">
+                    <Text className="text-lg text-brand-gray-medium dark:text-brand-gray-medium/70 mb-8 leading-6">
                         Complete your profile to unlock personalized AI rendering tailored to your unique skin tone.
                     </Text>
 
@@ -192,11 +192,11 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
                         )}
 
                         <View className="mb-6">
-                            <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Full Name</Text>
-                            <View className="flex-row items-center bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 rounded-2xl px-5">
-                                <LucideUser size={20} color="#697D59" className="mr-3" />
+                            <Text className="text-[17px] font-semibold text-brand-gray dark:text-brand-gray-light mb-3">Full Name</Text>
+                            <View className="flex-row items-center bg-brand-peach/30 dark:bg-brand-peach-dark/20 border border-brand-gray-medium/10 rounded-2xl px-5">
+                                <LucideUser size={20} color="#307b75" className="mr-3" />
                                 <TextInput
-                                    className="flex-1 py-4 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
+                                    className="flex-1 py-4 text-lg text-brand-gray dark:text-brand-gray-light"
                                     placeholder="Enter your name"
                                     placeholderTextColor="#A1A1A1"
                                     value={formData.fullName}
@@ -206,15 +206,15 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
                         </View>
 
                         <View className="mb-6">
-                            <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Gender</Text>
+                            <Text className="text-[17px] font-semibold text-brand-gray dark:text-brand-gray-light mb-3">Gender</Text>
                             <View className="flex-row gap-x-2">
                                 {["Female", "Male", "Other"].map((g) => (
                                     <TouchableOpacity
                                         key={g}
                                         onPress={() => setFormData({ ...formData, gender: g })}
-                                        className={`flex-1 py-4 rounded-2xl border items-center ${formData.gender === g ? 'bg-brand-sage border-brand-sage' : 'bg-transparent border-brand-charcoal-light/10'}`}
+                                        className={`flex-1 py-4 rounded-2xl border items-center ${formData.gender === g ? 'bg-brand-teal border-brand-teal' : 'bg-transparent border-brand-gray-medium/10'}`}
                                     >
-                                        <Text className={`font-bold ${formData.gender === g ? 'text-white' : 'text-brand-charcoal-light'}`}>{g}</Text>
+                                        <Text className={`font-bold ${formData.gender === g ? 'text-white' : 'text-brand-gray-medium'}`}>{g}</Text>
                                     </TouchableOpacity>
                                 ))}
                             </View>
@@ -222,10 +222,10 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
 
                         <View className="flex-row gap-x-4 mb-8">
                             <View className="flex-1">
-                                <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Zipcode</Text>
-                                <View className="flex-row items-center bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 rounded-2xl px-5">
+                                <Text className="text-[17px] font-semibold text-brand-gray dark:text-brand-gray-light mb-3">Zipcode</Text>
+                                <View className="flex-row items-center bg-brand-peach/30 dark:bg-brand-peach-dark/20 border border-brand-gray-medium/10 rounded-2xl px-5">
                                     <TextInput
-                                        className="flex-1 py-4 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
+                                        className="flex-1 py-4 text-lg text-brand-gray dark:text-brand-gray-light"
                                         placeholder="Zipcode"
                                         placeholderTextColor="#A1A1A1"
                                         keyboardType="numeric"
@@ -233,63 +233,63 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
                                         value={formData.zipcode}
                                         onChangeText={handleZipcodeChange}
                                     />
-                                    {isCheckingZip && <LucideLoader2 size={18} color="#697D59" className="animate-spin" />}
-                                    {!isCheckingZip && formData.zipcode.length === 5 && !error && <LucideCheck size={18} color="#697D59" />}
+                                    {isCheckingZip && <LucideLoader2 size={18} color="#307b75" className="animate-spin" />}
+                                    {!isCheckingZip && formData.zipcode.length === 5 && !error && <LucideCheck size={18} color="#307b75" />}
                                 </View>
                             </View>
                             <View className="flex-[1.5]">
-                                <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">City</Text>
-                                <View className="flex-row items-center bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 rounded-2xl px-5">
+                                <Text className="text-[17px] font-semibold text-brand-gray dark:text-brand-gray-light mb-3">City</Text>
+                                <View className="flex-row items-center bg-brand-peach/30 dark:bg-brand-peach-dark/20 border border-brand-gray-medium/10 rounded-2xl px-5">
                                     <TextInput
-                                        className="flex-1 py-4 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
+                                        className="flex-1 py-4 text-lg text-brand-gray dark:text-brand-gray-light"
                                         placeholder="Your City"
                                         placeholderTextColor="#A1A1A1"
                                         value={formData.city}
                                         onChangeText={(v) => setFormData({ ...formData, city: v })}
                                     />
-                                    {isLocating && <LucideLoader2 size={18} color="#697D59" className="animate-spin" />}
-                                    {!isLocating && formData.city.length > 0 && <LucideMapPin size={18} color="#697D59" />}
+                                    {isLocating && <LucideLoader2 size={18} color="#307b75" className="animate-spin" />}
+                                    {!isLocating && formData.city.length > 0 && <LucideMapPin size={18} color="#307b75" />}
                                 </View>
                             </View>
                         </View>
 
                         {/* Experience Selection Cards */}
                         <View className="mb-6">
-                            <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-4">Choose Your Experience</Text>
+                            <Text className="text-[17px] font-semibold text-brand-gray dark:text-brand-gray-light mb-4">Choose Your Experience</Text>
 
                             {/* Full Experience Card */}
                             <TouchableOpacity
                                 onPress={() => setSelectedExperience('full')}
-                                className={`p-5 rounded-3xl mb-3 border-2 ${selectedExperience === 'full' ? 'bg-brand-sage/10 border-brand-sage' : 'bg-white/50 border-brand-charcoal-light/10'}`}
+                                className={`p-5 rounded-3xl mb-3 border-2 ${selectedExperience === 'full' ? 'bg-brand-teal/10 border-brand-teal' : 'bg-white/50 border-brand-gray-medium/10'}`}
                             >
                                 <View className="flex-row justify-between items-start mb-3">
                                     <View className="flex-row items-center">
-                                        <LucideStar size={24} color="#697D59" />
-                                        <Text className="text-xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark ml-2">Full Experience</Text>
+                                        <LucideStar size={24} color="#307b75" />
+                                        <Text className="text-xl font-bold text-brand-gray dark:text-brand-gray-light ml-2">Full Experience</Text>
                                     </View>
                                     {selectedExperience === 'full' && (
-                                        <View className="w-6 h-6 rounded-full bg-brand-sage items-center justify-center">
+                                        <View className="w-6 h-6 rounded-full bg-brand-teal items-center justify-center">
                                             <LucideCheck size={14} color="white" strokeWidth={3} />
                                         </View>
                                     )}
                                 </View>
-                                <Text className="text-sm text-brand-sage font-semibold mb-3">RECOMMENDED</Text>
+                                <Text className="text-sm text-brand-teal font-semibold mb-3">RECOMMENDED</Text>
                                 <View className="gap-y-2">
                                     <View className="flex-row items-center">
-                                        <LucideZap size={16} color="#697D59" />
-                                        <Text className="text-base text-brand-charcoal dark:text-brand-charcoal-dark ml-2">Unlimited daily try-ons</Text>
+                                        <LucideZap size={16} color="#307b75" />
+                                        <Text className="text-base text-brand-gray dark:text-brand-gray-light ml-2">Unlimited daily try-ons</Text>
                                     </View>
                                     <View className="flex-row items-center">
-                                        <LucideSparkles size={16} color="#697D59" />
-                                        <Text className="text-base text-brand-charcoal dark:text-brand-charcoal-dark ml-2">AI-powered skin tone matching</Text>
+                                        <LucideSparkles size={16} color="#307b75" />
+                                        <Text className="text-base text-brand-gray dark:text-brand-gray-light ml-2">AI-powered skin tone matching</Text>
                                     </View>
                                     <View className="flex-row items-center">
-                                        <LucideTrendingUp size={16} color="#697D59" />
-                                        <Text className="text-base text-brand-charcoal dark:text-brand-charcoal-dark ml-2">Personalized color recommendations</Text>
+                                        <LucideTrendingUp size={16} color="#307b75" />
+                                        <Text className="text-base text-brand-gray dark:text-brand-gray-light ml-2">Personalized color recommendations</Text>
                                     </View>
                                     <View className="flex-row items-center">
-                                        <LucideStar size={16} color="#697D59" />
-                                        <Text className="text-base text-brand-charcoal dark:text-brand-charcoal-dark ml-2">Priority access to new features</Text>
+                                        <LucideStar size={16} color="#307b75" />
+                                        <Text className="text-base text-brand-gray dark:text-brand-gray-light ml-2">Priority access to new features</Text>
                                     </View>
                                 </View>
                             </TouchableOpacity>
@@ -297,12 +297,12 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
                             {/* Basic Experience Card */}
                             <TouchableOpacity
                                 onPress={() => setSelectedExperience('basic')}
-                                className={`p-5 rounded-3xl border-2 ${selectedExperience === 'basic' ? 'bg-gray-50 border-gray-400' : 'bg-white/50 border-brand-charcoal-light/10'}`}
+                                className={`p-5 rounded-3xl border-2 ${selectedExperience === 'basic' ? 'bg-gray-50 border-gray-400' : 'bg-white/50 border-brand-gray-medium/10'}`}
                             >
                                 <View className="flex-row justify-between items-start mb-3">
                                     <View className="flex-row items-center">
                                         <LucideLock size={24} color="#8A8A8A" />
-                                        <Text className="text-xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark ml-2">Basic Experience</Text>
+                                        <Text className="text-xl font-bold text-brand-gray dark:text-brand-gray-light ml-2">Basic Experience</Text>
                                     </View>
                                     {selectedExperience === 'basic' && (
                                         <View className="w-6 h-6 rounded-full bg-gray-400 items-center justify-center">
@@ -311,18 +311,18 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
                                     )}
                                 </View>
                                 <View className="gap-y-2">
-                                    <Text className="text-base text-brand-charcoal-light">• 5 try-ons per day limit</Text>
-                                    <Text className="text-base text-brand-charcoal-light">• Standard rendering quality</Text>
-                                    <Text className="text-base text-brand-charcoal-light">• No personalized recommendations</Text>
+                                    <Text className="text-base text-brand-gray-medium">• 5 try-ons per day limit</Text>
+                                    <Text className="text-base text-brand-gray-medium">• Standard rendering quality</Text>
+                                    <Text className="text-base text-brand-gray-medium">• No personalized recommendations</Text>
                                 </View>
                             </TouchableOpacity>
                         </View>
 
                         {/* Privacy Notice */}
-                        <View className="bg-brand-cream/20 dark:bg-brand-cream-dark/10 p-4 rounded-2xl mb-6 border border-brand-sage/10">
+                        <View className="bg-brand-peach/20 dark:bg-brand-peach-dark/10 p-4 rounded-2xl mb-6 border border-brand-teal/10">
                             <View className="flex-row items-start">
-                                <LucideShield size={18} color="#697D59" className="mr-2 mt-0.5" />
-                                <Text className="flex-1 text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/70 leading-5">
+                                <LucideShield size={18} color="#307b75" className="mr-2 mt-0.5" />
+                                <Text className="flex-1 text-sm text-brand-gray-medium dark:text-brand-gray-medium/70 leading-5">
                                     We use anonymized hand data to improve our AR engine for everyone. Your name and location are never shared. You can change this anytime in Settings.
                                 </Text>
                             </View>
@@ -332,7 +332,7 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
                     <TouchableOpacity
                         onPress={handleComplete}
                         disabled={loading}
-                        className={`bg-brand-sage dark:bg-brand-sage-dark py-6 rounded-2xl flex-row justify-center items-center shadow-lg ${loading ? 'opacity-70' : ''}`}
+                        className={`bg-brand-teal dark:bg-brand-teal-dark py-6 rounded-2xl flex-row justify-center items-center shadow-lg ${loading ? 'opacity-70' : ''}`}
                     >
                         {loading ? (
                             <Text className="text-white text-xl font-bold">Saving...</Text>
@@ -350,7 +350,7 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
                         onPress={handleMaybeLater}
                         className="py-5"
                     >
-                        <Text className="text-brand-charcoal-light dark:text-brand-charcoal-light/60 text-center text-lg font-medium">Maybe Later</Text>
+                        <Text className="text-brand-gray-medium dark:text-brand-gray-medium/60 text-center text-lg font-medium">Maybe Later</Text>
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>

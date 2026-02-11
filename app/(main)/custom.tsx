@@ -124,7 +124,7 @@ export default function ColorCustomizer() {
         if (!loggedIn) {
             router.push({
                 pathname: "/signup",
-                params: { returnTo: "/camera", color: currentColor }
+                params: { returnTo: "/photo-instruction", color: currentColor }
             });
             return;
         }
@@ -133,36 +133,36 @@ export default function ColorCustomizer() {
             setShowNameInput(true);
         } else {
             router.push({
-                pathname: "/camera",
+                pathname: "/photo-instruction",
                 params: { color: currentColor, colorName }
             });
         }
     };
 
     return (
-        <View className="flex-1 bg-brand-cream dark:bg-brand-cream-dark">
-            <SafeAreaView edges={['top']} className="bg-brand-cream/80 dark:bg-brand-cream-dark/80">
+        <View className="flex-1 bg-brand-peach dark:bg-brand-peach-dark">
+            <SafeAreaView edges={['top']} className="bg-brand-peach/80 dark:bg-brand-peach-dark/80">
                 <View className="px-6 pt-4 pb-5">
                     <View className="flex-row items-center gap-x-3 mb-5">
-                        <LucidePalette size={32} color="#697D59" strokeWidth={1.5} />
-                        <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Custom Mix</Text>
+                        <LucidePalette size={32} color="#307b75" strokeWidth={1.5} />
+                        <Text className="text-3xl font-bold text-brand-gray dark:text-brand-gray-light">Custom Mix</Text>
                     </View>
 
                     {/* Tabs */}
-                    <View className="flex-row bg-white/60 dark:bg-brand-charcoal/40 rounded-2xl p-1 gap-x-1 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5">
+                    <View className="flex-row bg-white/60 dark:bg-brand-gray/40 rounded-2xl p-1 gap-x-1 border border-brand-gray-medium/10 dark:border-brand-gray-medium/5">
                         <TouchableOpacity
                             onPress={() => setActiveTab("sliders")}
-                            className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl gap-x-2 ${activeTab === "sliders" ? "bg-brand-sage dark:bg-brand-sage-dark" : ""}`}
+                            className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl gap-x-2 ${activeTab === "sliders" ? "bg-brand-teal dark:bg-brand-teal-dark" : ""}`}
                         >
                             <LucideSliders size={18} color={activeTab === "sliders" ? "#fff" : "#8A8A8A"} />
-                            <Text className={`text-sm font-semibold ${activeTab === "sliders" ? "text-white" : "text-brand-charcoal-light"}`}>Sliders</Text>
+                            <Text className={`text-sm font-semibold ${activeTab === "sliders" ? "text-white" : "text-brand-gray-medium"}`}>Sliders</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() => setActiveTab("upload")}
-                            className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl gap-x-2 ${activeTab === "upload" ? "bg-brand-sage dark:bg-brand-sage-dark" : ""}`}
+                            className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl gap-x-2 ${activeTab === "upload" ? "bg-brand-teal dark:bg-brand-teal-dark" : ""}`}
                         >
                             <LucideUpload size={18} color={activeTab === "upload" ? "#fff" : "#8A8A8A"} />
-                            <Text className={`text-sm font-semibold ${activeTab === "upload" ? "text-white" : "text-brand-charcoal-light"}`}>Upload</Text>
+                            <Text className={`text-sm font-semibold ${activeTab === "upload" ? "text-white" : "text-brand-gray-medium"}`}>Upload</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -170,8 +170,8 @@ export default function ColorCustomizer() {
 
             <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
                 {/* Preview Card */}
-                <View className="bg-white/60 dark:bg-brand-charcoal/40 rounded-[32px] p-6 mb-6 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 items-center shadow-sm">
-                    <Text className="self-start text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60 mb-4">Preview</Text>
+                <View className="bg-white dark:bg-brand-gray/40 rounded-[32px] p-6 mb-6 border border-brand-gray-medium/10 dark:border-brand-gray-medium/5 items-center shadow-sm">
+                    <Text className="self-start text-sm text-brand-gray-medium dark:text-brand-gray-light/60 mb-4">Preview</Text>
                     <View
                         className="w-full h-40 rounded-3xl mb-5 overflow-hidden shadow-lg"
                         style={{ backgroundColor: currentColor }}
@@ -179,8 +179,8 @@ export default function ColorCustomizer() {
                         <View className="absolute inset-0 bg-white/10 -skew-x-[20deg] -translate-x-[50px]" />
                     </View>
                     <View className="items-center">
-                        <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-1">{currentColor}</Text>
-                        <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60">
+                        <Text className="text-3xl font-bold text-brand-gray dark:text-brand-gray-light mb-1">{currentColor}</Text>
+                        <Text className="text-sm text-brand-gray-medium dark:text-brand-gray-light/60">
                             RGB({Math.round(rgb.r)}, {Math.round(rgb.g)}, {Math.round(rgb.b)})
                         </Text>
                     </View>
@@ -188,17 +188,17 @@ export default function ColorCustomizer() {
 
                 {/* Name Input */}
                 {showNameInput && (
-                    <View className="bg-white/60 dark:bg-brand-charcoal/40 rounded-3xl p-5 mb-6 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5">
+                    <View className="bg-white dark:bg-brand-gray/40 rounded-3xl p-5 mb-6 border border-brand-gray-medium/10 dark:border-brand-gray-medium/5">
                         <View className="flex-row items-center gap-x-2 mb-3">
-                            <LucideSparkles size={18} color="#697D59" />
-                            <Text className="text-base font-semibold text-brand-charcoal dark:text-brand-charcoal-dark">Name Your Creation</Text>
+                            <LucideSparkles size={18} color="#307b75" />
+                            <Text className="text-base font-semibold text-brand-gray dark:text-brand-gray-light">Name Your Creation</Text>
                         </View>
                         <TextInput
                             value={colorName}
                             onChangeText={setColorName}
                             placeholder="e.g., Morning Dew..."
                             placeholderTextColor="#A1A1A1"
-                            className="bg-white/80 dark:bg-brand-charcoal/60 rounded-xl p-4 text-base text-brand-charcoal dark:text-brand-charcoal-dark border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5"
+                            className="bg-white/80 dark:bg-brand-gray/60 rounded-xl p-4 text-base text-brand-gray dark:text-brand-gray-light border border-brand-gray-medium/10 dark:border-brand-gray-medium/5"
                         />
                     </View>
                 )}
@@ -207,12 +207,12 @@ export default function ColorCustomizer() {
                 {activeTab === "sliders" && (
                     <View className="gap-y-4 mb-8">
                         {['r', 'g', 'b'].map((channel) => (
-                            <View key={channel} className="bg-white/40 dark:bg-brand-charcoal/20 rounded-2xl p-4 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5">
+                            <View key={channel} className="bg-white/40 dark:bg-brand-gray/20 rounded-2xl p-4 border border-brand-gray-medium/10 dark:border-brand-gray-medium/5">
                                 <View className="flex-row justify-between mb-3">
-                                    <Text className="text-sm font-semibold text-brand-charcoal dark:text-brand-charcoal-dark">
+                                    <Text className="text-sm font-semibold text-brand-gray dark:text-brand-gray-light">
                                         {channel === 'r' ? 'Red' : channel === 'g' ? 'Green' : 'Blue'}
                                     </Text>
-                                    <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60 font-mono">
+                                    <Text className="text-sm text-brand-gray-medium dark:text-brand-gray-light/60 font-mono">
                                         {Math.round(rgb[channel as keyof typeof rgb])}
                                     </Text>
                                 </View>
@@ -223,7 +223,7 @@ export default function ColorCustomizer() {
                                     onValueChange={(v) => handleSliderChange(channel as any, v)}
                                     minimumTrackTintColor={channel === 'r' ? '#FF4B4B' : channel === 'g' ? '#4BFF4B' : '#4B4BFF'}
                                     maximumTrackTintColor={Platform.OS === 'ios' ? '#E8E5E1' : '#D1D1D1'}
-                                    thumbTintColor="#697D59"
+                                    thumbTintColor="#307b75"
                                 />
                             </View>
                         ))}
@@ -237,15 +237,15 @@ export default function ColorCustomizer() {
                             <View className="gap-y-4">
                                 <TouchableOpacity
                                     onPress={takePhoto}
-                                    className="bg-white/60 dark:bg-brand-charcoal/40 rounded-3xl p-6 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 flex-row items-center gap-x-4"
+                                    className="bg-white dark:bg-brand-gray/40 rounded-3xl p-6 border border-brand-gray-medium/10 dark:border-brand-gray-medium/5 flex-row items-center gap-x-4"
                                     activeOpacity={0.7}
                                 >
-                                    <View className="w-14 h-14 rounded-2xl bg-brand-sage/10 items-center justify-center">
-                                        <LucideCamera size={28} color="#697D59" />
+                                    <View className="w-14 h-14 rounded-2xl bg-brand-teal-light items-center justify-center">
+                                        <LucideCamera size={28} color="#307b75" />
                                     </View>
                                     <View className="flex-1">
-                                        <Text className="text-lg font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-1">Take Photo</Text>
-                                        <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60">
+                                        <Text className="text-lg font-bold text-brand-gray dark:text-brand-gray-light mb-1">Take Photo</Text>
+                                        <Text className="text-sm text-brand-gray-medium dark:text-brand-gray-light/60">
                                             Capture a color from your camera
                                         </Text>
                                     </View>
@@ -253,28 +253,28 @@ export default function ColorCustomizer() {
 
                                 <TouchableOpacity
                                     onPress={pickImageFromGallery}
-                                    className="bg-white/60 dark:bg-brand-charcoal/40 rounded-3xl p-6 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 flex-row items-center gap-x-4"
+                                    className="bg-white dark:bg-brand-gray/40 rounded-3xl p-6 border border-brand-gray-medium/10 dark:border-brand-gray-medium/5 flex-row items-center gap-x-4"
                                     activeOpacity={0.7}
                                 >
-                                    <View className="w-14 h-14 rounded-2xl bg-brand-sage/10 items-center justify-center">
-                                        <LucideImage size={28} color="#697D59" />
+                                    <View className="w-14 h-14 rounded-2xl bg-brand-teal-light items-center justify-center">
+                                        <LucideImage size={28} color="#307b75" />
                                     </View>
                                     <View className="flex-1">
-                                        <Text className="text-lg font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-1">Choose from Gallery</Text>
-                                        <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60">
+                                        <Text className="text-lg font-bold text-brand-gray dark:text-brand-gray-light mb-1">Choose from Gallery</Text>
+                                        <Text className="text-sm text-brand-gray-medium dark:text-brand-gray-light/60">
                                             Pick a color from your photos
                                         </Text>
                                     </View>
                                 </TouchableOpacity>
                             </View>
                         ) : (
-                            <View className="bg-white/60 dark:bg-brand-charcoal/40 rounded-3xl p-5 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5">
+                            <View className="bg-white dark:bg-brand-gray/40 rounded-3xl p-5 border border-brand-gray-medium/10 dark:border-brand-gray-medium/5">
                                 <View className="flex-row justify-between items-center mb-4">
-                                    <Text className="text-base font-semibold text-brand-charcoal dark:text-brand-charcoal-dark">
+                                    <Text className="text-base font-semibold text-brand-gray dark:text-brand-gray-light">
                                         {isPickingColor ? 'Tap on image to pick a color' : 'Color selected!'}
                                     </Text>
-                                    <TouchableOpacity onPress={clearImage} className="w-8 h-8 rounded-full bg-red-100 items-center justify-center">
-                                        <LucideX size={18} color="#EF4444" />
+                                    <TouchableOpacity onPress={clearImage} className="w-8 h-8 rounded-full bg-brand-coral-light/30 items-center justify-center">
+                                        <LucideX size={18} color="#f45d48" />
                                     </TouchableOpacity>
                                 </View>
                                 <TouchableOpacity
@@ -289,8 +289,8 @@ export default function ColorCustomizer() {
                                     />
                                 </TouchableOpacity>
                                 {isPickingColor && (
-                                    <View className="mt-4 bg-brand-sage/10 rounded-2xl p-4">
-                                        <Text className="text-sm text-brand-charcoal dark:text-brand-charcoal-dark text-center font-medium">
+                                    <View className="mt-4 bg-brand-teal-light rounded-2xl p-4">
+                                        <Text className="text-sm text-brand-gray dark:text-brand-gray-light text-center font-medium">
                                             👆 Tap anywhere on the image to extract that color
                                         </Text>
                                     </View>
@@ -303,7 +303,7 @@ export default function ColorCustomizer() {
                 <TouchableOpacity
                     onPress={handleTryOn}
                     activeOpacity={0.8}
-                    className="bg-brand-sage dark:bg-brand-sage-dark rounded-2xl py-5 items-center shadow-lg"
+                    className="bg-brand-teal dark:bg-brand-teal-dark rounded-2xl py-5 items-center shadow-lg"
                 >
                     <Text className="text-white text-lg font-bold">
                         {showNameInput && colorName ? "Save & Try This Color" : "Try This Color"}

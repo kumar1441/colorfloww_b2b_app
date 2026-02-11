@@ -54,7 +54,7 @@ export default function BoldScreen() {
     };
 
     const renderItem = ({ item }: { item: Color }) => (
-        <View className="bg-white dark:bg-brand-charcoal rounded-[24px] border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 overflow-hidden shadow-sm mb-5" style={{ width: COLUMN_WIDTH }}>
+        <View className="bg-white dark:bg-brand-gray rounded-[24px] border border-brand-gray-medium/10 dark:border-brand-gray-medium/5 overflow-hidden shadow-sm mb-5" style={{ width: COLUMN_WIDTH }}>
             <TouchableOpacity
                 onPress={() => handleColorSelect(item.rgb, item.name)}
                 activeOpacity={0.9}
@@ -67,11 +67,11 @@ export default function BoldScreen() {
             </TouchableOpacity>
 
             <View className="p-3">
-                <Text className="text-[15px] font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-0.5" numberOfLines={1}>{item.name}</Text>
-                <Text className="text-xs text-brand-charcoal-light dark:text-brand-charcoal-light/60 mb-2">by ColorFloww</Text>
+                <Text className="text-[15px] font-bold text-brand-gray dark:text-brand-gray-light mb-0.5" numberOfLines={1}>{item.name}</Text>
+                <Text className="text-xs text-brand-gray-medium dark:text-brand-gray-medium/60 mb-2">by ColorFloww</Text>
 
                 <View className="flex-row justify-between items-center">
-                    <Text className="text-[10px] text-brand-charcoal-light dark:text-brand-charcoal-light/60 font-mono">{item.rgb}</Text>
+                    <Text className="text-[10px] text-brand-gray-medium dark:text-brand-gray-medium/60 font-mono">{item.rgb}</Text>
                     <View className="flex-row items-center gap-x-3">
                         <LucideHeart size={16} color={'#8A8A8A'} />
                         <LucideShare2 size={16} color="#8A8A8A" />
@@ -82,19 +82,19 @@ export default function BoldScreen() {
     );
 
     return (
-        <View className="flex-1 bg-brand-cream dark:bg-brand-cream-dark">
-            <SafeAreaView edges={['top']} className="bg-brand-cream/80 dark:bg-brand-cream-dark/80">
+        <View className="flex-1 bg-brand-peach dark:bg-brand-peach-dark">
+            <SafeAreaView edges={['top']} className="bg-brand-peach/80 dark:bg-brand-peach-dark/80">
                 <View className="px-6 py-4 flex-row items-center">
                     <TouchableOpacity onPress={() => router.back()} className="mr-4">
-                        <LucideChevronLeft size={28} color="#697D59" />
+                        <LucideChevronLeft size={28} color="#307b75" />
                     </TouchableOpacity>
-                    <Text className="text-2xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Bold Statements</Text>
+                    <Text className="text-2xl font-bold text-brand-gray dark:text-brand-gray-light">Bold Statements</Text>
                 </View>
             </SafeAreaView>
 
             {isLoading ? (
                 <View className="flex-1 justify-center items-center">
-                    <ActivityIndicator size="large" color="#697D59" />
+                    <ActivityIndicator size="large" color="#307b75" />
                 </View>
             ) : (
                 <FlatList

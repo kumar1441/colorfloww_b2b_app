@@ -26,30 +26,30 @@ export default function StreakShareModal({ visible, streak, onClose }: StreakSha
         <Modal visible={visible} transparent animationType="slide">
             <View className="flex-1 bg-black/80 justify-center items-center p-6">
                 <View className="w-full items-center">
-                    <TouchableOpacity className="absolute -top-16 right-0 bg-white dark:bg-brand-charcoal w-11 h-11 rounded-full justify-center items-center" onPress={onClose}>
-                        <LucideX size={24} color="#2D2D2D" className="dark:text-brand-charcoal-dark" />
+                    <TouchableOpacity className="absolute -top-16 right-0 bg-white dark:bg-brand-gray w-11 h-11 rounded-full justify-center items-center" onPress={onClose}>
+                        <LucideX size={24} color="#2D2D2D" className="dark:text-brand-gray-light" />
                     </TouchableOpacity>
 
-                    <View className="w-full bg-white dark:bg-brand-charcoal rounded-[32px] p-10 items-center">
+                    <View className="w-full bg-white dark:bg-brand-gray rounded-[32px] p-10 items-center">
                         <View className="relative mb-5">
                             <LucideFlame size={80} color="#F97316" fill="#F97316" />
-                            <View className="absolute bottom-2.5 left-1/2 -ml-5 bg-white dark:bg-brand-charcoal w-10 h-10 rounded-full border-3 border-[#F97316] justify-center items-center">
-                                <Text className="text-lg font-bold text-brand-charcoal dark:text-brand-charcoal-dark">{streak}</Text>
+                            <View className="absolute bottom-2.5 left-1/2 -ml-5 bg-white dark:bg-brand-gray w-10 h-10 rounded-full border-3 border-[#F97316] justify-center items-center">
+                                <Text className="text-lg font-bold text-brand-gray dark:text-brand-gray-light">{streak}</Text>
                             </View>
                         </View>
 
-                        <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-4">day streak</Text>
-                        <Text className="text-base text-brand-charcoal/70 dark:text-brand-charcoal-light/80 text-center leading-6 mb-10">
+                        <Text className="text-3xl font-bold text-brand-gray dark:text-brand-gray-light mb-4">day streak</Text>
+                        <Text className="text-base text-brand-gray/70 dark:text-brand-gray-medium/80 text-center leading-6 mb-10">
                             I've made a habit of visualizing new nail colors every day!
                         </Text>
 
-                        <View className="flex-row items-center bg-brand-cream dark:bg-brand-cream-dark/20 px-4 py-2 rounded-xl">
-                            <View className="w-3 h-3 rounded-full bg-brand-charcoal dark:bg-brand-charcoal-dark mr-2" />
-                            <Text className="text-sm font-semibold text-brand-charcoal dark:text-brand-charcoal-dark">nailart.app</Text>
+                        <View className="flex-row items-center bg-brand-peach dark:bg-brand-peach-dark/20 px-4 py-2 rounded-xl">
+                            <View className="w-3 h-3 rounded-full bg-brand-gray dark:bg-brand-gray-light mr-2" />
+                            <Text className="text-sm font-semibold text-brand-gray dark:text-brand-gray-light">nailart.app</Text>
                         </View>
                     </View>
 
-                    <TouchableOpacity className="bg-brand-sage dark:bg-brand-sage-dark w-full py-4.5 rounded-2xl flex-row justify-center items-center mt-6 shadow-lg" onPress={handleShare}>
+                    <TouchableOpacity className="bg-brand-teal dark:bg-brand-teal-dark w-full py-4.5 rounded-2xl flex-row justify-center items-center mt-6 shadow-lg" onPress={handleShare}>
                         <LucideShare2 size={20} color="#fff" className="mr-2" />
                         <Text className="text-white text-lg font-bold">Share Streak</Text>
                     </TouchableOpacity>

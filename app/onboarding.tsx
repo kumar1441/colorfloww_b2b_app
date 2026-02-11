@@ -136,7 +136,7 @@ export default function OnboardingScreen() {
                         });
                         const backgroundColor = scrollX.interpolate({
                             inputRange,
-                            outputRange: ['#CCCCCC', '#697D59', '#CCCCCC'],
+                            outputRange: ['#CCCCCC', '#307b75', '#CCCCCC'],
                             extrapolate: 'clamp',
                         });
 
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     tagContainer: {
-        backgroundColor: '#F0F0F0',
+        backgroundColor: '#f2f2f2',
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 8,
@@ -263,8 +263,8 @@ const styles = StyleSheet.create({
         elevation: 4,
     },
     getStartedButton: {
-        backgroundColor: '#697D59', // Brand green for final CTA
-        shadowColor: '#697D59',
+        backgroundColor: '#307b75', // Brand green for final CTA
+        shadowColor: '#307b75',
     },
     buttonText: {
         color: '#FFFFFF',

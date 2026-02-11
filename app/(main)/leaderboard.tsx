@@ -73,7 +73,7 @@ export default function LeaderboardScreen() {
             {/* Featured Trend */}
             <View style={styles.featuredContainer}>
                 <View style={styles.featuredLabel}>
-                    <LucideTrendingUp size={16} color="#697D59" />
+                    <LucideTrendingUp size={16} color="#307b75" />
                     <Text style={styles.featuredLabelText}>Trending in {tab === 'global' ? 'the World' : 'London'}</Text>
                 </View>
                 <Text style={styles.trendName}>#NeonMatte</Text>
@@ -94,7 +94,7 @@ export default function LeaderboardScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FAF9F6',
+        backgroundColor: '#f2f2f2',
     },
     header: {
         paddingHorizontal: 24,
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     featuredLabelText: {
         fontSize: 12,
         fontWeight: '800',
-        color: '#697D59',
+        color: '#307b75',
         marginLeft: 6,
         textTransform: 'uppercase',
         letterSpacing: 1,
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     points: {
         fontSize: 18,
         fontWeight: '900',
-        color: '#697D59',
+        color: '#307b75',
     },
     pointsLabel: {
         fontSize: 10,

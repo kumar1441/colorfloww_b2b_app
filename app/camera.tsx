@@ -45,25 +45,25 @@ export default function CameraScreen() {
     if (isCheckingLimit) {
         return (
             <View className="flex-1 bg-black items-center justify-center">
-                <ActivityIndicator size="large" color="#697D59" />
+                <ActivityIndicator size="large" color="#307b75" />
             </View>
         );
     }
 
     if (isBlocked) {
         return (
-            <View className="flex-1 bg-brand-charcoal items-center justify-center p-8">
-                <View className="w-24 h-24 rounded-full bg-brand-sage/20 items-center justify-center mb-8">
-                    <LucideShieldAlert size={56} color="#697D59" />
+            <View className="flex-1 bg-brand-gray items-center justify-center p-8">
+                <View className="w-24 h-24 rounded-full bg-brand-teal/20 items-center justify-center mb-8">
+                    <LucideShieldAlert size={56} color="#307b75" />
                 </View>
                 <Text className="text-3xl font-bold text-white text-center mb-4">Daily Limit Reached</Text>
-                <Text className="text-lg text-brand-charcoal-light/80 text-center mb-10 leading-6">
+                <Text className="text-lg text-brand-gray-medium/80 text-center mb-10 leading-6">
                     You've reached your daily limit for personalized try-ons. Complete your profile to unlock unlimited high-quality sessions.
                 </Text>
 
                 <TouchableOpacity
                     onPress={() => setShowNudge(true)}
-                    className="w-full bg-brand-sage py-5 rounded-2xl flex-row justify-center items-center shadow-lg mb-4"
+                    className="w-full bg-brand-teal py-5 rounded-2xl flex-row justify-center items-center shadow-lg mb-4"
                 >
                     <Text className="text-white text-xl font-bold mr-2">Complete Profile</Text>
                     <LucideArrowRight size={20} color="white" />
@@ -73,7 +73,7 @@ export default function CameraScreen() {
                     onPress={() => router.back()}
                     className="py-4"
                 >
-                    <Text className="text-brand-charcoal-light font-medium text-lg">Maybe Later</Text>
+                    <Text className="text-brand-gray-medium font-medium text-lg">Maybe Later</Text>
                 </TouchableOpacity>
 
                 <ProfileNudgeModal
@@ -96,7 +96,7 @@ export default function CameraScreen() {
                 <Text className="text-white text-center text-lg mb-6">We need your permission to show the camera</Text>
                 <TouchableOpacity
                     onPress={requestPermission}
-                    className="bg-brand-sage px-8 py-4 rounded-2xl"
+                    className="bg-brand-teal px-8 py-4 rounded-2xl"
                 >
                     <Text className="text-white font-bold">Grant Permission</Text>
                 </TouchableOpacity>

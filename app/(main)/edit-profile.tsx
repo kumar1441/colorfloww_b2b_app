@@ -104,8 +104,8 @@ export default function EditProfileScreen() {
 
     if (isLoading) {
         return (
-            <View className="flex-1 bg-brand-cream dark:bg-brand-cream-dark items-center justify-center">
-                <ActivityIndicator size="large" color="#697D59" />
+            <View className="flex-1 bg-brand-peach dark:bg-brand-peach-dark items-center justify-center">
+                <ActivityIndicator size="large" color="#307b75" />
             </View>
         );
     }
@@ -113,19 +113,19 @@ export default function EditProfileScreen() {
     const genderOptions = ['Female', 'Male', 'Non-binary', 'Prefer not to say'];
 
     return (
-        <View className="flex-1 bg-brand-cream dark:bg-brand-cream-dark">
-            <SafeAreaView edges={['top']} className="bg-brand-cream/80 dark:bg-brand-cream-dark/80">
+        <View className="flex-1 bg-brand-peach dark:bg-brand-peach-dark">
+            <SafeAreaView edges={['top']} className="bg-brand-peach/80 dark:bg-brand-peach-dark/80">
                 <View style={{ paddingTop: Math.max(insets.top, 0) }} className="px-6 py-4 flex-row items-center justify-between">
                     <View className="flex-row items-center">
                         <TouchableOpacity onPress={() => router.back()} className="mr-4">
-                            <LucideChevronLeft size={28} color="#697D59" />
+                            <LucideChevronLeft size={28} color="#307b75" />
                         </TouchableOpacity>
-                        <Text className="text-2xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Edit Profile</Text>
+                        <Text className="text-2xl font-bold text-brand-gray dark:text-brand-gray-light">Edit Profile</Text>
                     </View>
                     <TouchableOpacity
                         onPress={handleSave}
                         disabled={isSaving}
-                        className={`w-10 h-10 rounded-full items-center justify-center ${isSaving ? 'bg-brand-sage/50' : 'bg-brand-sage shadow-md'}`}
+                        className={`w-10 h-10 rounded-full items-center justify-center ${isSaving ? 'bg-brand-teal/50' : 'bg-brand-teal shadow-md'}`}
                     >
                         {isSaving ? <ActivityIndicator size="small" color="white" /> : <LucideCheck size={20} color="white" />}
                     </TouchableOpacity>
@@ -135,19 +135,19 @@ export default function EditProfileScreen() {
             <ScrollView contentContainerStyle={{ padding: 24 }} showsVerticalScrollIndicator={false}>
                 {/* Profile Photo Placeholder Action */}
                 <View className="items-center mb-10">
-                    <View className="w-24 h-24 rounded-full bg-white dark:bg-brand-charcoal items-center justify-center mb-2 shadow-sm border border-brand-charcoal-light/10">
-                        <LucideUser size={48} color="#697D59" />
+                    <View className="w-24 h-24 rounded-full bg-white dark:bg-brand-gray items-center justify-center mb-2 shadow-sm border border-brand-gray-medium/10">
+                        <LucideUser size={48} color="#307b75" />
                     </View>
-                    <Text className="text-brand-sage font-semibold">Change photo</Text>
-                    <Text className="text-[10px] text-brand-charcoal-light mt-1 opacity-60 italic">Managed in Profile screen</Text>
+                    <Text className="text-brand-teal font-semibold">Change photo</Text>
+                    <Text className="text-[10px] text-brand-gray-medium mt-1 opacity-60 italic">Managed in Profile screen</Text>
                 </View>
 
                 {/* Input Fields */}
                 <View className="space-y-6">
                     <View>
-                        <Text className="text-sm font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-2 ml-1">Full Name</Text>
+                        <Text className="text-sm font-bold text-brand-gray dark:text-brand-gray-light mb-2 ml-1">Full Name</Text>
                         <TextInput
-                            className="bg-white dark:bg-brand-charcoal/40 p-5 rounded-[20px] text-base border border-brand-charcoal-light/10 dark:text-white"
+                            className="bg-white dark:bg-brand-gray/40 p-5 rounded-[20px] text-base border border-brand-gray-medium/10 dark:text-white"
                             placeholder="Your Name"
                             value={fullName}
                             onChangeText={setFullName}
@@ -155,41 +155,41 @@ export default function EditProfileScreen() {
                     </View>
 
                     <View>
-                        <Text className="text-sm font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-2 ml-1">Email Address</Text>
+                        <Text className="text-sm font-bold text-brand-gray dark:text-brand-gray-light mb-2 ml-1">Email Address</Text>
                         <TextInput
-                            className="bg-brand-cream-dark/10 p-5 rounded-[20px] text-base border border-brand-charcoal-light/5 text-brand-charcoal-light"
+                            className="bg-brand-peach-dark/10 p-5 rounded-[20px] text-base border border-brand-gray-medium/5 text-brand-gray-medium"
                             value={email}
                             editable={false}
                         />
-                        <Text className="text-[10px] text-brand-charcoal-light mt-2 ml-1 opacity-60">Email cannot be changed for security.</Text>
+                        <Text className="text-[10px] text-brand-gray-medium mt-2 ml-1 opacity-60">Email cannot be changed for security.</Text>
                     </View>
 
                     <View>
-                        <Text className="text-sm font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-3 ml-1">Gender</Text>
-                        <View className="bg-white/60 dark:bg-brand-charcoal/40 rounded-[24px] overflow-hidden border border-brand-charcoal-light/10">
+                        <Text className="text-sm font-bold text-brand-gray dark:text-brand-gray-light mb-3 ml-1">Gender</Text>
+                        <View className="bg-white/60 dark:bg-brand-gray/40 rounded-[24px] overflow-hidden border border-brand-gray-medium/10">
                             {genderOptions.map((option, index) => (
                                 <TouchableOpacity
                                     key={option}
                                     onPress={() => setGender(option)}
-                                    className={`flex-row items-center justify-between p-4 ${index !== genderOptions.length - 1 ? 'border-b border-brand-cream dark:border-brand-cream-dark/20' : ''}`}
+                                    className={`flex-row items-center justify-between p-4 ${index !== genderOptions.length - 1 ? 'border-b border-brand-peach dark:border-brand-peach-dark/20' : ''}`}
                                 >
-                                    <Text className={`text-base ${gender === option ? 'text-brand-sage font-bold' : 'text-brand-charcoal dark:text-white'}`}>
+                                    <Text className={`text-base ${gender === option ? 'text-brand-teal font-bold' : 'text-brand-gray dark:text-white'}`}>
                                         {option}
                                     </Text>
-                                    {gender === option && <LucideCheck size={18} color="#697D59" />}
+                                    {gender === option && <LucideCheck size={18} color="#307b75" />}
                                 </TouchableOpacity>
                             ))}
                         </View>
                     </View>
 
                     <View className="opacity-60">
-                        <Text className="text-sm font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-2 ml-1">Age Range</Text>
+                        <Text className="text-sm font-bold text-brand-gray dark:text-brand-gray-light mb-2 ml-1">Age Range</Text>
                         <TextInput
-                            className="bg-brand-cream-dark/10 p-5 rounded-[20px] text-base border border-brand-charcoal-light/5 text-brand-charcoal-light"
+                            className="bg-brand-peach-dark/10 p-5 rounded-[20px] text-base border border-brand-gray-medium/5 text-brand-gray-medium"
                             value={ageRange}
                             editable={false}
                         />
-                        <Text className="text-[10px] text-brand-charcoal-light mt-2 ml-1">Age range is set during signup.</Text>
+                        <Text className="text-[10px] text-brand-gray-medium mt-2 ml-1">Age range is set during signup.</Text>
                     </View>
                 </View>
 
@@ -203,7 +203,7 @@ export default function EditProfileScreen() {
                         <LucideTrash2 size={16} color="#DC2626" />
                         <Text className="text-red-600 font-bold">Delete Account</Text>
                     </TouchableOpacity>
-                    <Text className="text-xs text-brand-charcoal-light opacity-40">Privacy Policy • Terms of Service</Text>
+                    <Text className="text-xs text-brand-gray-medium opacity-40">Privacy Policy • Terms of Service</Text>
                 </View>
             </ScrollView>
         </View>

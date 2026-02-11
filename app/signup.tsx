@@ -82,23 +82,23 @@ export default function SignupScreen() {
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            className="flex-1 bg-brand-cream dark:bg-brand-cream-dark"
+            className="flex-1 bg-brand-peach dark:bg-brand-peach-dark"
         >
             <SafeAreaView className="flex-1" edges={['bottom', 'left', 'right']}>
                 <View style={{ paddingTop: Math.max(insets.top, 16) }} className="px-6">
                     <TouchableOpacity onPress={handleBack} className="flex-row items-center">
-                        <LucideArrowLeft size={20} color="#697D59" />
-                        <Text className="ml-2 text-brand-sage dark:text-brand-sage-dark text-lg font-medium">Back</Text>
+                        <LucideArrowLeft size={20} color="#307b75" />
+                        <Text className="ml-2 text-brand-teal dark:text-brand-teal-dark text-lg font-medium">Back</Text>
                     </TouchableOpacity>
                 </View>
 
                 <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24, paddingBottom: 24 + insets.bottom }} keyboardShouldPersistTaps="handled">
-                    <View className="bg-white dark:bg-brand-charcoal rounded-[40px] p-10 shadow-2xl">
-                        <Text className="text-4xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">
+                    <View className="bg-white dark:bg-brand-gray rounded-[40px] p-10 shadow-2xl">
+                        <Text className="text-4xl font-bold text-brand-gray dark:text-brand-gray-light mb-3">
                             Create Account
                         </Text>
 
-                        <Text className="text-lg text-brand-charcoal-light dark:text-brand-charcoal-light/60 mb-6 leading-6">
+                        <Text className="text-lg text-brand-gray-medium dark:text-brand-gray-medium/60 mb-6 leading-6">
                             Start your journey with just your email and password.
                         </Text>
 
@@ -109,9 +109,9 @@ export default function SignupScreen() {
                         )}
 
                         <View className="mb-6">
-                            <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Email</Text>
+                            <Text className="text-[17px] font-semibold text-brand-gray dark:text-brand-gray-light mb-3">Email</Text>
                             <TextInput
-                                className="bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/10 rounded-2xl py-4 px-5 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
+                                className="bg-brand-peach/30 dark:bg-brand-peach-dark/20 border border-brand-gray-medium/10 dark:border-brand-gray-medium/10 rounded-2xl py-4 px-5 text-lg text-brand-gray dark:text-brand-gray-light"
                                 placeholder="your@email.com"
                                 placeholderTextColor="#A1A1A1"
                                 keyboardType="email-address"
@@ -122,9 +122,9 @@ export default function SignupScreen() {
                         </View>
 
                         <View className="mb-8">
-                            <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Password</Text>
+                            <Text className="text-[17px] font-semibold text-brand-gray dark:text-brand-gray-light mb-3">Password</Text>
                             <TextInput
-                                className="bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/10 rounded-2xl py-4 px-5 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
+                                className="bg-brand-peach/30 dark:bg-brand-peach-dark/20 border border-brand-gray-medium/10 dark:border-brand-gray-medium/10 rounded-2xl py-4 px-5 text-lg text-brand-gray dark:text-brand-gray-light"
                                 placeholder="Create a password"
                                 placeholderTextColor="#A1A1A1"
                                 secureTextEntry
@@ -137,7 +137,7 @@ export default function SignupScreen() {
                             onPress={handleSignup}
                             activeOpacity={0.8}
                             disabled={loading}
-                            className={`bg-[#697D59] rounded-2xl py-6 items-center shadow-lg ${loading ? 'opacity-70' : ''}`}
+                            className={`bg-[#307b75] rounded-2xl py-6 items-center shadow-lg ${loading ? 'opacity-70' : ''}`}
                         >
                             <Text className="text-white text-xl font-bold">
                                 {loading ? "Signing up..." : "Complete"}
@@ -145,8 +145,8 @@ export default function SignupScreen() {
                         </TouchableOpacity>
 
                         <View className="items-center mt-8">
-                            <Text className="text-base text-brand-charcoal-light dark:text-brand-charcoal-light/60">
-                                Already have an account? <Text className="text-brand-sage dark:text-brand-sage-dark font-bold underline" onPress={() => router.push('/login')}>Log in</Text>
+                            <Text className="text-base text-brand-gray-medium dark:text-brand-gray-medium/60">
+                                Already have an account? <Text className="text-brand-teal dark:text-brand-teal-dark font-bold underline" onPress={() => router.push('/login')}>Log in</Text>
                             </Text>
                         </View>
                     </View>

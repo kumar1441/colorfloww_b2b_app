@@ -120,11 +120,11 @@ export default function ProfileScreen() {
     const renderGuestView = () => (
         <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
             <View className="items-center mt-10 mb-12">
-                <View className="w-24 h-24 rounded-full bg-brand-sage/10 items-center justify-center mb-6">
-                    <LucideUser size={48} color="#697D59" />
+                <View className="w-24 h-24 rounded-full bg-brand-teal/10 items-center justify-center mb-6">
+                    <LucideUser size={48} color="#307b75" />
                 </View>
-                <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark text-center mb-3">Join ColorFloww</Text>
-                <Text className="text-brand-charcoal-light dark:text-brand-charcoal-light/60 text-center px-6 leading-6">
+                <Text className="text-3xl font-bold text-brand-gray dark:text-brand-gray-light text-center mb-3">Join ColorFloww</Text>
+                <Text className="text-brand-gray-medium dark:text-brand-gray-medium/60 text-center px-6 leading-6">
                     Sign up to track your nail streaks, save your favorite looks, and join our creative community.
                 </Text>
             </View>
@@ -133,28 +133,28 @@ export default function ProfileScreen() {
             <View className="gap-y-4 mb-12">
                 <TouchableOpacity
                     onPress={() => router.push('/signup')}
-                    className="bg-brand-sage h-16 rounded-2xl items-center justify-center shadow-lg"
+                    className="bg-brand-teal h-16 rounded-2xl items-center justify-center shadow-lg"
                 >
                     <Text className="text-white text-lg font-bold">Create Account</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={() => router.push('/login')}
-                    className="bg-white dark:bg-brand-charcoal h-16 rounded-2xl items-center justify-center border border-brand-charcoal-light/10 shadow-sm"
+                    className="bg-white dark:bg-brand-gray h-16 rounded-2xl items-center justify-center border border-brand-gray-medium/10 shadow-sm"
                 >
-                    <Text className="text-brand-charcoal dark:text-brand-charcoal-dark text-lg font-bold">Log In</Text>
+                    <Text className="text-brand-gray dark:text-brand-gray-light text-lg font-bold">Log In</Text>
                 </TouchableOpacity>
             </View>
 
             {/* Feature Teasers */}
-            <Text className="text-lg font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-4 px-2">Unlock Features</Text>
-            <View className="bg-white dark:bg-brand-charcoal rounded-[32px] p-6 border border-brand-charcoal-light/10 shadow-sm mb-8">
+            <Text className="text-lg font-bold text-brand-gray dark:text-brand-gray-light mb-4 px-2">Unlock Features</Text>
+            <View className="bg-white dark:bg-brand-gray rounded-[32px] p-6 border border-brand-gray-medium/10 shadow-sm mb-8">
                 <View className="flex-row items-center gap-x-4 mb-6">
                     <View className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/20 items-center justify-center">
                         <LucideFlame size={20} color="#F97316" />
                     </View>
                     <View className="flex-1">
-                        <Text className="text-base font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Track Streaks</Text>
-                        <Text className="text-xs text-brand-charcoal-light dark:text-brand-charcoal-light/60">Keep your nail routine consistent</Text>
+                        <Text className="text-base font-bold text-brand-gray dark:text-brand-gray-light">Track Streaks</Text>
+                        <Text className="text-xs text-brand-gray-medium dark:text-brand-gray-medium/60">Keep your nail routine consistent</Text>
                     </View>
                 </View>
 
@@ -163,29 +163,29 @@ export default function ProfileScreen() {
                         <LucideTrophy size={20} color="#A78BFA" />
                     </View>
                     <View className="flex-1">
-                        <Text className="text-base font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Earn Awards</Text>
-                        <Text className="text-xs text-brand-charcoal-light dark:text-brand-charcoal-light/60">Compete for the best creative looks</Text>
+                        <Text className="text-base font-bold text-brand-gray dark:text-brand-gray-light">Earn Awards</Text>
+                        <Text className="text-xs text-brand-gray-medium dark:text-brand-gray-medium/60">Compete for the best creative looks</Text>
                     </View>
                 </View>
 
                 <View className="flex-row items-center gap-x-4">
-                    <View className="w-10 h-10 rounded-xl bg-brand-sage/10 items-center justify-center">
-                        <LucideSparkles size={20} color="#697D59" />
+                    <View className="w-10 h-10 rounded-xl bg-brand-teal/10 items-center justify-center">
+                        <LucideSparkles size={20} color="#307b75" />
                     </View>
                     <View className="flex-1">
-                        <Text className="text-base font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Personalized AI</Text>
-                        <Text className="text-xs text-brand-charcoal-light dark:text-brand-charcoal-light/60">Get shades tailored to your skin tone</Text>
+                        <Text className="text-base font-bold text-brand-gray dark:text-brand-gray-light">Personalized AI</Text>
+                        <Text className="text-xs text-brand-gray-medium dark:text-brand-gray-medium/60">Get shades tailored to your skin tone</Text>
                     </View>
                 </View>
             </View>
 
             <TouchableOpacity
                 onPress={() => setFeedbackModalVisible(true)}
-                className="flex-row items-center justify-between p-5 bg-white/60 dark:bg-brand-charcoal/40 rounded-2xl border border-brand-charcoal-light/10"
+                className="flex-row items-center justify-between p-5 bg-white/60 dark:bg-brand-gray/40 rounded-2xl border border-brand-gray-medium/10"
             >
                 <View className="flex-row items-center gap-x-4">
-                    <LucideMessageSquare size={20} color="#697D59" />
-                    <Text className="text-base font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Give Feedback</Text>
+                    <LucideMessageSquare size={20} color="#307b75" />
+                    <Text className="text-base font-bold text-brand-gray dark:text-brand-gray-light">Give Feedback</Text>
                 </View>
                 <LucideArrowRight size={20} color="#A1A1A1" />
             </TouchableOpacity>
@@ -201,39 +201,39 @@ export default function ProfileScreen() {
                     activeOpacity={0.9}
                     className="relative"
                 >
-                    <View className="w-28 h-28 rounded-full bg-white dark:bg-brand-charcoal items-center justify-center mb-4 shadow-xl border-4 border-white dark:border-brand-charcoal overflow-hidden">
+                    <View className="w-28 h-28 rounded-full bg-white dark:bg-brand-gray items-center justify-center mb-4 shadow-xl border-4 border-white dark:border-brand-gray overflow-hidden">
                         {userProfile?.avatarUrl ? (
                             <Image source={{ uri: userProfile.avatarUrl }} className="w-full h-full" />
                         ) : (
-                            <LucideUser size={56} color="#697D59" />
+                            <LucideUser size={56} color="#307b75" />
                         )}
                     </View>
-                    <View className="absolute bottom-4 right-0 w-9 h-9 bg-brand-sage rounded-full items-center justify-center border-2 border-white dark:border-brand-charcoal shadow-sm">
+                    <View className="absolute bottom-4 right-0 w-9 h-9 bg-brand-teal rounded-full items-center justify-center border-2 border-white dark:border-brand-gray shadow-sm">
                         <LucideCamera size={16} color="white" />
                     </View>
                 </TouchableOpacity>
 
-                <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-1">
+                <Text className="text-3xl font-bold text-brand-gray dark:text-brand-gray-light mb-1">
                     {userProfile?.fullName || 'Nail Enthusiast'}
                 </Text>
                 <View className="flex-row items-center gap-x-1.5 opacity-60">
                     <LucideMail size={14} color="#8A8A8A" />
-                    <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60">
+                    <Text className="text-sm text-brand-gray-medium dark:text-brand-gray-medium/60">
                         {userProfile?.email}
                     </Text>
                 </View>
             </View>
 
             {/* Referral Card */}
-            <View className="bg-brand-sage/10 dark:bg-brand-sage/5 rounded-[32px] p-6 mb-8 border border-brand-sage/20 relative overflow-hidden">
+            <View className="bg-brand-teal/10 dark:bg-brand-teal/5 rounded-[32px] p-6 mb-8 border border-brand-teal/20 relative overflow-hidden">
                 <View className="flex-row justify-between items-center mb-4">
                     <View className="flex-row items-center gap-x-3">
-                        <View className="w-10 h-10 rounded-2xl bg-brand-sage/20 items-center justify-center">
-                            <LucideGift size={20} color="#697D59" />
+                        <View className="w-10 h-10 rounded-2xl bg-brand-teal/20 items-center justify-center">
+                            <LucideGift size={20} color="#307b75" />
                         </View>
                         <View>
-                            <Text className="text-lg font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Refer a Friend</Text>
-                            <Text className="text-xs text-brand-charcoal-light dark:text-brand-charcoal-light/60">Unlock benefits for both</Text>
+                            <Text className="text-lg font-bold text-brand-gray dark:text-brand-gray-light">Refer a Friend</Text>
+                            <Text className="text-xs text-brand-gray-medium dark:text-brand-gray-medium/60">Unlock benefits for both</Text>
                         </View>
                     </View>
                     <TouchableOpacity
@@ -246,19 +246,19 @@ export default function ProfileScreen() {
                                 Alert.alert(error.message);
                             }
                         }}
-                        className="bg-brand-sage px-4 py-2 rounded-xl shadow-sm"
+                        className="bg-brand-teal px-4 py-2 rounded-xl shadow-sm"
                     >
                         <Text className="text-white font-bold text-sm">Share</Text>
                     </TouchableOpacity>
                 </View>
 
-                <View className="flex-row items-center justify-between bg-white/50 dark:bg-brand-charcoal/30 rounded-2xl p-4 border border-brand-sage/10">
-                    <Text className="text-brand-charcoal-light dark:text-brand-charcoal-light/60 font-medium">Your Code</Text>
-                    <Text className="text-xl font-black text-brand-sage tracking-widest uppercase">{userProfile?.referralCode || 'GETCODE1'}</Text>
+                <View className="flex-row items-center justify-between bg-white/50 dark:bg-brand-gray/30 rounded-2xl p-4 border border-brand-teal/10">
+                    <Text className="text-brand-gray-medium dark:text-brand-gray-medium/60 font-medium">Your Code</Text>
+                    <Text className="text-xl font-black text-brand-teal tracking-widest uppercase">{userProfile?.referralCode || 'GETCODE1'}</Text>
                 </View>
 
                 <View className="absolute -bottom-4 -right-4 opacity-5">
-                    <LucideGift size={80} color="#697D59" />
+                    <LucideGift size={80} color="#307b75" />
                 </View>
             </View>
 
@@ -278,58 +278,58 @@ export default function ProfileScreen() {
 
             {/* Stats Row */}
             <View className="flex-row justify-between mb-8 gap-x-3">
-                <View className="flex-1 bg-white/60 dark:bg-brand-charcoal/40 rounded-[24px] p-5 items-center border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 shadow-sm">
+                <View className="flex-1 bg-white/60 dark:bg-brand-gray/40 rounded-[24px] p-5 items-center border border-brand-gray-medium/10 dark:border-brand-gray-medium/5 shadow-sm">
                     <View className="w-10 h-10 rounded-full bg-orange-50 dark:bg-orange-900/20 items-center justify-center mb-2">
                         <LucideFlame size={20} color="#F97316" />
                     </View>
-                    <Text className="text-2xl font-black text-brand-charcoal dark:text-brand-charcoal-dark">{stats.karma}</Text>
-                    <Text className="text-[10px] text-brand-charcoal-light dark:text-brand-charcoal-light/60 font-bold uppercase tracking-widest mt-0.5">Karma</Text>
+                    <Text className="text-2xl font-black text-brand-gray dark:text-brand-gray-light">{stats.karma}</Text>
+                    <Text className="text-[10px] text-brand-gray-medium dark:text-brand-gray-medium/60 font-bold uppercase tracking-widest mt-0.5">Karma</Text>
                 </View>
 
                 <TouchableOpacity
                     onPress={() => router.push('/history')}
-                    className="flex-1 bg-white/60 dark:bg-brand-charcoal/40 rounded-[24px] p-5 items-center border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 shadow-sm"
+                    className="flex-1 bg-white/60 dark:bg-brand-gray/40 rounded-[24px] p-5 items-center border border-brand-gray-medium/10 dark:border-brand-gray-medium/5 shadow-sm"
                 >
                     <View className="w-10 h-10 rounded-full bg-yellow-50 dark:bg-yellow-900/20 items-center justify-center mb-2">
                         <LucideTrophy size={20} color="#FBBF24" />
                     </View>
-                    <Text className="text-2xl font-black text-brand-charcoal dark:text-brand-charcoal-dark">{stats.looks}</Text>
-                    <Text className="text-[10px] text-brand-charcoal-light dark:text-brand-charcoal-light/60 font-bold uppercase tracking-widest mt-0.5">Looks</Text>
+                    <Text className="text-2xl font-black text-brand-gray dark:text-brand-gray-light">{stats.looks}</Text>
+                    <Text className="text-[10px] text-brand-gray-medium dark:text-brand-gray-medium/60 font-bold uppercase tracking-widest mt-0.5">Looks</Text>
                 </TouchableOpacity>
 
-                <View className="flex-1 bg-white/60 dark:bg-brand-charcoal/40 rounded-[24px] p-5 items-center border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 shadow-sm">
+                <View className="flex-1 bg-white/60 dark:bg-brand-gray/40 rounded-[24px] p-5 items-center border border-brand-gray-medium/10 dark:border-brand-gray-medium/5 shadow-sm">
                     <View className="w-10 h-10 rounded-full bg-violet-50 dark:bg-violet-900/20 items-center justify-center mb-2">
                         <LucideTrophy size={20} color="#A78BFA" />
                     </View>
-                    <Text className="text-2xl font-black text-brand-charcoal dark:text-brand-charcoal-dark">{stats.awards}</Text>
-                    <Text className="text-[10px] text-brand-charcoal-light dark:text-brand-charcoal-light/60 font-bold uppercase tracking-widest mt-0.5">Awards</Text>
+                    <Text className="text-2xl font-black text-brand-gray dark:text-brand-gray-light">{stats.awards}</Text>
+                    <Text className="text-[10px] text-brand-gray-medium dark:text-brand-gray-medium/60 font-bold uppercase tracking-widest mt-0.5">Awards</Text>
                 </View>
             </View>
 
             {/* Menu Sections */}
-            <View className="bg-white/60 dark:bg-brand-charcoal/40 rounded-[32px] overflow-hidden border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 shadow-sm">
+            <View className="bg-white/60 dark:bg-brand-gray/40 rounded-[32px] overflow-hidden border border-brand-gray-medium/10 dark:border-brand-gray-medium/5 shadow-sm">
                 <TouchableOpacity
-                    className="flex-row items-center justify-between p-5 border-b border-brand-cream dark:border-brand-cream-dark/20"
+                    className="flex-row items-center justify-between p-5 border-b border-brand-peach dark:border-brand-peach-dark/20"
                     onPress={() => router.push('/edit-profile')}
                 >
                     <View className="flex-row items-center gap-x-4">
-                        <View className="w-10 h-10 rounded-2xl bg-brand-sage/10 items-center justify-center">
-                            <LucideEdit3 size={20} color="#697D59" />
+                        <View className="w-10 h-10 rounded-2xl bg-brand-teal/10 items-center justify-center">
+                            <LucideEdit3 size={20} color="#307b75" />
                         </View>
-                        <Text className="text-base font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Edit Profile</Text>
+                        <Text className="text-base font-bold text-brand-gray dark:text-brand-gray-light">Edit Profile</Text>
                     </View>
                     <LucideChevronRight size={20} color="#A1A1A1" />
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                    className="flex-row items-center justify-between p-5 border-b border-brand-cream dark:border-brand-cream-dark/20"
+                    className="flex-row items-center justify-between p-5 border-b border-brand-peach dark:border-brand-peach-dark/20"
                     onPress={() => setFeedbackModalVisible(true)}
                 >
                     <View className="flex-row items-center gap-x-4">
-                        <View className="w-10 h-10 rounded-2xl bg-brand-sage/10 items-center justify-center">
-                            <LucideMessageSquare size={20} color="#697D59" />
+                        <View className="w-10 h-10 rounded-2xl bg-brand-teal/10 items-center justify-center">
+                            <LucideMessageSquare size={20} color="#307b75" />
                         </View>
-                        <Text className="text-base font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Give Feedback</Text>
+                        <Text className="text-base font-bold text-brand-gray dark:text-brand-gray-light">Give Feedback</Text>
                     </View>
                     <LucideChevronRight size={20} color="#A1A1A1" />
                 </TouchableOpacity>
@@ -349,27 +349,27 @@ export default function ProfileScreen() {
 
             {/* About & Legal Section */}
             <View className="mt-8 mb-8">
-                <Text className="text-lg font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-4 px-2">About ColorFloww</Text>
+                <Text className="text-lg font-bold text-brand-gray dark:text-brand-gray-light mb-4 px-2">About ColorFloww</Text>
 
-                <View className="bg-white/60 dark:bg-brand-charcoal/40 rounded-[32px] overflow-hidden border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 shadow-sm p-6 mb-4">
-                    <Text className="text-brand-charcoal-light dark:text-brand-charcoal-light/80 leading-6 mb-4">
+                <View className="bg-white/60 dark:bg-brand-gray/40 rounded-[32px] overflow-hidden border border-brand-gray-medium/10 dark:border-brand-gray-medium/5 shadow-sm p-6 mb-4">
+                    <Text className="text-brand-gray-medium dark:text-brand-gray-medium/80 leading-6 mb-4">
                         ColorFloww is your personal nail styling companion. Discover, try on, and track your favorite nail looks with the power of AI.
                     </Text>
                     <View className="flex-row items-center gap-x-2 opacity-50">
-                        <LucideInfo size={16} color="#697D59" />
-                        <Text className="text-xs font-bold text-brand-charcoal-light dark:text-brand-charcoal-light/60 uppercase tracking-widest">Version 1.1.0</Text>
+                        <LucideInfo size={16} color="#307b75" />
+                        <Text className="text-xs font-bold text-brand-gray-medium dark:text-brand-gray-medium/60 uppercase tracking-widest">Version 1.1.0</Text>
                     </View>
                 </View>
 
                 <TouchableOpacity
                     onPress={() => Linking.openURL('https://colorfloww.com/privacy')}
-                    className="bg-white/60 dark:bg-brand-charcoal/40 rounded-[24px] p-5 flex-row items-center justify-between border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 shadow-sm"
+                    className="bg-white/60 dark:bg-brand-gray/40 rounded-[24px] p-5 flex-row items-center justify-between border border-brand-gray-medium/10 dark:border-brand-gray-medium/5 shadow-sm"
                 >
                     <View className="flex-row items-center gap-x-4">
-                        <View className="w-10 h-10 rounded-2xl bg-brand-sage/10 items-center justify-center">
-                            <LucideShield size={20} color="#697D59" />
+                        <View className="w-10 h-10 rounded-2xl bg-brand-teal/10 items-center justify-center">
+                            <LucideShield size={20} color="#307b75" />
                         </View>
-                        <Text className="text-base font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Privacy Policy</Text>
+                        <Text className="text-base font-bold text-brand-gray dark:text-brand-gray-light">Privacy Policy</Text>
                     </View>
                     <LucideChevronRight size={20} color="#A1A1A1" />
                 </TouchableOpacity>
@@ -378,12 +378,12 @@ export default function ProfileScreen() {
     );
 
     return (
-        <View className="flex-1 bg-brand-cream dark:bg-brand-cream-dark">
-            <SafeAreaView edges={['top']} className="bg-brand-cream/80 dark:bg-brand-cream-dark/80">
+        <View className="flex-1 bg-brand-peach dark:bg-brand-peach-dark">
+            <SafeAreaView edges={['top']} className="bg-brand-peach/80 dark:bg-brand-peach-dark/80">
                 <View style={{ paddingTop: Math.max(insets.top, 0) }} className="px-6 pb-5 flex-row justify-between items-center">
                     <View className="flex-row items-center gap-x-3">
-                        <LucideUser size={32} color="#697D59" strokeWidth={1.5} />
-                        <Text className="text-3xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Profile</Text>
+                        <LucideUser size={32} color="#307b75" strokeWidth={1.5} />
+                        <Text className="text-3xl font-bold text-brand-gray dark:text-brand-gray-light">Profile</Text>
                     </View>
                     <TouchableOpacity className="p-1">
                         <LucideSettings size={22} color="#8A8A8A" />
@@ -393,7 +393,7 @@ export default function ProfileScreen() {
 
             {isLoading ? (
                 <View className="flex-1 justify-center items-center">
-                    <ActivityIndicator size="large" color="#697D59" />
+                    <ActivityIndicator size="large" color="#307b75" />
                 </View>
             ) : isLoggedIn ? (
                 renderProfileContent()

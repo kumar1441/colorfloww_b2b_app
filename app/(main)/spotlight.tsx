@@ -134,7 +134,7 @@ export default function SpotlightScreen() {
         if (submissions.length === 0) {
             return (
                 <View style={styles.emptyContainer}>
-                    <LucideStar size={64} color="#697D59" style={{ opacity: 0.3, marginBottom: 20 }} />
+                    <LucideStar size={64} color="#307b75" style={{ opacity: 0.3, marginBottom: 20 }} />
                     <Text style={styles.emptyTitle}>No more looks to vote on!</Text>
                     <Text style={styles.emptySubtitle}>Check back later for new styles from the community.</Text>
                     <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
@@ -181,7 +181,7 @@ export default function SpotlightScreen() {
                                     })}
                                     activeOpacity={0.7}
                                 >
-                                    <LucidePaintbrush size={14} color="#697D59" style={{ marginRight: 6 }} />
+                                    <LucidePaintbrush size={14} color="#307b75" style={{ marginRight: 6 }} />
                                     <Text style={styles.tryButtonText}>Try This Shade</Text>
                                 </TouchableOpacity>
                             </View>
@@ -229,7 +229,7 @@ export default function SpotlightScreen() {
             <View style={styles.content}>
                 {isLoading && (
                     <View style={styles.loadingContainer}>
-                        <ActivityIndicator size="large" color="#697D59" />
+                        <ActivityIndicator size="large" color="#307b75" />
                         <Text style={styles.loadingText}>Fetching style inspiration...</Text>
                     </View>
                 )}
@@ -268,7 +268,7 @@ export default function SpotlightScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F7F7F7',
+        backgroundColor: '#f2f2f2',
     },
     header: {
         paddingHorizontal: 20,
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     },
     tryButtonText: {
         fontSize: 12,
-        color: '#697D59',
+        color: '#307b75',
         fontWeight: '700',
         letterSpacing: 0.3,
     },
@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
         paddingBottom: 20,
         paddingTop: 16,
         gap: 50,
-        backgroundColor: '#F7F7F7',
+        backgroundColor: '#f2f2f2',
     },
     footerButton: {
         width: 76,
@@ -478,11 +478,11 @@ const styles = StyleSheet.create({
     refreshButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#697D59',
+        backgroundColor: '#307b75',
         paddingHorizontal: 24,
         paddingVertical: 14,
         borderRadius: 20,
-        shadowColor: '#697D59',
+        shadowColor: '#307b75',
         shadowOffset: { width: 0, height: 5 },
         shadowOpacity: 0.3,
         shadowRadius: 10,
