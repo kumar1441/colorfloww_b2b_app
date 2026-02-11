@@ -6,7 +6,8 @@ import { LucideChevronLeft, LucideCheckCircle2, LucideShare2 } from 'lucide-reac
 import { BlurView } from 'expo-blur';
 import { GamificationService } from '../services/gamification';
 import { detectNails, Nail, NailDetectionResult } from '../services/nailDetection';
-import { NailOverlaySkia } from '../components/NailOverlaySkia';
+import { SpotlightService } from '../services/spotlight';
+import { NailOverlaySkia, NailOverlayRef } from '../components/NailOverlaySkia';
 import { HistoryService, IntentTag } from '../services/history';
 import { AuthService } from '../services/auth';
 import { ProfileNudgeModal } from '../components/ProfileNudgeModal';
@@ -15,9 +16,10 @@ const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const INTENTS: { label: IntentTag, icon: string }[] = [
     { label: 'Everyday', icon: '☀️' },
-    { label: 'Work', icon: '💼' },
-    { label: 'Experiment', icon: '🎨' },
+    { label: 'Business', icon: '💼' },
     { label: 'Event', icon: '🎉' },
+    { label: 'Trend', icon: '🔥' },
+    { label: 'Trying New', icon: '🎨' },
 ];
 
 /**
@@ -33,10 +35,15 @@ function ResultScreen() {
     const [isDetecting, setIsDetecting] = React.useState(true);
     const [selectedIntent, setSelectedIntent] = React.useState<IntentTag>('Everyday');
     const [showNudge, setShowNudge] = useState(false);
+    const [isSubmittingSpotlight, setIsSubmittingSpotlight] = useState(false);
+    const [hasSubmittedSpotlight, setHasSubmittedSpotlight] = useState(false);
+    const [processedWidth, setProcessedWidth] = useState<number>(0);
+    const [processedHeight, setProcessedHeight] = useState<number>(0);
     const [isSaving, setIsSaving] = React.useState(false);
     const [customName, setCustomName] = React.useState((params.colorName as string) || '');
 
     const abortControllerRef = useRef<AbortController | null>(null);
+    const overlayRef = useRef<NailOverlayRef>(null);
 
     useEffect(() => {
         if (params.imageUri) {
@@ -67,6 +74,8 @@ function ResultScreen() {
             clearTimeout(timeoutId);
             setNails(result.nails);
             setProcessedImageUri(result.processedImageUri);
+            setProcessedWidth(result.imageWidth);
+            setProcessedHeight(result.imageHeight);
 
             if (result.nails.length === 0) {
                 Alert.alert("No Nails Detected", "Try again with better lighting for a perfect rendering.", [{ text: "OK" }]);
@@ -108,17 +117,58 @@ function ResultScreen() {
         }
     };
 
+    const handleSubmitToSpotlight = async () => {
+        setIsSubmittingSpotlight(true);
+        try {
+            const colorHex = (params.selectedColor as string) || '#697D59';
+            const finalName = customName.trim() || 'Custom Shade';
+
+            // Capture the masterpiece!
+            const base64Image = overlayRef.current?.capture();
+            const finalImageUri = base64Image ? `data:image/jpeg;base64,${base64Image}` : (processedImageUri || params.imageUri as string);
+
+            const result = await SpotlightService.submitToSpotlight(
+                params.imageUri as string,
+                finalImageUri,
+                colorHex,
+                finalName
+            );
+
+            if (result.success) {
+                await GamificationService.awardXP(20, 'spotlight_submission');
+                setHasSubmittedSpotlight(true);
+                Alert.alert(
+                    "✨ Submitted to Spotlight!",
+                    "Your look is now live for others to vote on. You earned 20 XP!",
+                    [{ text: "Awesome!" }]
+                );
+            } else {
+                Alert.alert("Error", result.error || "Failed to submit to spotlight");
+            }
+        } catch (e) {
+            console.error("Spotlight submission error:", e);
+            Alert.alert("Error", "Could not submit to spotlight. Please try again.");
+        } finally {
+            setIsSubmittingSpotlight(false);
+        }
+    };
+
     const handleDone = async () => {
         setIsSaving(true);
         try {
             const colorHex = (params.selectedColor as string) || '#697D59';
             const finalName = customName.trim() || 'Custom Shade';
 
+            // Capture the processed image for history
+            const base64Image = overlayRef.current?.capture();
+            const finalImageUri = base64Image ? `data:image/jpeg;base64,${base64Image}` : (processedImageUri || params.imageUri as string);
+
             await HistoryService.saveTryOn({
                 colorHex,
                 colorName: finalName,
                 intent: selectedIntent,
                 nailsCount: nails.length,
+                processedImageUri: finalImageUri, // Save the virtual look photo
             });
 
             await GamificationService.awardXP(30, 'custom_color_creation');
@@ -160,6 +210,7 @@ function ResultScreen() {
                 {params.imageUri ? (
                     <View style={styles.full}>
                         <NailOverlaySkia
+                            ref={overlayRef}
                             imageUri={processedImageUri || params.imageUri as string}
                             nails={nails}
                             selectedColor={(params.selectedColor as string) || '#697D59'}
@@ -230,32 +281,48 @@ function ResultScreen() {
                             />
                         </View>
                         <View
-                            style={[styles.colorIndicator, { backgroundColor: (params.selectedColor as string) || '#697D59' }]}
+                            style={[styles.backplateCircle, { backgroundColor: (params.selectedColor as string) || '#697D59' }]}
                         />
                     </View>
 
-                    <Text style={styles.label}>Set The Vibe</Text>
-                    <View style={styles.vibeContainer}>
+                    <View style={styles.vibeHeader}>
+                        <Text style={styles.label}>Set The Vibe</Text>
+                        <Text style={styles.selectedVibeLabel}>{selectedIntent}</Text>
+                    </View>
+
+                    <View style={styles.vibeBar}>
                         {INTENTS.map((item) => (
                             <TouchableOpacity
                                 key={item.label}
                                 activeOpacity={0.7}
                                 onPress={() => setSelectedIntent(item.label)}
                                 style={[
-                                    styles.vibeTag,
-                                    selectedIntent === item.label ? styles.vibeTagActive : styles.vibeTagInactive
+                                    styles.emojiCircle,
+                                    selectedIntent === item.label ? styles.emojiCircleActive : styles.emojiCircleInactive
                                 ]}
                             >
-                                <Text style={styles.vibeIcon}>{item.icon}</Text>
-                                <Text
-                                    numberOfLines={1}
-                                    style={[styles.vibeText, selectedIntent === item.label ? styles.vibeTextActive : styles.vibeTextInactive]}
-                                >
-                                    {item.label}
-                                </Text>
+                                <Text style={styles.emojiText}>{item.icon}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>
+
+                    {!hasSubmittedSpotlight && (
+                        <TouchableOpacity
+                            style={styles.spotlightButton}
+                            onPress={handleSubmitToSpotlight}
+                            disabled={isSubmittingSpotlight || !customName.trim() || isDetecting}
+                        >
+                            {isSubmittingSpotlight ? (
+                                <ActivityIndicator color="#697D59" />
+                            ) : (
+                                <>
+                                    <Text style={styles.spotlightButtonIcon}>✨</Text>
+                                    <Text style={styles.spotlightButtonText}>Submit to Spotlight</Text>
+                                    <Text style={styles.spotlightButtonXP}>+20 XP</Text>
+                                </>
+                            )}
+                        </TouchableOpacity>
+                    )}
 
                     <TouchableOpacity
                         onPress={handleDone}
@@ -299,7 +366,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     heroSection: {
-        height: SCREEN_HEIGHT * 0.7,
+        height: SCREEN_HEIGHT * 0.65,
         width: '100%',
         position: 'relative',
     },
@@ -369,18 +436,11 @@ const styles = StyleSheet.create({
     },
     controlsSection: {
         flex: 1,
-        marginTop: -40,
-        backgroundColor: '#FBFBF9', // brand-cream
+        marginTop: -30,
+        backgroundColor: '#FBFBF9',
         borderTopLeftRadius: 40,
         borderTopRightRadius: 40,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -10 },
-        shadowOpacity: 0.1,
-        shadowRadius: 20,
-        elevation: 10,
-        overflow: 'hidden',
-        borderTopWidth: 1,
-        borderTopColor: 'rgba(105, 125, 89, 0.1)',
+        paddingTop: 8,
     },
     scrollContent: {
         padding: 24,
@@ -389,8 +449,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 32,
-        opacity: 0.9,
+        marginBottom: 24,
     },
     flex1: {
         flex: 1,
@@ -402,20 +461,19 @@ const styles = StyleSheet.create({
         color: '#697D59',
         textTransform: 'uppercase',
         letterSpacing: 2,
-        marginBottom: 8,
-        opacity: 0.9,
+        marginBottom: 4,
     },
     nameInput: {
-        fontSize: 24,
+        fontSize: 28,
         fontWeight: 'bold',
         color: '#1A1A1A',
         padding: 0,
     },
-    colorIndicator: {
-        width: 56,
-        height: 56,
-        borderRadius: 16,
-        borderWidth: 2,
+    backplateCircle: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        borderWidth: 3,
         borderColor: 'white',
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
@@ -423,53 +481,79 @@ const styles = StyleSheet.create({
         shadowRadius: 10,
         elevation: 5,
     },
-    vibeContainer: {
+    vibeHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 40,
+        alignItems: 'center',
+        marginBottom: 12,
     },
-    vibeTag: {
-        width: (SCREEN_WIDTH - 48 - 24) / 4, // screen width - horizontal padding - gap
-        aspectRatio: 1,
-        borderRadius: 20,
-        borderWidth: 1,
+    selectedVibeLabel: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+    },
+    vibeBar: {
+        flexDirection: 'row',
+        backgroundColor: '#E8E4DF',
+        padding: 8,
+        borderRadius: 40,
+        justifyContent: 'space-between',
+        marginBottom: 32,
+    },
+    emojiCircle: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    vibeTagActive: {
-        backgroundColor: '#697D59',
-        borderColor: '#697D59',
-        shadowColor: "#697D59",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 4,
-    },
-    vibeTagInactive: {
+    emojiCircleActive: {
         backgroundColor: 'white',
-        borderColor: 'rgba(0,0,0,0.05)',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
     },
-    vibeIcon: {
+    emojiCircleInactive: {
+        backgroundColor: 'transparent',
+    },
+    emojiText: {
         fontSize: 24,
-        marginBottom: 4,
     },
-    vibeText: {
-        fontSize: 10,
-        fontWeight: 'bold',
-        textTransform: 'uppercase',
-        letterSpacing: -0.5,
+    spotlightButton: {
+        width: '100%',
+        backgroundColor: 'white',
+        borderRadius: 24,
+        paddingVertical: 18,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 12,
+        borderWidth: 2,
+        borderColor: '#697D59',
     },
-    vibeTextActive: {
-        color: 'white',
+    spotlightButtonIcon: {
+        fontSize: 20,
+        marginRight: 8,
     },
-    vibeTextInactive: {
-        color: 'rgba(26,26,26,0.3)',
+    spotlightButtonText: {
+        color: '#697D59',
+        fontSize: 17,
+        fontWeight: '800',
+    },
+    spotlightButtonXP: {
+        color: '#697D59',
+        fontSize: 12,
+        fontWeight: '600',
+        marginLeft: 8,
+        opacity: 0.7,
     },
     saveButton: {
         width: '100%',
         backgroundColor: '#697D59',
         paddingVertical: 20,
-        borderRadius: 20,
+        borderRadius: 24,
         alignItems: 'center',
         shadowColor: "#697D59",
         shadowOffset: { width: 0, height: 10 },
@@ -486,8 +570,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     backLink: {
-        marginTop: 24,
-        paddingVertical: 8,
+        marginTop: 20,
         alignItems: 'center',
     },
     backLinkText: {

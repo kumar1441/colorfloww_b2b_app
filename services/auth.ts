@@ -91,7 +91,7 @@ export const AuthService = {
     /**
      * Save user profile details to Supabase.
      */
-    async saveUserProfile(details: { email: string, fullName?: string, gender?: string, age_range?: string, zipcode?: string, city?: string, data_consent?: boolean, referral_code?: string }, userId?: string) {
+    async saveUserProfile(details: { email: string, fullName?: string, gender?: string, age_range?: string, zipcode?: string, city?: string, data_consent?: boolean, referral_code?: string, location_permission?: boolean }, userId?: string) {
         console.log(`[AuthService] Saving user profile for: ${userId || 'current user'}`);
 
         const { data: { session } } = await supabase.auth.getSession();
@@ -124,6 +124,7 @@ export const AuthService = {
                 age_range: details.age_range,
                 zipcode: details.zipcode,
                 data_consent: details.data_consent,
+                location_permission: details.location_permission,
                 referral_code: details.referral_code,
                 updated_at: new Date().toISOString()
             });

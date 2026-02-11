@@ -1,5 +1,5 @@
-import React from 'react';
-import { Canvas, Path, Image, useImage, Skia, Group, BlurMask, SkImage } from "@shopify/react-native-skia";
+import React, { useImperativeHandle, forwardRef } from 'react';
+import { Canvas, Path, Image, useImage, Skia, Group, BlurMask, SkImage, useCanvasRef, ImageFormat } from "@shopify/react-native-skia";
 import { View, StyleSheet } from "react-native";
 import { Nail } from "../services/nailDetection";
 
@@ -9,12 +9,26 @@ interface Props {
     selectedColor: string;
 }
 
+export interface NailOverlayRef {
+    capture: () => string | null;
+}
+
 /**
  * Renders the virtual nail polish using Skia for high-performance blending.
  */
-export function NailOverlaySkia({ imageUri, nails, selectedColor }: Props) {
+export const NailOverlaySkia = forwardRef<NailOverlayRef, Props>(({ imageUri, nails, selectedColor }, ref) => {
     const [containerSize, setContainerSize] = React.useState({ width: 0, height: 0 });
     const [image, setImage] = React.useState<SkImage | null>(null);
+    const canvasRef = useCanvasRef();
+
+    useImperativeHandle(ref, () => ({
+        capture: () => {
+            if (!canvasRef.current) return null;
+            const snapshot = canvasRef.current.makeImageSnapshot();
+            if (!snapshot) return null;
+            return snapshot.encodeToBase64(ImageFormat.JPEG, 80);
+        }
+    }));
 
     React.useEffect(() => {
         let isMounted = true;
@@ -24,8 +38,6 @@ export function NailOverlaySkia({ imageUri, nails, selectedColor }: Props) {
                 return;
             }
             try {
-                // Method 3: Fetch API (Standard, Native)
-                // This bypasses expo-file-system and uses the native bridge to read the file
                 const response = await fetch(imageUri);
                 const buffer = await response.arrayBuffer();
                 const bytes = new Uint8Array(buffer);
@@ -97,6 +109,7 @@ export function NailOverlaySkia({ imageUri, nails, selectedColor }: Props) {
     } else {
         // Image is taller than container
         scaledWidth = containerHeight * imageAspectRatio;
+        offsetY = 0; // Reset for better alignment
         offsetX = (containerWidth - scaledWidth) / 2;
     }
 
@@ -112,7 +125,7 @@ export function NailOverlaySkia({ imageUri, nails, selectedColor }: Props) {
                 }
             }}
         >
-            <Canvas style={styles.canvas}>
+            <Canvas style={styles.canvas} ref={canvasRef}>
                 {/* Base Image */}
                 <Image
                     image={image}
@@ -135,17 +148,12 @@ export function NailOverlaySkia({ imageUri, nails, selectedColor }: Props) {
 
                     return (
                         <Group key={index}>
-                            {/* 1. Base Layer: Multiply preserves the underlying nail texture/shadows */}
                             <Path path={path} color={selectedColor} blendMode="multiply" opacity={0.8}>
                                 <BlurMask blur={1.5} style="normal" />
                             </Path>
-
-                            {/* 2. Color Pop: Overlay/SoftLight adds vibrancy while respecting texture */}
                             <Path path={path} color={selectedColor} blendMode="softLight" opacity={0.6}>
                                 <BlurMask blur={1.5} style="normal" />
                             </Path>
-
-                            {/* 3. Gloss Layer: Screen adds realistic highlights */}
                             <Path path={path} color="white" blendMode="screen" opacity={0.15}>
                                 <BlurMask blur={2} style="normal" />
                             </Path>
@@ -155,7 +163,7 @@ export function NailOverlaySkia({ imageUri, nails, selectedColor }: Props) {
             </Canvas>
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     canvas: {

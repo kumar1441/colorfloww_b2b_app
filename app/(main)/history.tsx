@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions, Alert, Image, LayoutAnimation, Platform, UIManager } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LucideHistory, LucideTrash2, LucideShare2 } from 'lucide-react-native';
+import { LucideHistory, LucideTrash2, LucideShare2, LucideCamera } from 'lucide-react-native';
 import { HistoryService, HistoryItem, IntentTag } from '../../services/history';
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const { width } = Dimensions.get('window');
 
@@ -18,6 +23,7 @@ export default function HistoryScreen() {
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [filter, setFilter] = useState<IntentTag | 'All'>('All');
     const [isLoading, setIsLoading] = useState(true);
+    const [expandedId, setExpandedId] = useState<string | null>(null);
 
     const loadHistory = async () => {
         setIsLoading(true);
@@ -41,11 +47,21 @@ export default function HistoryScreen() {
                     style: "destructive",
                     onPress: async () => {
                         await HistoryService.deleteItem(id);
+                        if (expandedId === id) {
+                            setExpandedId(null);
+                        }
                         loadHistory();
                     }
                 }
             ]
         );
+    };
+
+    const toggleExpand = (id: string, hasImage: boolean) => {
+        if (!hasImage) return;
+
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setExpandedId(expandedId === id ? null : id);
     };
 
     const filteredHistory = filter === 'All'
@@ -71,37 +87,67 @@ export default function HistoryScreen() {
     const renderItem = ({ item }: { item: HistoryItem }) => {
         const dateObj = new Date(item.date);
         const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const isExpanded = expandedId === item.id;
+        const hasImage = !!item.processedImageUri;
 
         return (
-            <View className="bg-white dark:bg-brand-charcoal rounded-[28px] p-5 mb-5 flex-row items-center border border-brand-charcoal-light/5 shadow-sm">
-                {/* Color Block */}
-                <View
-                    style={{ backgroundColor: item.color }}
-                    className="w-20 h-20 rounded-2xl shadow-inner border border-brand-charcoal-light/10"
-                />
+            <TouchableOpacity
+                activeOpacity={hasImage ? 0.7 : 1}
+                onPress={() => toggleExpand(item.id, hasImage)}
+                className="bg-white dark:bg-brand-charcoal rounded-[28px] p-5 mb-5 border border-brand-charcoal-light/5 shadow-sm"
+            >
+                <View className="flex-row items-center">
+                    {/* Color Block with Camera Icon */}
+                    <View className="relative">
+                        <View
+                            style={{ backgroundColor: item.color }}
+                            className="w-20 h-20 rounded-2xl shadow-inner border border-brand-charcoal-light/10"
+                        />
+                        {hasImage && (
+                            <View className="absolute top-1 right-1 w-6 h-6 rounded-full bg-white/90 items-center justify-center shadow-sm">
+                                <LucideCamera size={12} color="#697D59" />
+                            </View>
+                        )}
+                    </View>
 
-                {/* Info */}
-                <View className="flex-1 ml-5">
-                    <Text className="text-lg font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-1">
-                        {item.color_details?.name || item.color.toUpperCase()}
-                    </Text>
-                    <View className="flex-row items-center">
-                        <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60">
-                            {intentIcons[item.intent]} {item.intent} • {formattedDate}
+                    {/* Info */}
+                    <View className="flex-1 ml-5">
+                        <Text className="text-lg font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-1">
+                            {item.color_details?.name || item.color.toUpperCase()}
                         </Text>
+                        <View className="flex-row items-center">
+                            <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60">
+                                {intentIcons[item.intent]} {item.intent} • {formattedDate}
+                            </Text>
+                        </View>
+                    </View>
+
+                    {/* Actions */}
+                    <View className="flex-row gap-x-4">
+                        <TouchableOpacity>
+                            <LucideShare2 size={20} color="#8A8A8A" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                            <LucideTrash2 size={20} color="#EF4444" />
+                        </TouchableOpacity>
                     </View>
                 </View>
 
-                {/* Actions */}
-                <View className="flex-row gap-x-4">
-                    <TouchableOpacity>
-                        <LucideShare2 size={20} color="#8A8A8A" />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                        <LucideTrash2 size={20} color="#EF4444" />
-                    </TouchableOpacity>
-                </View>
-            </View>
+                {/* Expanded Image View */}
+                {isExpanded && hasImage && (
+                    <View className="mt-5 pt-5 border-t border-brand-charcoal-light/10">
+                        <Text className="text-sm font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">
+                            Your Virtual Look
+                        </Text>
+                        <Image
+                            source={{ uri: item.processedImageUri }}
+                            className="w-full rounded-2xl"
+                            style={{ height: width - 80, backgroundColor: '#f5f5f5' }}
+                            resizeMode="cover"
+                        />
+                    </View>
+                )}
+            </TouchableOpacity>
         );
     };
 

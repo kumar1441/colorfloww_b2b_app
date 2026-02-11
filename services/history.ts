@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase';
 import { AuthService } from './auth';
 import { GamificationService } from './gamification';
 
-export type IntentTag = 'Everyday' | 'Work' | 'Experiment' | 'Trend' | 'Event';
+export type IntentTag = 'Everyday' | 'Business' | 'Event' | 'Trend' | 'Trying New' | 'Work' | 'Experiment' | 'Like' | 'Cheer' | 'Celebrate' | 'Appreciate' | 'Smile';
 
 export interface HistoryItem {
     id: string;
@@ -10,6 +10,7 @@ export interface HistoryItem {
     intent: IntentTag;
     date: string; // ISO string
     nailsCount: number;
+    processedImageUri?: string; // Virtual look photo
     color_details?: {
         name: string;
         rgb: string;
@@ -23,7 +24,7 @@ export const HistoryService = {
     /**
      * Saves a new try-on session to history.
      */
-    async saveTryOn(item: { colorHex: string, colorName: string, intent: IntentTag, nailsCount: number }): Promise<void> {
+    async saveTryOn(item: { colorHex: string, colorName: string, intent: IntentTag, nailsCount: number, processedImageUri?: string }): Promise<void> {
         const user = await AuthService.getCurrentUser();
         if (!user) return;
 
@@ -47,6 +48,7 @@ export const HistoryService = {
                     user_id: user.id,
                     color_id: colorData.id,
                     intent: item.intent,
+                    processed_image_uri: item.processedImageUri,
                 });
 
             if (sessionError) throw sessionError;
@@ -84,6 +86,7 @@ export const HistoryService = {
                     id,
                     intent,
                     created_at,
+                    processed_image_uri,
                     colors (
                         name,
                         rgb
@@ -100,6 +103,7 @@ export const HistoryService = {
                 intent: item.intent as IntentTag,
                 date: item.created_at,
                 nailsCount: 5, // Default
+                processedImageUri: item.processed_image_uri,
                 color_details: item.colors as any
             }));
         } catch (e) {

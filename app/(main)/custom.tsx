@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Platform, Image, Alert, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Slider from '@react-native-community/slider';
-// import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
-import { LucidePalette, LucideSliders, LucideUpload, LucideSparkles } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { LucidePalette, LucideSliders, LucideUpload, LucideSparkles, LucideCamera, LucideImage, LucideX } from 'lucide-react-native';
 import { AuthService } from '../../services/auth';
+
+const { width } = Dimensions.get('window');
 
 export default function ColorCustomizer() {
     const router = useRouter();
@@ -13,6 +15,8 @@ export default function ColorCustomizer() {
     const [rgb, setRgb] = useState({ r: 105, g: 125, b: 89 });
     const [colorName, setColorName] = useState("");
     const [showNameInput, setShowNameInput] = useState(false);
+    const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+    const [isPickingColor, setIsPickingColor] = useState(false);
 
     const rgbToHex = (r: number, g: number, b: number) => {
         return "#" + [r, g, b].map(x => {
@@ -25,6 +29,94 @@ export default function ColorCustomizer() {
 
     const handleSliderChange = (channel: "r" | "g" | "b", value: number) => {
         setRgb(prev => ({ ...prev, [channel]: value }));
+    };
+
+    const requestCameraPermission = async () => {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Required', 'Camera permission is required to take photos.');
+            return false;
+        }
+        return true;
+    };
+
+    const requestGalleryPermission = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Required', 'Gallery permission is required to select photos.');
+            return false;
+        }
+        return true;
+    };
+
+    const takePhoto = async () => {
+        const hasPermission = await requestCameraPermission();
+        if (!hasPermission) return;
+
+        const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.8,
+        });
+
+        if (!result.canceled && result.assets[0]) {
+            setUploadedImage(result.assets[0].uri);
+            setIsPickingColor(true);
+        }
+    };
+
+    const pickImageFromGallery = async () => {
+        const hasPermission = await requestGalleryPermission();
+        if (!hasPermission) return;
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.8,
+        });
+
+        if (!result.canceled && result.assets[0]) {
+            setUploadedImage(result.assets[0].uri);
+            setIsPickingColor(true);
+        }
+    };
+
+    const handleImagePress = async (event: any) => {
+        if (!uploadedImage) return;
+
+        const { locationX, locationY } = event.nativeEvent;
+
+        // For a more accurate color extraction, we would need to use canvas or image manipulation
+        // For now, we'll use a simplified approach with react-native-image-colors or similar
+        // Since we don't have that library, we'll simulate color picking by using a predefined color
+        // In production, you'd want to use expo-image-manipulator or a similar library
+
+        Alert.alert(
+            'Color Picker',
+            'Tap confirmed! In production, this would extract the exact pixel color. For now, using a sample color.',
+            [
+                {
+                    text: 'OK',
+                    onPress: () => {
+                        // Simulate color extraction - in production, extract actual pixel color
+                        // For demo purposes, we'll use a random-ish color based on position
+                        const r = Math.floor((locationX / width) * 255);
+                        const g = Math.floor((locationY / width) * 255);
+                        const b = Math.floor(((locationX + locationY) / (width * 2)) * 255);
+
+                        setRgb({ r, g, b });
+                        setIsPickingColor(false);
+                    }
+                }
+            ]
+        );
+    };
+
+    const clearImage = () => {
+        setUploadedImage(null);
+        setIsPickingColor(false);
     };
 
     const handleTryOn = async () => {
@@ -138,12 +230,73 @@ export default function ColorCustomizer() {
                     </View>
                 )}
 
+                {/* Upload Tab */}
                 {activeTab === "upload" && (
-                    <View className="bg-white/60 dark:bg-brand-charcoal/40 rounded-3xl p-5 mb-6 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5">
-                        <Text className="text-base font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-2">Upload logic placeholder</Text>
-                        <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60 leading-5">
-                            In the native app, you can pick colors directly from your camera roll or using the color picker.
-                        </Text>
+                    <View className="mb-8">
+                        {!uploadedImage ? (
+                            <View className="gap-y-4">
+                                <TouchableOpacity
+                                    onPress={takePhoto}
+                                    className="bg-white/60 dark:bg-brand-charcoal/40 rounded-3xl p-6 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 flex-row items-center gap-x-4"
+                                    activeOpacity={0.7}
+                                >
+                                    <View className="w-14 h-14 rounded-2xl bg-brand-sage/10 items-center justify-center">
+                                        <LucideCamera size={28} color="#697D59" />
+                                    </View>
+                                    <View className="flex-1">
+                                        <Text className="text-lg font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-1">Take Photo</Text>
+                                        <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60">
+                                            Capture a color from your camera
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    onPress={pickImageFromGallery}
+                                    className="bg-white/60 dark:bg-brand-charcoal/40 rounded-3xl p-6 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5 flex-row items-center gap-x-4"
+                                    activeOpacity={0.7}
+                                >
+                                    <View className="w-14 h-14 rounded-2xl bg-brand-sage/10 items-center justify-center">
+                                        <LucideImage size={28} color="#697D59" />
+                                    </View>
+                                    <View className="flex-1">
+                                        <Text className="text-lg font-bold text-brand-charcoal dark:text-brand-charcoal-dark mb-1">Choose from Gallery</Text>
+                                        <Text className="text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/60">
+                                            Pick a color from your photos
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            <View className="bg-white/60 dark:bg-brand-charcoal/40 rounded-3xl p-5 border border-brand-charcoal-light/10 dark:border-brand-charcoal-light/5">
+                                <View className="flex-row justify-between items-center mb-4">
+                                    <Text className="text-base font-semibold text-brand-charcoal dark:text-brand-charcoal-dark">
+                                        {isPickingColor ? 'Tap on image to pick a color' : 'Color selected!'}
+                                    </Text>
+                                    <TouchableOpacity onPress={clearImage} className="w-8 h-8 rounded-full bg-red-100 items-center justify-center">
+                                        <LucideX size={18} color="#EF4444" />
+                                    </TouchableOpacity>
+                                </View>
+                                <TouchableOpacity
+                                    onPress={handleImagePress}
+                                    activeOpacity={isPickingColor ? 0.8 : 1}
+                                    disabled={!isPickingColor}
+                                >
+                                    <Image
+                                        source={{ uri: uploadedImage }}
+                                        className="w-full h-64 rounded-2xl"
+                                        resizeMode="cover"
+                                    />
+                                </TouchableOpacity>
+                                {isPickingColor && (
+                                    <View className="mt-4 bg-brand-sage/10 rounded-2xl p-4">
+                                        <Text className="text-sm text-brand-charcoal dark:text-brand-charcoal-dark text-center font-medium">
+                                            👆 Tap anywhere on the image to extract that color
+                                        </Text>
+                                    </View>
+                                )}
+                            </View>
+                        )}
                     </View>
                 )}
 

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, TextInput, TouchableOpacity, ScrollView, Switch, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
-import { LucideUser, LucideMapPin, LucideShieldCheck, LucideCheck, LucideX } from 'lucide-react-native';
+import { View, Text, Modal, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import * as Location from 'expo-location';
 import { AuthService } from '../services/auth';
+import { LocationService } from '../services/location';
+import { LucideUser, LucideCheck, LucideX, LucideStar, LucideLock, LucideSparkles, LucideZap, LucideTrendingUp, LucideShield, LucideMapPin, LucideLoader2 } from 'lucide-react-native';
 
 interface ProfileNudgeModalProps {
     visible: boolean;
@@ -9,17 +11,117 @@ interface ProfileNudgeModalProps {
     onComplete: () => void;
 }
 
+type ExperienceType = 'full' | 'basic';
+
 export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, onClose, onComplete }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [selectedExperience, setSelectedExperience] = useState<ExperienceType>('full');
+    const [isLocating, setIsLocating] = useState(false);
+    const [isCheckingZip, setIsCheckingZip] = useState(false);
+    const [locationPermissionStatus, setLocationPermissionStatus] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
         fullName: "",
         gender: "",
         zipcode: "",
         city: "",
-        dataConsent: true
     });
+
+    // Check location permission and auto-fill if granted
+    React.useEffect(() => {
+        if (visible) {
+            checkAndRequestLocation();
+        }
+    }, [visible]);
+
+    const checkAndRequestLocation = async () => {
+        try {
+            const { status } = await Location.getForegroundPermissionsAsync();
+            if (status === 'granted') {
+                await fillLocationData();
+            } else if (status === 'undetermined') {
+                // We'll ask in requestLocationPermission when they start filling or on mount
+                await requestLocationPermission();
+            }
+        } catch (err) {
+            console.error('[ProfileNudge] Error checking location status:', err);
+        }
+    };
+
+    const fillLocationData = async () => {
+        setIsLocating(true);
+        try {
+            const data = await LocationService.getCurrentLocationData();
+            if (data) {
+                setFormData(prev => ({
+                    ...prev,
+                    zipcode: data.zipcode || prev.zipcode,
+                    city: data.city || prev.city
+                }));
+            }
+        } catch (err) {
+            console.error('[ProfileNudge] Error filling location data:', err);
+        } finally {
+            setIsLocating(false);
+        }
+    };
+
+    const requestLocationPermission = async (): Promise<void> => {
+        return new Promise((resolve) => {
+            Alert.alert(
+                "Improve Your Recommendations",
+                "We'd like to access your approximate location to show trending colors in your area. We don't need your precise location.",
+                [
+                    {
+                        text: "Not Now",
+                        style: "cancel",
+                        onPress: () => {
+                            setLocationPermissionStatus('denied');
+                            resolve();
+                        }
+                    },
+                    {
+                        text: "Allow",
+                        onPress: async () => {
+                            try {
+                                const { status } = await Location.requestForegroundPermissionsAsync();
+                                setLocationPermissionStatus(status);
+                                if (status === 'granted') {
+                                    await fillLocationData();
+                                }
+                            } catch (err) {
+                                console.error('[ProfileNudge] Location permission error:', err);
+                            }
+                            resolve();
+                        }
+                    }
+                ]
+            );
+        });
+    };
+
+    const handleZipcodeChange = async (zip: string) => {
+        const cleanedZip = zip.replace(/[^0-9]/g, '').slice(0, 5);
+        setFormData(prev => ({ ...prev, zipcode: cleanedZip }));
+
+        if (cleanedZip.length === 5) {
+            setIsCheckingZip(true);
+            try {
+                const city = await LocationService.getCityFromZipcode(cleanedZip);
+                if (city) {
+                    setFormData(prev => ({ ...prev, city }));
+                    setError(null);
+                } else {
+                    setError("Could not find city for this zipcode. Please check again.");
+                }
+            } catch (err) {
+                console.error('[ProfileNudge] City lookup error:', err);
+            } finally {
+                setIsCheckingZip(false);
+            }
+        }
+    };
 
     const handleComplete = async () => {
         if (!formData.fullName || !formData.gender || !formData.zipcode || !formData.city) {
@@ -30,6 +132,10 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
         setLoading(true);
         setError(null);
         try {
+            // No need to request location permission again here as it's handled on mount
+            // but we can check if it was granted to store the state correctly if needed
+            const { status } = await Location.getForegroundPermissionsAsync();
+
             const user = await AuthService.getCurrentUser();
             await AuthService.saveUserProfile({
                 email: user.email,
@@ -37,7 +143,8 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
                 gender: formData.gender,
                 zipcode: formData.zipcode,
                 city: formData.city,
-                data_consent: formData.dataConsent
+                data_consent: selectedExperience === 'full', // True if Full Experience selected
+                location_permission: status === 'granted'
             });
 
             await AuthService.resetNudgeCount();
@@ -74,7 +181,7 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
                     </View>
 
                     <Text className="text-lg text-brand-charcoal-light dark:text-brand-charcoal-light/70 mb-8 leading-6">
-                        Complete your profile to get AI rendering tailored perfectly to your unique skin tone and lighting.
+                        Complete your profile to unlock personalized AI rendering tailored to your unique skin tone.
                     </Text>
 
                     <ScrollView showsVerticalScrollIndicator={false} className="max-h-[60vh]">
@@ -105,7 +212,7 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
                                     <TouchableOpacity
                                         key={g}
                                         onPress={() => setFormData({ ...formData, gender: g })}
-                                        className={`flex-1 py-4 rounded-2xl border items-center transition-colors ${formData.gender === g ? 'bg-brand-sage border-brand-sage' : 'bg-transparent border-brand-charcoal-light/10'}`}
+                                        className={`flex-1 py-4 rounded-2xl border items-center ${formData.gender === g ? 'bg-brand-sage border-brand-sage' : 'bg-transparent border-brand-charcoal-light/10'}`}
                                     >
                                         <Text className={`font-bold ${formData.gender === g ? 'text-white' : 'text-brand-charcoal-light'}`}>{g}</Text>
                                     </TouchableOpacity>
@@ -116,43 +223,109 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
                         <View className="flex-row gap-x-4 mb-8">
                             <View className="flex-1">
                                 <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">Zipcode</Text>
-                                <TextInput
-                                    className="bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 rounded-2xl py-4 px-5 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
-                                    placeholder="Zipcode"
-                                    placeholderTextColor="#A1A1A1"
-                                    keyboardType="numeric"
-                                    value={formData.zipcode}
-                                    onChangeText={(v) => setFormData({ ...formData, zipcode: v })}
-                                />
+                                <View className="flex-row items-center bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 rounded-2xl px-5">
+                                    <TextInput
+                                        className="flex-1 py-4 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
+                                        placeholder="Zipcode"
+                                        placeholderTextColor="#A1A1A1"
+                                        keyboardType="numeric"
+                                        maxLength={5}
+                                        value={formData.zipcode}
+                                        onChangeText={handleZipcodeChange}
+                                    />
+                                    {isCheckingZip && <LucideLoader2 size={18} color="#697D59" className="animate-spin" />}
+                                    {!isCheckingZip && formData.zipcode.length === 5 && !error && <LucideCheck size={18} color="#697D59" />}
+                                </View>
                             </View>
                             <View className="flex-[1.5]">
                                 <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-3">City</Text>
-                                <TextInput
-                                    className="bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 rounded-2xl py-4 px-5 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
-                                    placeholder="Your City"
-                                    placeholderTextColor="#A1A1A1"
-                                    value={formData.city}
-                                    onChangeText={(v) => setFormData({ ...formData, city: v })}
-                                />
+                                <View className="flex-row items-center bg-brand-cream/30 dark:bg-brand-cream-dark/20 border border-brand-charcoal-light/10 rounded-2xl px-5">
+                                    <TextInput
+                                        className="flex-1 py-4 text-lg text-brand-charcoal dark:text-brand-charcoal-dark"
+                                        placeholder="Your City"
+                                        placeholderTextColor="#A1A1A1"
+                                        value={formData.city}
+                                        onChangeText={(v) => setFormData({ ...formData, city: v })}
+                                    />
+                                    {isLocating && <LucideLoader2 size={18} color="#697D59" className="animate-spin" />}
+                                    {!isLocating && formData.city.length > 0 && <LucideMapPin size={18} color="#697D59" />}
+                                </View>
                             </View>
                         </View>
 
-                        <View className="bg-brand-cream/20 dark:bg-brand-cream-dark/10 p-6 rounded-3xl mb-8 border border-brand-sage/10">
-                            <View className="flex-row justify-between items-center mb-4">
-                                <View className="flex-row items-center">
-                                    <LucideShieldCheck size={24} color="#697D59" className="mr-3" />
-                                    <Text className="text-lg font-bold text-brand-charcoal dark:text-brand-charcoal-dark">Data Consent</Text>
+                        {/* Experience Selection Cards */}
+                        <View className="mb-6">
+                            <Text className="text-[17px] font-semibold text-brand-charcoal dark:text-brand-charcoal-dark mb-4">Choose Your Experience</Text>
+
+                            {/* Full Experience Card */}
+                            <TouchableOpacity
+                                onPress={() => setSelectedExperience('full')}
+                                className={`p-5 rounded-3xl mb-3 border-2 ${selectedExperience === 'full' ? 'bg-brand-sage/10 border-brand-sage' : 'bg-white/50 border-brand-charcoal-light/10'}`}
+                            >
+                                <View className="flex-row justify-between items-start mb-3">
+                                    <View className="flex-row items-center">
+                                        <LucideStar size={24} color="#697D59" />
+                                        <Text className="text-xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark ml-2">Full Experience</Text>
+                                    </View>
+                                    {selectedExperience === 'full' && (
+                                        <View className="w-6 h-6 rounded-full bg-brand-sage items-center justify-center">
+                                            <LucideCheck size={14} color="white" strokeWidth={3} />
+                                        </View>
+                                    )}
                                 </View>
-                                <Switch
-                                    value={formData.dataConsent}
-                                    onValueChange={(v) => setFormData({ ...formData, dataConsent: v })}
-                                    trackColor={{ false: '#D1D1D1', true: '#697D59' }}
-                                    thumbColor="#fff"
-                                />
+                                <Text className="text-sm text-brand-sage font-semibold mb-3">RECOMMENDED</Text>
+                                <View className="gap-y-2">
+                                    <View className="flex-row items-center">
+                                        <LucideZap size={16} color="#697D59" />
+                                        <Text className="text-base text-brand-charcoal dark:text-brand-charcoal-dark ml-2">Unlimited daily try-ons</Text>
+                                    </View>
+                                    <View className="flex-row items-center">
+                                        <LucideSparkles size={16} color="#697D59" />
+                                        <Text className="text-base text-brand-charcoal dark:text-brand-charcoal-dark ml-2">AI-powered skin tone matching</Text>
+                                    </View>
+                                    <View className="flex-row items-center">
+                                        <LucideTrendingUp size={16} color="#697D59" />
+                                        <Text className="text-base text-brand-charcoal dark:text-brand-charcoal-dark ml-2">Personalized color recommendations</Text>
+                                    </View>
+                                    <View className="flex-row items-center">
+                                        <LucideStar size={16} color="#697D59" />
+                                        <Text className="text-base text-brand-charcoal dark:text-brand-charcoal-dark ml-2">Priority access to new features</Text>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+
+                            {/* Basic Experience Card */}
+                            <TouchableOpacity
+                                onPress={() => setSelectedExperience('basic')}
+                                className={`p-5 rounded-3xl border-2 ${selectedExperience === 'basic' ? 'bg-gray-50 border-gray-400' : 'bg-white/50 border-brand-charcoal-light/10'}`}
+                            >
+                                <View className="flex-row justify-between items-start mb-3">
+                                    <View className="flex-row items-center">
+                                        <LucideLock size={24} color="#8A8A8A" />
+                                        <Text className="text-xl font-bold text-brand-charcoal dark:text-brand-charcoal-dark ml-2">Basic Experience</Text>
+                                    </View>
+                                    {selectedExperience === 'basic' && (
+                                        <View className="w-6 h-6 rounded-full bg-gray-400 items-center justify-center">
+                                            <LucideCheck size={14} color="white" strokeWidth={3} />
+                                        </View>
+                                    )}
+                                </View>
+                                <View className="gap-y-2">
+                                    <Text className="text-base text-brand-charcoal-light">• 5 try-ons per day limit</Text>
+                                    <Text className="text-base text-brand-charcoal-light">• Standard rendering quality</Text>
+                                    <Text className="text-base text-brand-charcoal-light">• No personalized recommendations</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Privacy Notice */}
+                        <View className="bg-brand-cream/20 dark:bg-brand-cream-dark/10 p-4 rounded-2xl mb-6 border border-brand-sage/10">
+                            <View className="flex-row items-start">
+                                <LucideShield size={18} color="#697D59" className="mr-2 mt-0.5" />
+                                <Text className="flex-1 text-sm text-brand-charcoal-light dark:text-brand-charcoal-light/70 leading-5">
+                                    We use anonymized hand data to improve our AR engine for everyone. Your name and location are never shared. You can change this anytime in Settings.
+                                </Text>
                             </View>
-                            <Text className="text-base text-brand-charcoal-light dark:text-brand-charcoal-light/70 leading-5">
-                                We use anonymized hand data to improve our AR engine for everyone. Your name and location are never shared.
-                            </Text>
                         </View>
                     </ScrollView>
 
@@ -166,7 +339,9 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
                         ) : (
                             <>
                                 <LucideCheck size={24} color="#fff" className="mr-3" />
-                                <Text className="text-white text-xl font-bold">Complete Profile</Text>
+                                <Text className="text-white text-xl font-bold">
+                                    {selectedExperience === 'full' ? 'Get Full Experience' : 'Continue with Basic'}
+                                </Text>
                             </>
                         )}
                     </TouchableOpacity>
