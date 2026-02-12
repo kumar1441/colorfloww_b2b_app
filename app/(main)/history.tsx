@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions, Alert, Image, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions, Alert, Image, LayoutAnimation, Platform, UIManager, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LucideHistory, LucideTrash2, LucideShare2, LucideCamera } from 'lucide-react-native';
+import { LucideHistory, LucideShare2, LucideCamera } from 'lucide-react-native';
 import { HistoryService, HistoryItem, IntentTag } from '../../services/history';
 
 // Enable LayoutAnimation on Android
@@ -13,10 +13,17 @@ const { width } = Dimensions.get('window');
 
 const intentIcons: Record<IntentTag, string> = {
     Everyday: '☀️',
+    Business: '💼',
+    Event: '🎉',
+    Trend: '🔥',
+    'Trying New': '🎨',
     Work: '💼',
     Experiment: '🎨',
-    Trend: '✨',
-    Event: '🎉',
+    Like: '❤️',
+    Cheer: '🎊',
+    Celebrate: '🎉',
+    Appreciate: '🙏',
+    Smile: '😊',
 };
 
 export default function HistoryScreen() {
@@ -36,25 +43,18 @@ export default function HistoryScreen() {
         loadHistory();
     }, []);
 
-    const handleDelete = (id: string) => {
-        Alert.alert(
-            "Delete Record",
-            "Are you sure you want to remove this attempt?",
-            [
-                { text: "Cancel", style: "cancel" },
-                {
-                    text: "Delete",
-                    style: "destructive",
-                    onPress: async () => {
-                        await HistoryService.deleteItem(id);
-                        if (expandedId === id) {
-                            setExpandedId(null);
-                        }
-                        loadHistory();
-                    }
-                }
-            ]
-        );
+    const handleShare = async (item: HistoryItem) => {
+        try {
+            const imageToShare = item.processedImageUri || '';
+            const colorName = item.color_details?.name || 'Custom Shade';
+
+            await Share.share({
+                message: `Check out my custom look painted by ColorFloww!\n\nhttps://colorfloww.com/app`,
+                url: imageToShare,
+            });
+        } catch (error: any) {
+            Alert.alert('Share Error', error.message);
+        }
     };
 
     const toggleExpand = (id: string, hasImage: boolean) => {
@@ -123,14 +123,9 @@ export default function HistoryScreen() {
                     </View>
 
                     {/* Actions */}
-                    <View className="flex-row gap-x-4">
-                        <TouchableOpacity>
-                            <LucideShare2 size={20} color="#8A8A8A" />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                            <LucideTrash2 size={20} color="#EF4444" />
-                        </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity onPress={() => handleShare(item)}>
+                        <LucideShare2 size={20} color="#307b75" />
+                    </TouchableOpacity>
                 </View>
 
                 {/* Expanded Image View */}

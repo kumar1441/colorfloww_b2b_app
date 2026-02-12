@@ -15,7 +15,7 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.nailay.colorfloww",
-      buildNumber: "1",
+      buildNumber: "2",
       infoPlist: {
         NSCameraUsageDescription: "Allow Colorfloww to access your camera to create nail art.",
         NSPhotoLibraryUsageDescription: "Allow Colorfloww to access your photos to select nail art references.",
@@ -25,7 +25,7 @@ export default {
     },
     android: {
       package: "com.nailay.colorfloww",
-      versionCode: 1,
+      versionCode: 2,
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff"

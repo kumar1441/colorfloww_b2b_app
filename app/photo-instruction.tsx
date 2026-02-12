@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Animated, Dimensions, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { LucideZoomIn, LucideCheckCircle, LucideMaximize } from 'lucide-react-native';
+import { LucideZoomIn, LucideCheckCircle, LucideMaximize, LucideChevronLeft } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -40,6 +40,16 @@ export default function PhotoInstructionScreen() {
     return (
         <View className="flex-1 bg-brand-peach dark:bg-brand-peach-dark">
             <SafeAreaView edges={['top', 'bottom']} className="flex-1">
+                {/* Subtle Back Button */}
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    className="absolute top-4 left-4 z-10 w-10 h-10 rounded-full bg-white/30 dark:bg-black/20 items-center justify-center"
+                    activeOpacity={0.6}
+                    style={{ opacity: 0.3 }}
+                >
+                    <LucideChevronLeft size={24} color="#307b75" />
+                </TouchableOpacity>
+
                 <View className="flex-1 justify-center items-center px-8">
                     {/* Animated Image Container - Slightly larger than original w-64 */}
                     <Animated.View

@@ -29,21 +29,26 @@ export const GamificationService = {
             lastDate = streakData.last_activity_date;
         }
 
+        // Case 1: User already painted today - don't increment again
         if (lastDate === today) {
             return { streak: currentStreak, reachedMilestone: false };
         }
 
+        // Calculate yesterday's date
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = yesterday.toISOString().split('T')[0];
 
+        // Case 2: User painted yesterday - increment streak
         if (lastDate === yesterdayStr) {
             currentStreak += 1;
-        } else {
+        }
+        // Case 3: User missed one or more days - reset streak to 1
+        else {
             currentStreak = 1;
         }
 
-        // 2. Upsert streak
+        // 2. Upsert streak with new values
         await supabase
             .from('user_streaks')
             .upsert({
