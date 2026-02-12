@@ -13,8 +13,6 @@ export default function ColorCustomizer() {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<"sliders" | "upload">("sliders");
     const [rgb, setRgb] = useState({ r: 105, g: 125, b: 89 });
-    const [colorName, setColorName] = useState("");
-    const [showNameInput, setShowNameInput] = useState(false);
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
     const [isPickingColor, setIsPickingColor] = useState(false);
 
@@ -129,14 +127,10 @@ export default function ColorCustomizer() {
             return;
         }
 
-        if (!showNameInput && !colorName) {
-            setShowNameInput(true);
-        } else {
-            router.push({
-                pathname: "/photo-instruction",
-                params: { color: currentColor, colorName }
-            });
-        }
+        router.push({
+            pathname: "/photo-instruction",
+            params: { color: currentColor, colorName: "Custom Shade" }
+        });
     };
 
     return (
@@ -186,22 +180,6 @@ export default function ColorCustomizer() {
                     </View>
                 </View>
 
-                {/* Name Input */}
-                {showNameInput && (
-                    <View className="bg-white dark:bg-brand-gray/40 rounded-3xl p-5 mb-6 border border-brand-gray-medium/10 dark:border-brand-gray-medium/5">
-                        <View className="flex-row items-center gap-x-2 mb-3">
-                            <LucideSparkles size={18} color="#307b75" />
-                            <Text className="text-base font-semibold text-brand-gray dark:text-brand-gray-light">Name Your Creation</Text>
-                        </View>
-                        <TextInput
-                            value={colorName}
-                            onChangeText={setColorName}
-                            placeholder="e.g., Morning Dew..."
-                            placeholderTextColor="#A1A1A1"
-                            className="bg-white/80 dark:bg-brand-gray/60 rounded-xl p-4 text-base text-brand-gray dark:text-brand-gray-light border border-brand-gray-medium/10 dark:border-brand-gray-medium/5"
-                        />
-                    </View>
-                )}
 
                 {/* Sliders */}
                 {activeTab === "sliders" && (
@@ -306,7 +284,7 @@ export default function ColorCustomizer() {
                     className="bg-brand-teal dark:bg-brand-teal-dark rounded-2xl py-5 items-center shadow-lg"
                 >
                     <Text className="text-white text-lg font-bold">
-                        {showNameInput && colorName ? "Save & Try This Color" : "Try This Color"}
+                        Try This Color
                     </Text>
                 </TouchableOpacity>
             </ScrollView>

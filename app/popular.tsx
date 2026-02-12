@@ -18,9 +18,8 @@ export default function PopularScreen() {
         const fetchColors = async () => {
             setIsLoading(true);
             try {
-                // Fetching 30 colors as requested
-                const data = await ColorService.getColors(30);
-                setColors(data);
+                const categorized = await ColorService.getCategorizedColors();
+                setColors(categorized.popular);
             } catch (error) {
                 console.error('Error fetching popular colors:', error);
             } finally {

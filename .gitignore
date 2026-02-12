@@ -39,3 +39,11 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# SQL scripts
+*.sql
+
+# test scripts
+probe_all_tables.js
+test_paint_sessions.js
+test_supabase.js

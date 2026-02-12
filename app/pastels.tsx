@@ -9,7 +9,7 @@ import { ColorService, Color } from '../services/color';
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = (width - 64) / 2;
 
-export default function BoldScreen() {
+export default function PastelsScreen() {
     const router = useRouter();
     const [colors, setColors] = useState<Color[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -19,9 +19,9 @@ export default function BoldScreen() {
             setIsLoading(true);
             try {
                 const categorized = await ColorService.getCategorizedColors();
-                setColors(categorized.bold);
+                setColors(categorized.pastels);
             } catch (error) {
-                console.error('Error fetching bold colors:', error);
+                console.error('Error fetching pastel colors:', error);
             } finally {
                 setIsLoading(false);
             }
@@ -81,13 +81,13 @@ export default function BoldScreen() {
     );
 
     return (
-        <View className="flex-1 bg-brand-peach dark:bg-brand-peach-dark">
-            <SafeAreaView edges={['top']} className="bg-brand-peach/80 dark:bg-brand-peach-dark/80">
+        <View className="flex-1 bg-[#f2f2f2] dark:bg-brand-peach-dark">
+            <SafeAreaView edges={['top']} className="bg-[#f2f2f2]/80 dark:bg-brand-peach-dark/80">
                 <View className="px-6 py-4 flex-row items-center">
                     <TouchableOpacity onPress={() => router.back()} className="mr-4">
                         <LucideChevronLeft size={28} color="#307b75" />
                     </TouchableOpacity>
-                    <Text className="text-2xl font-bold text-brand-gray dark:text-brand-gray-light">Bold Statements</Text>
+                    <Text className="text-2xl font-bold text-brand-gray dark:text-brand-gray-light">Pastel Shades</Text>
                 </View>
             </SafeAreaView>
 

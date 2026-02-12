@@ -21,6 +21,7 @@ export default function HomeScreen() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [popularColors, setPopularColors] = useState<Color[]>([]);
     const [boldColors, setBoldColors] = useState<Color[]>([]);
+    const [pastelColors, setPastelColors] = useState<Color[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -31,10 +32,10 @@ export default function HomeScreen() {
         const fetchColors = async () => {
             setIsLoading(true);
             try {
-                const colors = await ColorService.getColors();
-                // Simple logic to split colors: first 5 are popular, next 5 are bold
-                setPopularColors(colors.slice(0, 5));
-                setBoldColors(colors.slice(5, 10));
+                const categorized = await ColorService.getCategorizedColors();
+                setPastelColors(categorized.pastels.slice(0, 10));
+                setPopularColors(categorized.popular.slice(0, 10));
+                setBoldColors(categorized.bold.slice(0, 10));
             } catch (error) {
                 console.error('Error fetching colors:', error);
             } finally {
@@ -45,16 +46,16 @@ export default function HomeScreen() {
         fetchColors();
     }, []);
 
-    const handleColorSelect = async (color: string) => {
+    const handleColorSelect = async (color: string, colorName: string) => {
         if (isLoggedIn) {
             router.push({
                 pathname: "/photo-instruction",
-                params: { color }
+                params: { color, colorName }
             });
         } else {
             router.push({
                 pathname: "/signup",
-                params: { returnTo: "/photo-instruction", color }
+                params: { returnTo: "/photo-instruction", color, colorName }
             });
         }
     };
@@ -72,6 +73,19 @@ export default function HomeScreen() {
                 <LucideArrowRight size={20} color="#307b75" />
             </TouchableOpacity>
         </View>
+    );
+
+    const renderColorItem = ({ item }: { item: Color }) => (
+        <TouchableOpacity
+            onPress={() => handleColorSelect(item.rgb, item.name)}
+            className="mr-4 items-center"
+        >
+            <View
+                className="w-24 h-24 rounded-full mb-3 border-2 border-white"
+                style={{ backgroundColor: item.rgb }}
+            />
+            <Text className="text-[13px] font-semibold text-brand-gray dark:text-brand-gray-light">{item.name}</Text>
+        </TouchableOpacity>
     );
 
     return (
@@ -96,8 +110,21 @@ export default function HomeScreen() {
                     </View>
                 ) : (
                     <>
-                        {/* Popular Choices */}
+                        {/* Pastels category */}
                         <View className="pt-10">
+                            {renderHeader("Pastels", "Soft & subtle shades", () => router.push('/pastels'))}
+                            <FlatList
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                data={pastelColors}
+                                contentContainerStyle={{ paddingLeft: 24, paddingRight: 8 }}
+                                keyExtractor={(item) => item.id}
+                                renderItem={renderColorItem}
+                            />
+                        </View>
+
+                        {/* Popular Choices */}
+                        <View className="pt-12">
                             {renderHeader("Popular Choices", "What's trending right now", () => router.push('/popular'))}
                             <FlatList
                                 horizontal
@@ -105,18 +132,7 @@ export default function HomeScreen() {
                                 data={popularColors}
                                 contentContainerStyle={{ paddingLeft: 24, paddingRight: 8 }}
                                 keyExtractor={(item) => item.id}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity
-                                        onPress={() => handleColorSelect(item.rgb)}
-                                        className="mr-4 items-center"
-                                    >
-                                        <View
-                                            className="w-24 h-24 rounded-full mb-3 border-2 border-white"
-                                            style={{ backgroundColor: item.rgb }}
-                                        />
-                                        <Text className="text-[13px] font-semibold text-brand-gray dark:text-brand-gray-light">{item.name}</Text>
-                                    </TouchableOpacity>
-                                )}
+                                renderItem={renderColorItem}
                             />
                         </View>
 
@@ -129,18 +145,7 @@ export default function HomeScreen() {
                                 data={boldColors}
                                 contentContainerStyle={{ paddingLeft: 24, paddingRight: 8 }}
                                 keyExtractor={(item) => item.id}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity
-                                        onPress={() => handleColorSelect(item.rgb)}
-                                        className="mr-4 items-center"
-                                    >
-                                        <View
-                                            className="w-24 h-24 rounded-full mb-3 border-2 border-white"
-                                            style={{ backgroundColor: item.rgb }}
-                                        />
-                                        <Text className="text-[13px] font-semibold text-brand-gray dark:text-brand-gray-light">{item.name}</Text>
-                                    </TouchableOpacity>
-                                )}
+                                renderItem={renderColorItem}
                             />
                         </View>
                     </>

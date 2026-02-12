@@ -73,9 +73,8 @@ export default function OnboardingScreen() {
     const renderItem = ({ item }: { item: typeof ONBOARDING_DATA[0] }) => {
         return (
             <View style={styles.slide}>
-                {/* Image Container with Organic Background */}
+                {/* Image Container */}
                 <View style={styles.imageWrapper}>
-                    <View style={[styles.organicShape, { backgroundColor: item.accent }]} />
                     <Image source={item.image} style={styles.image} resizeMode="contain" />
                 </View>
 
@@ -189,19 +188,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     imageWrapper: {
-        width: width * 0.9,
-        height: height * 0.5,
+        width: width,
+        height: height * 0.6,
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
-    },
-    organicShape: {
-        position: 'absolute',
-        width: width * 0.75,
-        height: width * 0.75,
-        borderRadius: width * 0.4,
-        opacity: 0.6,
-        transform: [{ scaleX: 1.2 }, { rotate: '15deg' }],
     },
     image: {
         width: '100%',
@@ -228,7 +219,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 42,
         fontWeight: '900',
-        color: '#000000',
+        color: '#307b75',
         textAlign: 'center',
         lineHeight: 48,
         letterSpacing: -1,

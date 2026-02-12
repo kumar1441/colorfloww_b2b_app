@@ -40,7 +40,7 @@ function ResultScreen() {
     const [processedWidth, setProcessedWidth] = useState<number>(0);
     const [processedHeight, setProcessedHeight] = useState<number>(0);
     const [isSaving, setIsSaving] = React.useState(false);
-    const [customName, setCustomName] = React.useState((params.colorName as string) || '');
+    const colorName = (params.colorName as string) || 'Custom Shade';
 
     const abortControllerRef = useRef<AbortController | null>(null);
     const overlayRef = useRef<NailOverlayRef>(null);
@@ -121,7 +121,7 @@ function ResultScreen() {
         setIsSubmittingSpotlight(true);
         try {
             const colorHex = (params.selectedColor as string) || '#307b75';
-            const finalName = customName.trim() || 'Custom Shade';
+            const finalName = colorName;
 
             // Capture the masterpiece!
             const base64Image = overlayRef.current?.capture();
@@ -157,7 +157,7 @@ function ResultScreen() {
         setIsSaving(true);
         try {
             const colorHex = (params.selectedColor as string) || '#307b75';
-            const finalName = customName.trim() || 'Custom Shade';
+            const finalName = colorName;
 
             // Capture the processed image for history
             const base64Image = overlayRef.current?.capture();
@@ -172,7 +172,7 @@ function ResultScreen() {
             });
 
             await GamificationService.awardXP(30, 'custom_color_creation');
-            if (finalName !== params.colorName) {
+            if (colorName !== params.colorName) {
                 await GamificationService.awardKarma(10, 'Universal', 'color_named');
             }
 
@@ -193,7 +193,7 @@ function ResultScreen() {
 
     const handleShare = async () => {
         try {
-            const colorName = customName || params.colorName || 'Custom Shade';
+            const finalColorName = colorName;
 
             // Capture the finished painted nails image
             const base64Image = overlayRef.current?.capture();
@@ -276,14 +276,8 @@ function ResultScreen() {
                 >
                     <View style={styles.nameRow}>
                         <View style={styles.flex1}>
-                            <Text style={styles.label}>Color Name</Text>
-                            <TextInput
-                                style={styles.nameInput}
-                                placeholder="Name this shade..."
-                                placeholderTextColor="#A1A1A1"
-                                value={customName}
-                                onChangeText={setCustomName}
-                            />
+                            <Text style={styles.label}>Selected Color</Text>
+                            <Text style={styles.nameDisplay}>{colorName}</Text>
                         </View>
                         <View
                             style={[styles.backplateCircle, { backgroundColor: (params.selectedColor as string) || '#307b75' }]}
@@ -315,7 +309,7 @@ function ResultScreen() {
                         <TouchableOpacity
                             style={styles.spotlightButton}
                             onPress={handleSubmitToSpotlight}
-                            disabled={isSubmittingSpotlight || !customName.trim() || isDetecting}
+                            disabled={isSubmittingSpotlight || isDetecting}
                         >
                             {isSubmittingSpotlight ? (
                                 <ActivityIndicator color="#307b75" />
@@ -345,7 +339,7 @@ function ResultScreen() {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        onPress={() => router.back()}
+                        onPress={() => router.dismissAll()}
                         style={styles.backLink}
                     >
                         <Text style={styles.backLinkText}>Try Another Color</Text>
@@ -420,7 +414,7 @@ const styles = StyleSheet.create({
         marginLeft: 'auto',
     },
     badge: {
-        backgroundColor: 'rgba(105, 125, 89, 0.9)',
+        backgroundColor: 'rgba(48, 123, 117, 0.9)',
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 99,
@@ -468,7 +462,7 @@ const styles = StyleSheet.create({
         letterSpacing: 2,
         marginBottom: 4,
     },
-    nameInput: {
+    nameDisplay: {
         fontSize: 28,
         fontWeight: 'bold',
         color: '#1A1A1A',

@@ -29,40 +29,32 @@ export const HistoryService = {
         if (!user) return;
 
         try {
-            // 1. Ensure color exists in colors table or get its ID
-            const { data: colorData, error: colorError } = await supabase
-                .from('colors')
-                .upsert({
-                    name: item.colorName,
-                    rgb: item.colorHex
-                }, { onConflict: 'rgb' })
-                .select()
-                .single();
-
-            if (colorError) throw colorError;
-
-            // 2. Save session
-            const { error: sessionError } = await supabase
+            // 1. Save session directly with color details
+            const { data: sessionData, error: sessionError } = await supabase
                 .from('paint_sessions')
                 .insert({
                     user_id: user.id,
-                    color_id: colorData.id,
+                    color_name: item.colorName,
+                    color_hex: item.colorHex,
                     intent: item.intent,
                     processed_image_uri: item.processedImageUri,
-                });
+                })
+                .select()
+                .single();
 
             if (sessionError) throw sessionError;
 
-            // 3. Log the intent tag
+            // 2. Log the intent tag (optional, keeping it for now but using the session ID or similar)
             await supabase
                 .from('color_votes')
                 .insert({
                     user_id: user.id,
-                    color_id: colorData.id,
+                    color_hex: item.colorHex,
+                    color_name: item.colorName,
                     intent_tag: item.intent
                 });
 
-            // 4. Update streaks and check awards
+            // 3. Update streaks and check awards
             await GamificationService.updateStreak();
             await GamificationService.checkAndGrantAwards();
 
@@ -87,10 +79,8 @@ export const HistoryService = {
                     intent,
                     created_at,
                     processed_image_uri,
-                    colors (
-                        name,
-                        rgb
-                    )
+                    color_name,
+                    color_hex
                 `)
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false });
@@ -99,12 +89,15 @@ export const HistoryService = {
 
             return (data || []).map((item: any) => ({
                 id: item.id.toString(),
-                color: (item.colors as any)?.rgb || '#000000',
+                color: item.color_hex || '#000000',
                 intent: item.intent as IntentTag,
                 date: item.created_at,
                 nailsCount: 5, // Default
                 processedImageUri: item.processed_image_uri,
-                color_details: item.colors as any
+                color_details: {
+                    name: item.color_name || 'Custom Shade',
+                    rgb: item.color_hex || '#000000'
+                }
             }));
         } catch (e) {
             console.error("Error fetching history from Supabase:", e);
