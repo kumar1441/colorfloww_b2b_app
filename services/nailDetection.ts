@@ -45,7 +45,7 @@ export const detectNails = async (
     const base64Image = `data:image/jpeg;base64,${manipulated.base64}`;
 
     const SPACE_URL =
-      "https://nblvprasad-nailrecogniton-v2.hf.space/gradio_api/call/process_image";
+      "https://nblvprasad-nailrecogniton-v3.hf.space/gradio_api/call/process_image";
 
     // ---------- STEP 2: POST ----------
 
@@ -163,6 +163,22 @@ export const detectNails = async (
     }
 
     // ---------- STEP 6: MAP TO Nail ----------
+    const tightenMask = (points: { x: number, y: number }[], factor = 0.03) => {
+      // Calculate centroid
+      const n = points.length;
+      if (n === 0) return points;
+      let cx = 0, cy = 0;
+      points.forEach(p => { cx += p.x; cy += p.y; });
+      cx /= n;
+      cy /= n;
+
+      // Pull each point slightly towards centroid
+      return points.map(p => ({
+        x: p.x + (cx - p.x) * factor,
+        y: p.y + (cy - p.y) * factor
+      }));
+    };
+
     const nails = detections.map((det: any) => {
       const width = det.x2 - det.x1;
       const height = det.y2 - det.y1;
@@ -175,15 +191,20 @@ export const detectNails = async (
       let mask = "";
 
       if (Array.isArray(det.segments) && det.segments.length) {
-        mask = `M ${det.segments[0].x} ${det.segments[0].y}`;
-        for (let i = 1; i < det.segments.length; i++) {
-          mask += ` L ${det.segments[i].x} ${det.segments[i].y}`;
+        // Tighten segments to prevent leaking
+        const tightened = tightenMask(det.segments, 0.04);
+        mask = `M ${tightened[0].x} ${tightened[0].y}`;
+        for (let i = 1; i < tightened.length; i++) {
+          mask += ` L ${tightened[i].x} ${tightened[i].y}`;
         }
         mask += " Z";
       } else if (Array.isArray(det.segmentation) && det.segmentation.length) {
-        mask = `M ${det.segmentation[0][0]} ${det.segmentation[0][1]}`;
-        for (let i = 1; i < det.segmentation.length; i++) {
-          mask += ` L ${det.segmentation[i][0]} ${det.segmentation[i][1]}`;
+        // Tighten segmentation points
+        const points = det.segmentation.map((s: number[]) => ({ x: s[0], y: s[1] }));
+        const tightened = tightenMask(points, 0.04);
+        mask = `M ${tightened[0].x} ${tightened[0].y}`;
+        for (let i = 1; i < tightened.length; i++) {
+          mask += ` L ${tightened[i].x} ${tightened[i].y}`;
         }
         mask += " Z";
       } else {

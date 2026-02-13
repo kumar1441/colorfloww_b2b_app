@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, Animated, PanResponder, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, Animated, PanResponder, ActivityIndicator, Alert, Modal, FlatList } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { LucideHeart, LucideX, LucideStar, LucideSparkles, LucideRefreshCw, LucidePaintbrush } from 'lucide-react-native';
+import { LucideHeart, LucideX, LucideStar, LucideSparkles, LucideRefreshCw, LucidePaintbrush, LucideBarChart3, LucideChevronRight } from 'lucide-react-native';
 import { GamificationService } from '../../services/gamification';
 import { SpotlightService, SpotlightSubmission } from '../../services/spotlight';
 
@@ -18,6 +18,9 @@ export default function SpotlightScreen() {
     const [submissions, setSubmissions] = useState<SpotlightSubmission[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [mySubmissions, setMySubmissions] = useState<SpotlightSubmission[]>([]);
+    const [showResultsModal, setShowResultsModal] = useState(false);
+    const [isLoadingResults, setIsLoadingResults] = useState(false);
 
     const position = new Animated.ValueXY();
     const rotate = position.x.interpolate({
@@ -106,18 +109,34 @@ export default function SpotlightScreen() {
         setIsRefreshing(false);
     };
 
+    const loadMySubmissions = async () => {
+        setIsLoadingResults(true);
+        try {
+            const data = await SpotlightService.getUserSubmissions();
+            setMySubmissions(data);
+        } catch (error) {
+            console.error('[Spotlight] Error loading user submissions:', error);
+        } finally {
+            setIsLoadingResults(false);
+        }
+    };
+
+    const openResults = () => {
+        setShowResultsModal(true);
+        loadMySubmissions();
+    };
+
     const handleVote = async (type: 'yes' | 'no') => {
         if (submissions.length === 0) return;
 
         const currentSubmission = submissions[0];
-        console.log(`[Spotlight] Voted ${type} on submission: ${currentSubmission.id}`);
 
         // Record vote in database
         const result = await SpotlightService.voteOnSubmission(currentSubmission.id, type);
 
         if (result.success) {
-            // Award XP for voting
-            await GamificationService.awardXP(5, 'spotlight_vote');
+            // Award Karma for voting
+            await GamificationService.awardKarma(5, 'Universal', 'spotlight_vote');
 
             // Remove card from stack
             setSubmissions((prev) => prev.slice(1));
@@ -222,8 +241,20 @@ export default function SpotlightScreen() {
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <View style={styles.header}>
-                <Text style={styles.title}>Spotlight</Text>
-                <Text style={styles.subtitle}>Vote on the community's best looks</Text>
+                <View style={styles.headerTop}>
+                    <View>
+                        <Text style={styles.title}>Spotlight</Text>
+                        <Text style={styles.subtitle}>Community looks</Text>
+                    </View>
+                    <TouchableOpacity
+                        style={styles.resultsHeaderButton}
+                        onPress={openResults}
+                        activeOpacity={0.7}
+                    >
+                        <LucideBarChart3 size={20} color="#307b75" />
+                        <Text style={styles.resultsButtonText}>My Results</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
 
             <View style={styles.content}>
@@ -261,6 +292,77 @@ export default function SpotlightScreen() {
                     <LucideHeart size={30} color="#4ADE80" />
                 </TouchableOpacity>
             </View>
+
+            {/* MY RESULTS MODAL */}
+            <Modal
+                visible={showResultsModal}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={() => setShowResultsModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={[styles.modalContent, { paddingTop: insets.top || 20 }]}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>My Submissions</Text>
+                            <TouchableOpacity
+                                onPress={() => setShowResultsModal(false)}
+                                style={styles.closeModalButton}
+                            >
+                                <LucideX size={24} color="#1A1A1A" />
+                            </TouchableOpacity>
+                        </View>
+
+                        {isLoadingResults ? (
+                            <View style={styles.modalLoading}>
+                                <ActivityIndicator size="large" color="#307b75" />
+                                <Text style={styles.modalLoadingText}>Loading your results...</Text>
+                            </View>
+                        ) : mySubmissions.length === 0 ? (
+                            <View style={styles.modalEmpty}>
+                                <LucideSparkles size={48} color="#D1D5DB" style={{ marginBottom: 16 }} />
+                                <Text style={styles.modalEmptyText}>No submissions yet.</Text>
+                                <Text style={styles.modalEmptySubtext}>Submit your nail looks from the result page!</Text>
+                            </View>
+                        ) : (
+                            <FlatList
+                                data={mySubmissions}
+                                keyExtractor={(item) => item.id}
+                                contentContainerStyle={styles.resultsList}
+                                showsVerticalScrollIndicator={false}
+                                renderItem={({ item }) => (
+                                    <View style={styles.resultItem}>
+                                        <Image
+                                            source={{ uri: item.processed_image_uri }}
+                                            style={styles.resultThumbnail}
+                                        />
+                                        <View style={styles.resultMain}>
+                                            <Text style={styles.resultColorName}>{item.color_name}</Text>
+                                            <Text style={styles.resultDate}>
+                                                {new Date(item.created_at).toLocaleDateString()}
+                                            </Text>
+                                            <View style={styles.statsContainer}>
+                                                <View style={styles.statBox}>
+                                                    <Text style={styles.statEmoji}>👍</Text>
+                                                    <Text style={styles.statValue}>{item.yes_votes || 0}</Text>
+                                                </View>
+                                                <View style={styles.statBox}>
+                                                    <Text style={styles.statEmoji}>👎</Text>
+                                                    <Text style={styles.statValue}>{item.no_votes || 0}</Text>
+                                                </View>
+                                                <View style={styles.statBox}>
+                                                    <Text style={styles.statLabel}>Total:</Text>
+                                                    <Text style={styles.statValue}>{item.total_votes || 0}</Text>
+                                                </View>
+                                            </View>
+                                        </View>
+                                        <LucideChevronRight size={20} color="#D1D5DB" />
+                                    </View>
+                                )}
+                            />
+                        )}
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -275,6 +377,11 @@ const styles = StyleSheet.create({
         paddingTop: 10,
         paddingBottom: 10,
     },
+    headerTop: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
     title: {
         fontSize: 32,
         fontWeight: '900',
@@ -282,10 +389,31 @@ const styles = StyleSheet.create({
         letterSpacing: -1,
     },
     subtitle: {
-        fontSize: 16,
+        fontSize: 14,
         color: 'rgba(26,26,26,0.5)',
-        fontWeight: '500',
-        marginTop: 4,
+        fontWeight: '600',
+        marginTop: -2,
+    },
+    resultsHeaderButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 16,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 5,
+        elevation: 2,
+        borderWidth: 1,
+        borderColor: 'rgba(48, 123, 117, 0.1)',
+    },
+    resultsButtonText: {
+        marginLeft: 6,
+        fontSize: 13,
+        fontWeight: '700',
+        color: '#307b75',
     },
     content: {
         flex: 1,
@@ -492,5 +620,130 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
         fontWeight: '900',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: '#f2f2f2',
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        height: height * 0.85,
+        paddingHorizontal: 24,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(0,0,0,0.05)',
+    },
+    modalTitle: {
+        fontSize: 22,
+        fontWeight: '800',
+        color: '#1A1A1A',
+    },
+    closeModalButton: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'white',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    resultsList: {
+        paddingVertical: 16,
+    },
+    resultItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        padding: 12,
+        borderRadius: 20,
+        marginBottom: 12,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 5,
+        elevation: 2,
+    },
+    resultThumbnail: {
+        width: 60,
+        height: 80,
+        borderRadius: 12,
+        backgroundColor: '#f2f2f2',
+    },
+    resultMain: {
+        flex: 1,
+        marginLeft: 16,
+    },
+    resultColorName: {
+        fontSize: 17,
+        fontWeight: '700',
+        color: '#1A1A1A',
+    },
+    resultDate: {
+        fontSize: 12,
+        color: '#9CA3AF',
+        marginTop: 2,
+    },
+    statsContainer: {
+        flexDirection: 'row',
+        marginTop: 8,
+        gap: 12,
+    },
+    statBox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f9fafb',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 8,
+    },
+    statEmoji: {
+        fontSize: 12,
+        marginRight: 4,
+    },
+    statLabel: {
+        fontSize: 11,
+        fontWeight: '600',
+        color: '#6B7280',
+        marginRight: 4,
+    },
+    statValue: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: '#1A1A1A',
+    },
+    modalLoading: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    modalLoadingText: {
+        marginTop: 12,
+        fontSize: 15,
+        color: '#6B7280',
+    },
+    modalEmpty: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 40,
+    },
+    modalEmptyText: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#1A1A1A',
+        textAlign: 'center',
+    },
+    modalEmptySubtext: {
+        fontSize: 14,
+        color: '#6B7280',
+        textAlign: 'center',
+        marginTop: 8,
     }
 });

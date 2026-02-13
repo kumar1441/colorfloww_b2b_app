@@ -135,11 +135,11 @@ function ResultScreen() {
             );
 
             if (result.success) {
-                await GamificationService.awardXP(20, 'spotlight_submission');
+                await GamificationService.awardKarma(20, 'Universal', 'spotlight_submission');
                 setHasSubmittedSpotlight(true);
                 Alert.alert(
                     "✨ Submitted to Spotlight!",
-                    "Your look is now live for others to vote on. You earned 20 XP!",
+                    "Your look is now live for others to vote on. You earned 20 Karma!",
                     [{ text: "Awesome!" }]
                 );
             } else {
@@ -174,6 +174,7 @@ function ResultScreen() {
             await GamificationService.awardXP(30, 'custom_color_creation');
             if (colorName !== params.colorName) {
                 await GamificationService.awardKarma(10, 'Universal', 'color_named');
+                Alert.alert("🎨 Creative Mind!", "You earned 10 Karma for naming your custom shade!", [{ text: "Nice!" }]);
             }
 
             await AuthService.recordSession();
@@ -305,38 +306,40 @@ function ResultScreen() {
                         ))}
                     </View>
 
-                    {!hasSubmittedSpotlight && (
-                        <TouchableOpacity
-                            style={styles.spotlightButton}
-                            onPress={handleSubmitToSpotlight}
-                            disabled={isSubmittingSpotlight || isDetecting}
-                        >
-                            {isSubmittingSpotlight ? (
-                                <ActivityIndicator color="#307b75" />
-                            ) : (
-                                <>
-                                    <Text style={styles.spotlightButtonIcon}>✨</Text>
-                                    <Text style={styles.spotlightButtonText}>Submit to Spotlight</Text>
-                                    <Text style={styles.spotlightButtonXP}>+20 XP</Text>
-                                </>
-                            )}
-                        </TouchableOpacity>
-                    )}
-
-                    <TouchableOpacity
-                        onPress={handleDone}
-                        disabled={isSaving || isDetecting}
-                        style={[
-                            styles.saveButton,
-                            (isSaving || isDetecting) && styles.saveButtonDisabled
-                        ]}
-                    >
-                        {isSaving ? (
-                            <ActivityIndicator color="white" />
-                        ) : (
-                            <Text style={styles.saveButtonText}>Save & Finish</Text>
+                    <View style={styles.buttonRow}>
+                        {!hasSubmittedSpotlight && (
+                            <TouchableOpacity
+                                style={styles.spotlightButtonHalf}
+                                onPress={handleSubmitToSpotlight}
+                                disabled={isSubmittingSpotlight || isDetecting}
+                            >
+                                <View style={styles.buttonInner}>
+                                    {isSubmittingSpotlight ? (
+                                        <ActivityIndicator color="#307b75" size="small" />
+                                    ) : (
+                                        <Text style={styles.spotlightButtonTextSmall}>Spotlight</Text>
+                                    )}
+                                </View>
+                            </TouchableOpacity>
                         )}
-                    </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={handleDone}
+                            disabled={isSaving || isDetecting}
+                            style={[
+                                styles.doneButtonHalf,
+                                (isSaving || isDetecting) && styles.saveButtonDisabled
+                            ]}
+                        >
+                            <View style={styles.buttonInner}>
+                                {isSaving ? (
+                                    <ActivityIndicator color="white" size="small" />
+                                ) : (
+                                    <Text style={styles.doneButtonTextSmall}>Done</Text>
+                                )}
+                            </View>
+                        </TouchableOpacity>
+                    </View>
 
                     <TouchableOpacity
                         onPress={() => router.dismissAll()}
@@ -493,11 +496,16 @@ const styles = StyleSheet.create({
     },
     vibeBar: {
         flexDirection: 'row',
-        backgroundColor: '#E8E4DF',
+        backgroundColor: 'white',
         padding: 8,
         borderRadius: 40,
         justifyContent: 'space-between',
-        marginBottom: 32,
+        marginBottom: 24,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 5,
+        elevation: 2,
     },
     emojiCircle: {
         width: 50,
@@ -507,12 +515,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     emojiCircleActive: {
-        backgroundColor: 'white',
+        backgroundColor: '#f2f2f2',
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowRadius: 2,
+        elevation: 1,
     },
     emojiCircleInactive: {
         backgroundColor: 'transparent',
@@ -520,62 +528,68 @@ const styles = StyleSheet.create({
     emojiText: {
         fontSize: 24,
     },
-    spotlightButton: {
-        width: '100%',
-        backgroundColor: 'white',
-        borderRadius: 24,
-        paddingVertical: 18,
+    buttonRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
+        gap: 12,
         marginBottom: 12,
+    },
+    spotlightButtonHalf: {
+        flex: 1,
+        height: 56,
+        backgroundColor: 'white',
+        borderRadius: 28,
         borderWidth: 2,
         borderColor: '#307b75',
-    },
-    spotlightButtonIcon: {
-        fontSize: 20,
-        marginRight: 8,
-    },
-    spotlightButtonText: {
-        color: '#307b75',
-        fontSize: 17,
-        fontWeight: '800',
-    },
-    spotlightButtonXP: {
-        color: '#307b75',
-        fontSize: 12,
-        fontWeight: '600',
-        marginLeft: 8,
-        opacity: 0.7,
-    },
-    saveButton: {
-        width: '100%',
-        backgroundColor: '#307b75',
-        paddingVertical: 20,
-        borderRadius: 24,
         alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 5,
+        elevation: 2,
+    },
+    spotlightButtonTextSmall: {
+        color: '#307b75',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    doneButtonHalf: {
+        flex: 1,
+        height: 56,
+        backgroundColor: '#307b75',
+        borderRadius: 28,
+        alignItems: 'center',
+        justifyContent: 'center',
         shadowColor: "#307b75",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.3,
-        shadowRadius: 15,
-        elevation: 8,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    buttonInner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    doneButtonTextSmall: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '800',
+        letterSpacing: -0.5,
     },
     saveButtonDisabled: {
-        backgroundColor: 'rgba(105, 125, 89, 0.4)',
-    },
-    saveButtonText: {
-        color: 'white',
-        fontSize: 20,
-        fontWeight: 'bold',
+        opacity: 0.5,
     },
     backLink: {
-        marginTop: 20,
+        marginTop: 12,
         alignItems: 'center',
     },
     backLinkText: {
         color: 'rgba(26,26,26,0.4)',
         fontWeight: '600',
-        fontSize: 16,
+        fontSize: 14,
     }
 });
 

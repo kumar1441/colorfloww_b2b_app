@@ -148,14 +148,14 @@ export const NailOverlaySkia = forwardRef<NailOverlayRef, Props>(({ imageUri, na
 
                     return (
                         <Group key={index}>
-                            <Path path={path} color={selectedColor} blendMode="multiply" opacity={0.8}>
-                                <BlurMask blur={1.5} style="normal" />
+                            <Path path={path} color={selectedColor} blendMode="multiply" opacity={0.7}>
+                                <BlurMask blur={0.8} style="normal" />
                             </Path>
-                            <Path path={path} color={selectedColor} blendMode="softLight" opacity={0.6}>
-                                <BlurMask blur={1.5} style="normal" />
+                            <Path path={path} color={selectedColor} blendMode="softLight" opacity={0.5}>
+                                <BlurMask blur={0.8} style="normal" />
                             </Path>
-                            <Path path={path} color="white" blendMode="screen" opacity={0.15}>
-                                <BlurMask blur={2} style="normal" />
+                            <Path path={path} color="white" blendMode="screen" opacity={0.12}>
+                                <BlurMask blur={1.5} style="normal" />
                             </Path>
                         </Group>
                     );

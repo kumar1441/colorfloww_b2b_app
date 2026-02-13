@@ -79,6 +79,7 @@ export const GamificationService = {
         const user = await AuthService.getCurrentUser();
         if (!user) return { newTotal: 0, leveledUp: false };
 
+        // 1. Get current stats
         const { data: profile } = await supabase
             .from('user_profile')
             .select('xp, level')
@@ -93,14 +94,22 @@ export const GamificationService = {
         const newLevel = Math.floor(Math.sqrt(newXP / 100)) + 1;
         const leveledUp = newLevel > currentLevel;
 
-        await supabase
+        // 2. Update profile
+        const { error: updateError } = await supabase
             .from('user_profile')
-            .update({ xp: newXP, level: newLevel })
+            .update({
+                xp: newXP,
+                level: newLevel,
+                updated_at: new Date().toISOString()
+            })
             .eq('id', user.id);
 
-        // Level updated successfully
+        if (updateError) {
+            console.error('[GamificationService] awardXP error:', updateError);
+            return { newTotal: currentXP, leveledUp: false };
+        }
 
-        // Log transaction for audit
+        // 3. Log transaction
         await supabase.from('xp_transactions').insert({
             user_id: user.id,
             amount,
@@ -140,11 +149,35 @@ export const GamificationService = {
     /**
      * Award Karma (Social/Regional Currency)
      */
-    async awardKarma(amount: number, city: string, reason: string): Promise<void> {
+    async awardKarma(amount: number, city: string, reason: string): Promise<{ newTotal: number }> {
         const user = await AuthService.getCurrentUser();
-        if (!user) return;
+        if (!user) return { newTotal: 0 };
 
-        // 1. Insert into karma_points log
+        // 1. Get current karma
+        const { data: profile } = await supabase
+            .from('user_profile')
+            .select('karma')
+            .eq('id', user.id)
+            .single();
+
+        const currentKarma = profile?.karma || 0;
+        const newKarma = currentKarma + amount;
+
+        // 2. Update profile
+        const { error: updateError } = await supabase
+            .from('user_profile')
+            .update({
+                karma: newKarma,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', user.id);
+
+        if (updateError) {
+            console.error('[GamificationService] awardKarma error:', updateError);
+            return { newTotal: currentKarma };
+        }
+
+        // 3. Log transaction
         await supabase.from('karma_points').insert({
             user_id: user.id,
             amount,
@@ -152,21 +185,7 @@ export const GamificationService = {
             reason
         });
 
-        // 2. Sync to user_profile total
-        const { data: profile } = await supabase
-            .from('user_profile')
-            .select('karma')
-            .eq('id', user.id)
-            .single();
-
-        const newKarma = (profile?.karma || 0) + amount;
-
-        await supabase
-            .from('user_profile')
-            .update({ karma: newKarma })
-            .eq('id', user.id);
-
-        // Karma updated successfully
+        return { newTotal: newKarma };
     },
 
     /**
@@ -305,15 +324,17 @@ export const GamificationService = {
 
         const { data: profile } = await supabase
             .from('user_profile')
-            .select('xp, level, gems, karma')
+            .select('id, xp, level, gems, karma, avatar_url')
             .eq('id', user.id)
             .single();
 
         return {
+            id: profile?.id,
             xp: profile?.xp || 0,
             level: profile?.level || 1,
             gems: profile?.gems || 0,
             karma: profile?.karma || 0,
+            avatarUrl: profile?.avatar_url,
             nextLevelXP: Math.pow(profile?.level || 1, 2) * 100
         };
     }
