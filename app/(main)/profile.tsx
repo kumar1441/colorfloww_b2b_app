@@ -216,6 +216,11 @@ export default function ProfileScreen() {
                 <Text className="text-3xl font-bold text-brand-gray dark:text-brand-gray-light mb-1">
                     {userProfile?.fullName || 'Nail Enthusiast'}
                 </Text>
+                {userProfile?.username && (
+                    <Text className="text-brand-teal font-bold mb-2">
+                        @{userProfile.username}
+                    </Text>
+                )}
                 <View className="flex-row items-center gap-x-1.5 opacity-60">
                     <LucideMail size={14} color="#8A8A8A" />
                     <Text className="text-sm text-brand-gray-medium dark:text-brand-gray-medium/60">
@@ -297,30 +302,20 @@ export default function ProfileScreen() {
                     <Text className="text-[10px] text-brand-gray-medium dark:text-brand-gray-medium/60 font-bold uppercase tracking-widest mt-0.5">Looks</Text>
                 </TouchableOpacity>
 
-                <View className="flex-1 bg-white/60 dark:bg-brand-gray/40 rounded-[24px] p-5 items-center border border-brand-gray-medium/10 dark:border-brand-gray-medium/5 shadow-sm">
+                <TouchableOpacity
+                    onPress={() => router.push('/awards')}
+                    className="flex-1 bg-white/60 dark:bg-brand-gray/40 rounded-[24px] p-5 items-center border border-brand-gray-medium/10 dark:border-brand-gray-medium/5 shadow-sm"
+                >
                     <View className="w-10 h-10 rounded-full bg-violet-50 dark:bg-violet-900/20 items-center justify-center mb-2">
                         <LucideTrophy size={20} color="#A78BFA" />
                     </View>
                     <Text className="text-2xl font-black text-brand-gray dark:text-brand-gray-light">{stats.awards}</Text>
                     <Text className="text-[10px] text-brand-gray-medium dark:text-brand-gray-medium/60 font-bold uppercase tracking-widest mt-0.5">Awards</Text>
-                </View>
+                </TouchableOpacity>
             </View>
 
             {/* Menu Sections */}
             <View className="bg-white/60 dark:bg-brand-gray/40 rounded-[32px] overflow-hidden border border-brand-gray-medium/10 dark:border-brand-gray-medium/5 shadow-sm">
-                <TouchableOpacity
-                    className="flex-row items-center justify-between p-5 border-b border-brand-peach dark:border-brand-peach-dark/20"
-                    onPress={() => router.push('/edit-profile')}
-                >
-                    <View className="flex-row items-center gap-x-4">
-                        <View className="w-10 h-10 rounded-2xl bg-brand-teal/10 items-center justify-center">
-                            <LucideEdit3 size={20} color="#307b75" />
-                        </View>
-                        <Text className="text-base font-bold text-brand-gray dark:text-brand-gray-light">Edit Profile</Text>
-                    </View>
-                    <LucideChevronRight size={20} color="#A1A1A1" />
-                </TouchableOpacity>
-
                 <TouchableOpacity
                     className="flex-row items-center justify-between p-5 border-b border-brand-peach dark:border-brand-peach-dark/20"
                     onPress={() => setFeedbackModalVisible(true)}
@@ -385,7 +380,10 @@ export default function ProfileScreen() {
                         <LucideUser size={32} color="#307b75" strokeWidth={1.5} />
                         <Text className="text-3xl font-bold text-brand-gray dark:text-brand-gray-light">Profile</Text>
                     </View>
-                    <TouchableOpacity className="p-1">
+                    <TouchableOpacity
+                        onPress={() => router.push('/settings')}
+                        className="p-1"
+                    >
                         <LucideSettings size={22} color="#8A8A8A" />
                     </TouchableOpacity>
                 </View>

@@ -24,9 +24,9 @@ export const HistoryService = {
     /**
      * Saves a new try-on session to history.
      */
-    async saveTryOn(item: { colorHex: string, colorName: string, intent: IntentTag, nailsCount: number, processedImageUri?: string }): Promise<void> {
+    async saveTryOn(item: { colorHex: string, colorName: string, intent: IntentTag, nailsCount: number, processedImageUri?: string }): Promise<import('./gamification').AwardDefinition[]> {
         const user = await AuthService.getCurrentUser();
-        if (!user) return;
+        if (!user) return [];
 
         try {
             // 1. Save session directly with color details
@@ -44,7 +44,7 @@ export const HistoryService = {
 
             if (sessionError) throw sessionError;
 
-            // 2. Log the intent tag (optional, keeping it for now but using the session ID or similar)
+            // 2. Log the intent tag
             await supabase
                 .from('color_votes')
                 .insert({
@@ -54,9 +54,13 @@ export const HistoryService = {
                     intent_tag: item.intent
                 });
 
-            // 3. Update streaks and check awards
-            await GamificationService.updateStreak();
-            await GamificationService.checkAndGrantAwards();
+            // 3. Update streaks and check awards — collect newly granted ones
+            const streakResult = await GamificationService.updateStreak();
+            const colorAwards = await GamificationService.checkAndGrantAwards();
+            // Combine color milestone awards + any newly earned streak awards
+            const allNewAwards = [...colorAwards, ...(streakResult.newAwards || [])];
+
+            return allNewAwards;
 
         } catch (e) {
             console.error("Error saving to Supabase:", e);

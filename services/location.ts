@@ -25,7 +25,6 @@ export const LocationService = {
             const response = await fetch(`https://api.zippopotam.us/us/${zipcode}`);
 
             if (!response.ok) {
-                console.log(`[LocationService] Invalid zipcode: ${zipcode}`);
                 return null;
             }
 
@@ -50,7 +49,6 @@ export const LocationService = {
             });
 
             if (!address) {
-                console.log('[LocationService] No address found for coordinates');
                 return null;
             }
 

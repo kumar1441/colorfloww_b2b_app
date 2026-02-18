@@ -43,6 +43,11 @@ yarn-error.*
 # SQL scripts
 *.sql
 
+# Build artifacts
+*.ipa
+*.aab
+*.apk
+
 # test scripts
 probe_all_tables.js
 test_paint_sessions.js

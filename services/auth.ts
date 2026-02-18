@@ -88,7 +88,7 @@ export const AuthService = {
     /**
      * Save user profile details to Supabase.
      */
-    async saveUserProfile(details: { email: string, fullName?: string, gender?: string, age_range?: string, zipcode?: string, city?: string, data_consent?: boolean, referral_code?: string, location_permission?: boolean }, userId?: string) {
+    async saveUserProfile(details: { email: string, username?: string, fullName?: string, gender?: string, age_range?: string, zipcode?: string, city?: string, data_consent?: boolean, referral_code?: string, location_permission?: boolean }, userId?: string) {
         const { data: { session } } = await supabase.auth.getSession();
 
         let finalUserId = userId;
@@ -114,6 +114,7 @@ export const AuthService = {
             .upsert({
                 id: finalUserId,
                 email: details.email,
+                username: details.username,
                 gender: details.gender,
                 age_range: details.age_range,
                 zipcode: details.zipcode,
@@ -154,7 +155,7 @@ export const AuthService = {
 
         const { data: profile } = await supabase
             .from('user_profile')
-            .select('gender, zipcode, data_consent')
+            .select('gender, zipcode, data_consent, username')
             .eq('id', user.id)
             .single();
 
@@ -162,8 +163,9 @@ export const AuthService = {
         const hasGender = !!profile?.gender;
         const hasZip = !!profile?.zipcode;
         const hasConsent = profile?.data_consent === true;
+        const hasUsername = !!profile?.username;
 
-        return !!(hasName && hasGender && hasZip && hasConsent);
+        return !!(hasName && hasGender && hasZip && hasConsent && hasUsername);
     },
 
     /**
@@ -258,7 +260,7 @@ export const AuthService = {
 
         const { data: profile } = await supabase
             .from('user_profile')
-            .select('*')
+            .select('*, username')
             .eq('id', user.id)
             .single();
 
@@ -266,13 +268,12 @@ export const AuthService = {
             id: user.id,
             email: user.email,
             fullName: user.user_metadata?.full_name || 'Nail Enthusiast',
+            username: profile?.username,
             avatarUrl: profile?.avatar_url,
             gender: profile?.gender,
             ageRange: profile?.age_range,
             referralCode: profile?.referral_code,
             karma: profile?.karma || 0,
-            xp: profile?.xp || 0,
-            level: profile?.level || 1,
             gems: profile?.gems || 0,
         };
     },
@@ -321,7 +322,7 @@ export const AuthService = {
     /**
      * Update user profile fields.
      */
-    async updateUserProfile(details: { fullName?: string, gender?: string }) {
+    async updateUserProfile(details: { fullName?: string, gender?: string, username?: string }) {
         const user = await this.getCurrentUser();
         if (!user) throw new Error("No authenticated user found");
 
@@ -333,14 +334,41 @@ export const AuthService = {
             if (authError) throw authError;
         }
 
-        // 2. Update public.user_profile (for gender)
-        if (details.gender) {
+        // 2. Update public.user_profile
+        const updates: any = {};
+        if (details.gender) updates.gender = details.gender;
+        if (details.username) updates.username = details.username;
+
+        if (Object.keys(updates).length > 0) {
             const { error: profileError } = await supabase
                 .from('user_profile')
-                .update({ gender: details.gender })
+                .update(updates)
                 .eq('id', user.id);
             if (profileError) throw profileError;
         }
+    },
+
+    /**
+     * Check if a username is available.
+     */
+    async isUsernameAvailable(username: string): Promise<boolean> {
+        const user = await this.getCurrentUser();
+        const { data, error } = await supabase
+            .from('user_profile')
+            .select('id')
+            .eq('username', username)
+            .maybeSingle();
+
+        if (error) {
+            console.error('[AuthService] isUsernameAvailable error:', error);
+            return false;
+        }
+
+        // If no one has this username, it's available
+        if (!data) return true;
+
+        // If the current user has this username, it's "available" (unchanged)
+        return data.id === user?.id;
     },
 
     /**

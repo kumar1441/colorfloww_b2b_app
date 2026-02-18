@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, Animated, PanResponder, ActivityIndicator, Alert, Modal, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, Animated, PanResponder, ActivityIndicator, Alert, Modal, FlatList, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { LucideHeart, LucideX, LucideStar, LucideSparkles, LucideRefreshCw, LucidePaintbrush, LucideBarChart3, LucideChevronRight } from 'lucide-react-native';
 import { GamificationService } from '../../services/gamification';
 import { SpotlightService, SpotlightSubmission } from '../../services/spotlight';
+import { AuthService } from '../../services/auth';
+import { ProfileNudgeModal } from '../../components/ProfileNudgeModal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -21,6 +23,7 @@ export default function SpotlightScreen() {
     const [mySubmissions, setMySubmissions] = useState<SpotlightSubmission[]>([]);
     const [showResultsModal, setShowResultsModal] = useState(false);
     const [isLoadingResults, setIsLoadingResults] = useState(false);
+    const [showNudge, setShowNudge] = useState(false);
 
     const position = new Animated.ValueXY();
     const rotate = position.x.interpolate({
@@ -88,7 +91,20 @@ export default function SpotlightScreen() {
 
     useEffect(() => {
         loadSubmissions();
+        checkProfileComplete();
     }, []);
+
+    const checkProfileComplete = async () => {
+        try {
+            const isComplete = await AuthService.isProfileComplete();
+            if (!isComplete) {
+                // Wait a bit before showing nudge for better UX
+                setTimeout(() => setShowNudge(true), 1500);
+            }
+        } catch (error) {
+            console.error('[Spotlight] Error checking profile status:', error);
+        }
+    };
 
     const loadSubmissions = async () => {
         setIsLoading(true);
@@ -105,8 +121,14 @@ export default function SpotlightScreen() {
 
     const handleRefresh = async () => {
         setIsRefreshing(true);
-        await loadSubmissions();
-        setIsRefreshing(false);
+        try {
+            const data = await SpotlightService.getSpotlightSubmissions(20, false);
+            setSubmissions(data);
+        } catch (error) {
+            console.error('[Spotlight] Error refreshing:', error);
+        } finally {
+            setIsRefreshing(false);
+        }
     };
 
     const loadMySubmissions = async () => {
@@ -126,6 +148,16 @@ export default function SpotlightScreen() {
         loadMySubmissions();
     };
 
+    const handleSkip = () => {
+        if (submissions.length <= 1) return;
+        // Move the top card to the back of the queue — no DB write needed
+        setSubmissions(prev => {
+            const [first, ...rest] = prev;
+            return [...rest, first];
+        });
+        position.setValue({ x: 0, y: 0 });
+    };
+
     const handleVote = async (type: 'yes' | 'no') => {
         if (submissions.length === 0) return;
 
@@ -136,7 +168,7 @@ export default function SpotlightScreen() {
 
         if (result.success) {
             // Award Karma for voting
-            await GamificationService.awardKarma(5, 'Universal', 'spotlight_vote');
+            await GamificationService.awardKarma(5, 'spotlight_vote');
 
             // Remove card from stack
             setSubmissions((prev) => prev.slice(1));
@@ -208,7 +240,7 @@ export default function SpotlightScreen() {
                                 <View style={[styles.colorBadge, { backgroundColor: item.color_hex }]} />
                                 <View style={styles.xpBadge}>
                                     <LucideSparkles size={14} color="#FFE66D" />
-                                    <Text style={styles.xpText}>+5 XP</Text>
+                                    <Text style={styles.xpText}>+5 Karma</Text>
                                 </View>
                             </View>
                         </View>
@@ -257,15 +289,33 @@ export default function SpotlightScreen() {
                 </View>
             </View>
 
-            <View style={styles.content}>
+            <ScrollView
+                contentContainerStyle={styles.contentScroll}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isRefreshing}
+                        onRefresh={handleRefresh}
+                        tintColor="#307b75"
+                        colors={['#307b75']}
+                    />
+                }
+                scrollEnabled={submissions.length === 0 || isLoading}
+            >
                 {isLoading && (
                     <View style={styles.loadingContainer}>
                         <ActivityIndicator size="large" color="#307b75" />
                         <Text style={styles.loadingText}>Fetching style inspiration...</Text>
                     </View>
                 )}
-                {!isLoading && renderSubmissions()}
-            </View>
+                {!isLoading && submissions.length === 0 && renderSubmissions()}
+            </ScrollView>
+
+            {/* Card stack sits outside ScrollView so swipe gestures work */}
+            {!isLoading && submissions.length > 0 && (
+                <View style={styles.content} pointerEvents="box-none">
+                    {renderSubmissions()}
+                </View>
+            )}
 
             <View style={styles.footer}>
                 <TouchableOpacity
@@ -278,6 +328,16 @@ export default function SpotlightScreen() {
                     }}
                 >
                     <LucideX size={30} color="#F87171" />
+                </TouchableOpacity>
+
+                {/* Subtle skip — moves card to back of queue, no vote recorded */}
+                <TouchableOpacity
+                    style={styles.skipButton}
+                    onPress={handleSkip}
+                    activeOpacity={0.6}
+                    disabled={submissions.length <= 1}
+                >
+                    <Text style={[styles.skipText, submissions.length <= 1 && { opacity: 0.3 }]}>Skip</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -363,6 +423,17 @@ export default function SpotlightScreen() {
                     </View>
                 </View>
             </Modal>
+
+            {/* Profile Nudge Modal */}
+            <ProfileNudgeModal
+                visible={showNudge}
+                onClose={() => setShowNudge(false)}
+                onComplete={() => {
+                    setShowNudge(false);
+                    // Refresh submissions to potentially show user's own name correctly if they had any
+                    loadSubmissions();
+                }}
+            />
         </SafeAreaView>
     );
 }
@@ -416,6 +487,16 @@ const styles = StyleSheet.create({
         color: '#307b75',
     },
     content: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+    },
+    contentScroll: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
@@ -553,8 +634,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingBottom: 20,
         paddingTop: 16,
-        gap: 50,
+        gap: 24,
         backgroundColor: '#f2f2f2',
+    },
+    skipButton: {
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderRadius: 20,
+        backgroundColor: 'rgba(0,0,0,0.05)',
+    },
+    skipText: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: 'rgba(26,26,26,0.45)',
+        letterSpacing: 0.3,
     },
     footerButton: {
         width: 76,

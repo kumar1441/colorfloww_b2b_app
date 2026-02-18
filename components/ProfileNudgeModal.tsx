@@ -23,10 +23,14 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
 
     const [formData, setFormData] = useState({
         fullName: "",
+        username: "",
         gender: "",
         zipcode: "",
         city: "",
     });
+
+    const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+    const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
 
     // Check location permission and auto-fill if granted
     React.useEffect(() => {
@@ -101,6 +105,24 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
         });
     };
 
+    const handleUsernameChange = async (username: string) => {
+        const cleaned = username.toLowerCase().replace(/[^a-z0-9_.]/g, '').slice(0, 20);
+        setFormData(prev => ({ ...prev, username: cleaned }));
+        setUsernameAvailable(null);
+
+        if (cleaned.length >= 3) {
+            setIsCheckingUsername(true);
+            try {
+                const available = await AuthService.isUsernameAvailable(cleaned);
+                setUsernameAvailable(available);
+            } catch (err) {
+                console.error('[ProfileNudge] Username check error:', err);
+            } finally {
+                setIsCheckingUsername(false);
+            }
+        }
+    };
+
     const handleZipcodeChange = async (zip: string) => {
         const cleanedZip = zip.replace(/[^0-9]/g, '').slice(0, 5);
         setFormData(prev => ({ ...prev, zipcode: cleanedZip }));
@@ -124,6 +146,10 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
     };
 
     const handleComplete = async () => {
+        if (!formData.username || usernameAvailable === false) {
+            setError("Please choose a valid and available username");
+            return;
+        }
         if (!formData.fullName || !formData.gender || !formData.zipcode || !formData.city) {
             setError("Please fill in all details for better results");
             return;
@@ -139,6 +165,7 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
             const user = await AuthService.getCurrentUser();
             await AuthService.saveUserProfile({
                 email: user.email,
+                username: formData.username,
                 fullName: formData.fullName,
                 gender: formData.gender,
                 zipcode: formData.zipcode,
@@ -190,6 +217,27 @@ export const ProfileNudgeModal: React.FC<ProfileNudgeModalProps> = ({ visible, o
                                 <Text className="text-red-600 text-center font-medium">{error}</Text>
                             </View>
                         )}
+
+                        <View className="mb-6">
+                            <Text className="text-[17px] font-semibold text-brand-gray dark:text-brand-gray-light mb-3">Username</Text>
+                            <View className="flex-row items-center bg-brand-peach/30 dark:bg-brand-peach-dark/20 border border-brand-gray-medium/10 rounded-2xl px-5">
+                                <LucideUser size={20} color="#307b75" className="mr-3" />
+                                <TextInput
+                                    className="flex-1 py-4 text-lg text-brand-gray dark:text-brand-gray-light"
+                                    placeholder="choose_a_username"
+                                    placeholderTextColor="#A1A1A1"
+                                    autoCapitalize="none"
+                                    value={formData.username}
+                                    onChangeText={handleUsernameChange}
+                                />
+                                {isCheckingUsername && <LucideLoader2 size={18} color="#307b75" className="animate-spin" />}
+                                {!isCheckingUsername && usernameAvailable === true && <LucideCheck size={18} color="#4ADE80" />}
+                                {!isCheckingUsername && usernameAvailable === false && <LucideX size={18} color="#F87171" />}
+                            </View>
+                            {usernameAvailable === false && (
+                                <Text className="text-red-500 text-xs mt-1 ml-2">Username is already taken</Text>
+                            )}
+                        </View>
 
                         <View className="mb-6">
                             <Text className="text-[17px] font-semibold text-brand-gray dark:text-brand-gray-light mb-3">Full Name</Text>

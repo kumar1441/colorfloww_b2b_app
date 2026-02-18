@@ -169,7 +169,6 @@ export default function CameraScreen() {
                 <View style={[styles.headerRow, { paddingTop: Math.max(insets.top, 16) }]} pointerEvents="box-none">
                     <TouchableOpacity
                         onPress={() => {
-                            console.log("Cancel pressed - returning");
                             router.back();
                         }}
                         style={styles.controlCircle}
@@ -180,7 +179,6 @@ export default function CameraScreen() {
 
                     <TouchableOpacity
                         onPress={() => {
-                            console.log("Flip pressed");
                             toggleCameraFacing();
                         }}
                         style={styles.controlCircle}

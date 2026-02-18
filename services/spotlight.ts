@@ -113,10 +113,10 @@ export class SpotlightService {
             const votedIds = votedSubmissions?.map(v => v.submission_id) || [];
             // User voted check
 
-            // Build query - simplified without profiles join
+            // Build query with user_profile join to get real usernames
             let query = supabase
                 .from('spotlight_submissions')
-                .select('*')
+                .select('*, user_profile(username)')
                 .eq('status', 'active')
                 .order('created_at', { ascending: false })
                 .limit(limit);
@@ -138,13 +138,12 @@ export class SpotlightService {
                 return [];
             }
 
-            // Return submissions with placeholder username
+            // Map results to include username from joined table
             const submissions: SpotlightSubmission[] = (data || []).map((item: any) => ({
                 ...item,
-                username: 'ColorflowUser',
+                username: item.user_profile?.username || 'GlowUser',
             }));
 
-            // Fetched submissions successfully
             return submissions;
         } catch (error) {
             console.error(`${logPrefix} Unexpected error:`, error);

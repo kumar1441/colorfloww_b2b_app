@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, Modal, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, StyleSheet } from 'react-native';
+import { View, Text, Pressable, Modal, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, StyleSheet, Dimensions } from 'react-native';
 import { LucideMessageSquare, LucideX, LucideCheck } from 'lucide-react-native';
 import { FeedbackService, FeedbackCategory } from '../services/feedback';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface FeedbackModalProps {
     visible: boolean;
@@ -64,7 +66,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ visible, onClose }
                             <View style={styles.header}>
                                 <View style={styles.headerTitleContainer}>
                                     <View style={styles.iconContainer}>
-                                        <LucideMessageSquare size={28} color="#000000" strokeWidth={2.5} />
+                                        <LucideMessageSquare size={24} color="#307b75" strokeWidth={2} />
                                     </View>
                                     <Text style={styles.titleText}>Feedback</Text>
                                 </View>
@@ -72,7 +74,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ visible, onClose }
                                     onPress={handleClose}
                                     style={({ pressed }) => [styles.closeButton, pressed && { opacity: 0.5 }]}
                                 >
-                                    <LucideX size={32} color="#000000" strokeWidth={3} />
+                                    <LucideX size={28} color="#8A8A8A" strokeWidth={2} />
                                 </Pressable>
                             </View>
 
@@ -87,14 +89,17 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ visible, onClose }
                                         style={({ pressed }) => [
                                             styles.categoryItem,
                                             selectedCategory === cat.value && styles.categoryItemSelected,
-                                            pressed && { opacity: 0.7 }
+                                            pressed && { opacity: 0.8 }
                                         ]}
                                     >
                                         <Text style={styles.categoryIcon}>{cat.icon}</Text>
-                                        <Text style={[
-                                            styles.categoryText,
-                                            selectedCategory === cat.value && styles.categoryTextSelected
-                                        ]}>
+                                        <Text
+                                            numberOfLines={1}
+                                            style={[
+                                                styles.categoryText,
+                                                selectedCategory === cat.value && styles.categoryTextSelected
+                                            ]}
+                                        >
                                             {cat.label}
                                         </Text>
                                     </Pressable>
@@ -107,7 +112,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ visible, onClose }
                                 <TextInput
                                     style={styles.textInput}
                                     placeholder="Tell us what's on your mind..."
-                                    placeholderTextColor="#777777"
+                                    placeholderTextColor="#A1A1A1"
                                     multiline
                                     value={message}
                                     onChangeText={setMessage}
@@ -120,16 +125,18 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ visible, onClose }
                                 disabled={isSubmitting}
                                 style={({ pressed }) => [
                                     styles.submitButton,
-                                    pressed && { backgroundColor: '#F0F0F0' },
+                                    pressed && styles.submitButtonPressed,
                                     isSubmitting && { opacity: 0.5 }
                                 ]}
                             >
-                                {isSubmitting ? (
-                                    <ActivityIndicator color="#000000" style={{ marginRight: 12 }} />
-                                ) : (
-                                    <LucideCheck size={26} color="#000000" style={{ marginRight: 12 }} strokeWidth={4} />
-                                )}
-                                <Text style={styles.submitButtonText}>Submit Feedback</Text>
+                                <View style={styles.buttonInner}>
+                                    {isSubmitting ? (
+                                        <ActivityIndicator color="white" style={{ marginRight: 12 }} />
+                                    ) : (
+                                        <LucideCheck size={20} color="white" style={{ marginRight: 8 }} strokeWidth={3} />
+                                    )}
+                                    <Text style={styles.submitButtonText}>Submit</Text>
+                                </View>
                             </Pressable>
                         </View>
                     </KeyboardAvoidingView>
@@ -143,133 +150,160 @@ const styles = StyleSheet.create({
     overlay: {
         flex: 1,
         justifyContent: 'flex-end',
-        backgroundColor: 'rgba(0,0,0,0.7)',
+        backgroundColor: 'rgba(0,0,0,0.5)',
     },
     keyboardView: {
         width: '100%',
     },
     modalContent: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#f2f2f2',
         borderTopLeftRadius: 40,
         borderTopRightRadius: 40,
         paddingHorizontal: 24,
-        paddingTop: 36,
+        paddingTop: 32,
         paddingBottom: 64,
-        borderWidth: 3,
-        borderColor: '#000000',
-        borderBottomWidth: 0,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: -10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 20,
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 32,
+        marginBottom: 24,
     },
     headerTitleContainer: {
         flexDirection: 'row',
         alignItems: 'center',
     },
     iconContainer: {
-        width: 56,
-        height: 56,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
+        width: 44,
+        height: 44,
+        backgroundColor: 'rgba(48, 123, 117, 0.1)',
+        borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: 16,
-        borderWidth: 3,
-        borderColor: '#000000',
+        marginRight: 12,
     },
     titleText: {
-        fontSize: 32,
-        fontWeight: '900',
-        color: '#000000',
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
         letterSpacing: -0.5,
     },
     closeButton: {
-        padding: 8,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'white',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 5,
+        elevation: 2,
     },
     subtitleText: {
-        fontSize: 14,
-        fontWeight: '900',
-        color: '#000000',
-        marginBottom: 24,
+        fontSize: 11,
+        fontWeight: 'bold',
+        color: '#307b75',
+        marginBottom: 20,
         letterSpacing: 2,
         textTransform: 'uppercase',
     },
     categoryGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        marginBottom: 32,
+        marginBottom: 28,
         gap: 12,
+        justifyContent: 'space-between',
     },
     categoryItem: {
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        borderRadius: 14,
-        borderWidth: 2.5,
-        borderColor: '#000000',
-        flexDirection: 'row',
+        width: (SCREEN_WIDTH - 48 - 24) / 3, // 3 column grid with gaps
+        paddingVertical: 16,
+        paddingHorizontal: 8,
+        borderRadius: 20,
+        borderWidth: 1.5,
+        borderColor: 'rgba(0,0,0,0.05)',
         alignItems: 'center',
-        backgroundColor: '#FFFFFF',
-        marginBottom: 4,
+        justifyContent: 'center',
+        backgroundColor: 'white',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.03,
+        shadowRadius: 4,
+        elevation: 1,
     },
     categoryItemSelected: {
-        backgroundColor: '#000000',
+        backgroundColor: 'rgba(48, 123, 117, 0.05)',
+        borderColor: '#307b75',
     },
     categoryIcon: {
-        marginRight: 10,
-        fontSize: 20,
+        fontSize: 24,
+        marginBottom: 8,
     },
     categoryText: {
-        fontWeight: '900',
-        fontSize: 15,
-        color: '#000000',
+        fontWeight: '700',
+        fontSize: 12,
+        color: '#1A1A1A',
+        textAlign: 'center',
     },
     categoryTextSelected: {
-        color: '#FFFFFF',
+        color: '#307b75',
     },
     inputSection: {
-        marginBottom: 40,
+        marginBottom: 32,
     },
     inputLabel: {
-        fontSize: 18,
-        fontWeight: '900',
-        color: '#000000',
-        marginBottom: 14,
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+        marginBottom: 12,
+        marginLeft: 4,
     },
     textInput: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: 'white',
         padding: 20,
         borderRadius: 24,
-        fontSize: 17,
-        borderWidth: 2.5,
-        borderColor: '#000000',
-        height: 160,
-        color: '#000000',
+        fontSize: 16,
+        borderWidth: 1.5,
+        borderColor: 'rgba(0,0,0,0.05)',
+        height: 140,
+        color: '#1A1A1A',
         textAlignVertical: 'top',
-        fontWeight: '700',
+        fontWeight: '500',
     },
     submitButton: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#307b75',
         width: '100%',
-        paddingVertical: 24,
-        borderRadius: 24,
+        height: 56,
+        borderRadius: 28,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#307b75',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 6,
+    },
+    submitButtonPressed: {
+        opacity: 0.9,
+        transform: [{ scale: 0.98 }],
+    },
+    buttonInner: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        borderWidth: 4,
-        borderColor: '#000000',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.15,
-        shadowRadius: 0, // Hard shadow for gorgeous brutalist look
-        elevation: 10,
     },
     submitButtonText: {
-        color: '#000000',
-        fontSize: 22,
-        fontWeight: '900',
-        letterSpacing: 0.5,
+        color: 'white',
+        fontSize: 18,
+        fontWeight: '800',
+        letterSpacing: -0.5,
     },
 });
+
+

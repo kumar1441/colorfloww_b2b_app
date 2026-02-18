@@ -42,6 +42,9 @@ export default function Layout() {
                 <Stack.Screen name="creators" />
                 <Stack.Screen name="signup" options={{ presentation: 'fullScreenModal' }} />
                 <Stack.Screen name="login" options={{ presentation: 'fullScreenModal' }} />
+                <Stack.Screen name="settings" />
+                <Stack.Screen name="edit-profile" />
+                <Stack.Screen name="awards" />
             </Stack>
             <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
         </SafeAreaProvider>

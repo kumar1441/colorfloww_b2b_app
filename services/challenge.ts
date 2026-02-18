@@ -53,7 +53,7 @@ export const ChallengeService = {
         // Award rewards
         const challenge = await this.getDailyChallenge();
         if (challenge) {
-            await GamificationService.awardXP(challenge.reward_xp, `challenge_completion_${challenge.id}`);
+            await GamificationService.awardKarma(challenge.reward_xp, `challenge_completion_${challenge.id}`);
             await GamificationService.awardGems(challenge.reward_gems, `challenge_completion_${challenge.id}`);
         }
     },
@@ -65,11 +65,8 @@ export const ChallengeService = {
         const stats = await GamificationService.getPlayerStats();
         if (!stats) return false;
 
-        // Premium colors unlock at Level 5 or via Gems
-        // Mock logic: IDs starting with 'fx_' are locked
+        // Premium colors unlock via Gems only
         if (!colorId.startsWith('fx_')) return true;
-
-        if (stats.level >= 5) return true;
 
         const { data: purchase } = await supabase
             .from('user_unlocks')

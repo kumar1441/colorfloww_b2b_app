@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, FlatList, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { LucideArrowRight, LucideSparkles, LucideLogOut } from 'lucide-react-native';
+import { LucideArrowRight, LucideSparkles, LucideAtSign, LucideX } from 'lucide-react-native';
 import { AuthService } from '../../services/auth';
 import { ColorService, Color } from '../../services/color';
 import { useIsFocused } from '@react-navigation/native';
@@ -19,13 +19,24 @@ export default function HomeScreen() {
     const router = useRouter();
     const isFocused = useIsFocused();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [showUsernameNudge, setShowUsernameNudge] = useState(false);
     const [popularColors, setPopularColors] = useState<Color[]>([]);
     const [boldColors, setBoldColors] = useState<Color[]>([]);
     const [pastelColors, setPastelColors] = useState<Color[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        AuthService.isLoggedIn().then(setIsLoggedIn);
+        const checkUser = async () => {
+            const loggedIn = await AuthService.isLoggedIn();
+            setIsLoggedIn(loggedIn);
+            if (loggedIn) {
+                const profile = await AuthService.getFullUserProfile();
+                setShowUsernameNudge(!profile?.username);
+            } else {
+                setShowUsernameNudge(false);
+            }
+        };
+        checkUser();
     }, [isFocused]);
 
     useEffect(() => {
@@ -103,6 +114,31 @@ export default function HomeScreen() {
                         <Text className="text-4xl font-bold text-white text-center">Paint Your Imaginations</Text>
                     </View>
                 </View>
+
+                {/* Username Nudge */}
+                {showUsernameNudge && (
+                    <View style={styles.nudgeBanner}>
+                        <View style={styles.nudgeIconContainer}>
+                            <LucideAtSign size={18} color="#307b75" strokeWidth={2.5} />
+                        </View>
+                        <View style={styles.nudgeTextContainer}>
+                            <Text style={styles.nudgeTitle}>Claim your handle</Text>
+                            <Text style={styles.nudgeSubtitle}>Set a unique @username</Text>
+                        </View>
+                        <TouchableOpacity
+                            onPress={() => router.push('/edit-profile')}
+                            style={styles.nudgeCTA}
+                        >
+                            <Text style={styles.nudgeCTAText}>Set it</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => setShowUsernameNudge(false)}
+                            style={styles.nudgeDismiss}
+                        >
+                            <LucideX size={14} color="#A1A1A1" strokeWidth={2.5} />
+                        </TouchableOpacity>
+                    </View>
+                )}
 
                 {isLoading ? (
                     <View className="py-20 justify-center items-center">
@@ -191,3 +227,58 @@ export default function HomeScreen() {
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    nudgeBanner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginHorizontal: 20,
+        marginTop: 16,
+        marginBottom: 4,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        backgroundColor: 'rgba(48, 123, 117, 0.07)',
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(48, 123, 117, 0.15)',
+    },
+    nudgeIconContainer: {
+        width: 36,
+        height: 36,
+        borderRadius: 12,
+        backgroundColor: 'rgba(48, 123, 117, 0.12)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+    },
+    nudgeTextContainer: {
+        flex: 1,
+    },
+    nudgeTitle: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: '#1A1A1A',
+        marginBottom: 1,
+    },
+    nudgeSubtitle: {
+        fontSize: 11,
+        color: '#8A8A8A',
+        fontWeight: '500',
+    },
+    nudgeCTA: {
+        backgroundColor: '#307b75',
+        paddingHorizontal: 14,
+        paddingVertical: 7,
+        borderRadius: 20,
+        marginLeft: 8,
+    },
+    nudgeCTAText: {
+        color: 'white',
+        fontSize: 12,
+        fontWeight: '700',
+    },
+    nudgeDismiss: {
+        padding: 6,
+        marginLeft: 4,
+    },
+});

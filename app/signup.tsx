@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { LucideArrowLeft } from 'lucide-react-native';
+import { LucideArrowLeft, LucideUser, LucideCheck, LucideX, LucideLoader2 } from 'lucide-react-native';
 import { AuthService } from '../services/auth';
 import { GamificationService } from '../services/gamification';
 import { AnalyticsService } from '../services/analytics';
@@ -20,44 +20,73 @@ export default function SignupScreen() {
 
     const [formData, setFormData] = useState({
         email: "",
-        password: ""
+        password: "",
+        fullName: "",
+        username: ""
     });
+
+    const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+    const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
 
     const handleBack = () => {
         router.back();
     };
 
+    const handleUsernameChange = async (username: string) => {
+        const cleaned = username.toLowerCase().replace(/[^a-z0-9_.]/g, '').slice(0, 20);
+        setFormData(prev => ({ ...prev, username: cleaned }));
+        setUsernameAvailable(null);
+
+        if (cleaned.length >= 3) {
+            setIsCheckingUsername(true);
+            try {
+                const available = await AuthService.isUsernameAvailable(cleaned);
+                setUsernameAvailable(available);
+            } catch (err) {
+                console.error('[Signup] Username check error:', err);
+            } finally {
+                setIsCheckingUsername(false);
+            }
+        }
+    };
+
     const handleSignup = async () => {
-        if (!formData.email || !formData.password) {
+        if (!formData.email || !formData.password || !formData.fullName || !formData.username) {
             setError("Please fill in all fields");
             return;
         }
 
-        console.log(`[SignupScreen] Starting signup for: ${formData.email}`);
+        if (usernameAvailable === false) {
+            setError("Username is already taken");
+            return;
+        }
+
+        if (formData.username.length < 3) {
+            setError("Username must be at least 3 characters");
+            return;
+        }
+
         setLoading(true);
         setError(null);
         try {
             // 1. Auth Sign Up
-            // Use email prefix as a default name
-            const defaultName = formData.email.split('@')[0];
-            const user = await AuthService.signUp(formData.email, formData.password, defaultName);
-            console.log(`[SignupScreen] Auth signup successful. User ID: ${user?.id}`);
+            const user = await AuthService.signUp(formData.email, formData.password, formData.fullName);
 
             // 2. Save User Profile
             const referralCode = AuthService.generateReferralCode();
             await AuthService.saveUserProfile({
                 email: formData.email,
+                username: formData.username,
+                fullName: formData.fullName,
                 referral_code: referralCode
             }, user?.id);
 
             await AnalyticsService.identify();
 
-            console.log(`[SignupScreen] Profile saved successfully`);
-
             // 3. Grant Gamification Rewards
             try {
                 await GamificationService.grantAward('verified_artist');
-                await GamificationService.awardXP(150, 'studio_calibration_complete');
+                await GamificationService.awardKarma(150, 'welcome_bonus');
             } catch (gamifyErr) {
                 console.error(`[SignupScreen] Gamification error (non-blocking):`, gamifyErr);
             }
@@ -107,6 +136,41 @@ export default function SignupScreen() {
                                 <Text className="text-red-600 text-center font-medium">{error}</Text>
                             </View>
                         )}
+
+                        <View className="mb-6">
+                            <Text className="text-[17px] font-semibold text-brand-gray dark:text-brand-gray-light mb-3">Full Name</Text>
+                            <View className="flex-row items-center bg-brand-peach/30 dark:bg-brand-peach-dark/20 border border-brand-gray-medium/10 rounded-2xl px-5">
+                                <LucideUser size={20} color="#307b75" className="mr-3" />
+                                <TextInput
+                                    className="flex-1 py-4 text-lg text-brand-gray dark:text-brand-gray-light"
+                                    placeholder="Enter your name"
+                                    placeholderTextColor="#A1A1A1"
+                                    value={formData.fullName}
+                                    onChangeText={(v) => setFormData({ ...formData, fullName: v })}
+                                />
+                            </View>
+                        </View>
+
+                        <View className="mb-6">
+                            <Text className="text-[17px] font-semibold text-brand-gray dark:text-brand-gray-light mb-3">Username</Text>
+                            <View className="flex-row items-center bg-brand-peach/30 dark:bg-brand-peach-dark/20 border border-brand-gray-medium/10 rounded-2xl px-5">
+                                <LucideUser size={20} color="#307b75" className="mr-3" />
+                                <TextInput
+                                    className="flex-1 py-4 text-lg text-brand-gray dark:text-brand-gray-light"
+                                    placeholder="choose_a_username"
+                                    placeholderTextColor="#A1A1A1"
+                                    autoCapitalize="none"
+                                    value={formData.username}
+                                    onChangeText={handleUsernameChange}
+                                />
+                                {isCheckingUsername && <LucideLoader2 size={18} color="#307b75" className="animate-spin" />}
+                                {!isCheckingUsername && usernameAvailable === true && <LucideCheck size={18} color="#4ADE80" />}
+                                {!isCheckingUsername && usernameAvailable === false && <LucideX size={18} color="#F87171" />}
+                            </View>
+                            {usernameAvailable === false && (
+                                <Text className="text-red-500 text-xs mt-1 ml-2">Username is already taken</Text>
+                            )}
+                        </View>
 
                         <View className="mb-6">
                             <Text className="text-[17px] font-semibold text-brand-gray dark:text-brand-gray-light mb-3">Email</Text>

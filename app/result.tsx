@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, TextInput, ScrollView, Dimensions, Share } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, TextInput, ScrollView, Dimensions, Share, Modal } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { LucideChevronLeft, LucideCheckCircle2, LucideShare2 } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
-import { GamificationService } from '../services/gamification';
+import { GamificationService, AwardDefinition } from '../services/gamification';
 import { detectNails, Nail, NailDetectionResult } from '../services/nailDetection';
 import { SpotlightService } from '../services/spotlight';
 import { NailOverlaySkia, NailOverlayRef } from '../components/NailOverlaySkia';
@@ -40,6 +40,8 @@ function ResultScreen() {
     const [processedWidth, setProcessedWidth] = useState<number>(0);
     const [processedHeight, setProcessedHeight] = useState<number>(0);
     const [isSaving, setIsSaving] = React.useState(false);
+    const [newAwards, setNewAwards] = useState<AwardDefinition[]>([]);
+    const [awardModalVisible, setAwardModalVisible] = useState(false);
     const colorName = (params.colorName as string) || 'Custom Shade';
 
     const abortControllerRef = useRef<AbortController | null>(null);
@@ -65,7 +67,6 @@ function ResultScreen() {
 
         // Auto-abort after 60 seconds (server cold start handling)
         const timeoutId = setTimeout(() => {
-            console.log("[ResultScreen] Detection timed out");
             controller.abort("TIMEOUT");
         }, 60000);
 
@@ -88,7 +89,6 @@ function ResultScreen() {
             }
         } catch (e: any) {
             clearTimeout(timeoutId);
-            console.log("[ResultScreen] Detection Error:", e);
 
             // Check for timeout or explicit cancellation
             const isTimeout = e === 'TIMEOUT' || (controller.signal.aborted && controller.signal.reason === 'TIMEOUT');
@@ -135,7 +135,7 @@ function ResultScreen() {
             );
 
             if (result.success) {
-                await GamificationService.awardKarma(20, 'Universal', 'spotlight_submission');
+                await GamificationService.awardKarma(20, 'spotlight_submission');
                 setHasSubmittedSpotlight(true);
                 Alert.alert(
                     "✨ Submitted to Spotlight!",
@@ -163,32 +163,49 @@ function ResultScreen() {
             const base64Image = overlayRef.current?.capture();
             const finalImageUri = base64Image ? `data:image/jpeg;base64,${base64Image}` : (processedImageUri || params.imageUri as string);
 
-            await HistoryService.saveTryOn({
+            const earnedAwards = await HistoryService.saveTryOn({
                 colorHex,
                 colorName: finalName,
                 intent: selectedIntent,
                 nailsCount: nails.length,
-                processedImageUri: finalImageUri, // Save the virtual look photo
+                processedImageUri: finalImageUri,
             });
 
-            await GamificationService.awardXP(30, 'custom_color_creation');
+            await GamificationService.awardKarma(30, 'custom_color_creation');
             if (colorName !== params.colorName) {
-                await GamificationService.awardKarma(10, 'Universal', 'color_named');
-                Alert.alert("🎨 Creative Mind!", "You earned 10 Karma for naming your custom shade!", [{ text: "Nice!" }]);
+                await GamificationService.awardKarma(10, 'color_named');
             }
 
             await AuthService.recordSession();
-            const isComplete = await AuthService.isProfileComplete();
-            if (!isComplete) {
-                setShowNudge(true);
+
+            // Show award celebration if any new awards were earned
+            if (earnedAwards && earnedAwards.length > 0) {
+                setNewAwards(earnedAwards);
+                setAwardModalVisible(true);
+                // Navigation will happen when user dismisses the modal
             } else {
-                router.dismissAll();
+                const isComplete = await AuthService.isProfileComplete();
+                if (!isComplete) {
+                    setShowNudge(true);
+                } else {
+                    router.dismissAll();
+                }
             }
         } catch (e) {
             console.error("Save history error:", e);
             Alert.alert("Error", "Could not save your session. Please try again.");
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleAwardModalDismiss = async () => {
+        setAwardModalVisible(false);
+        const isComplete = await AuthService.isProfileComplete();
+        if (!isComplete) {
+            setShowNudge(true);
+        } else {
+            router.dismissAll();
         }
     };
 
@@ -355,6 +372,56 @@ function ResultScreen() {
                 onClose={() => router.dismissAll()}
                 onComplete={() => router.dismissAll()}
             />
+
+            {/* Award Celebration Modal */}
+            {newAwards.length > 0 && (
+                <Modal
+                    visible={awardModalVisible}
+                    transparent
+                    animationType="fade"
+                    onRequestClose={handleAwardModalDismiss}
+                >
+                    <View style={styles.awardOverlay}>
+                        <View style={styles.awardCard}>
+                            {/* Confetti header */}
+                            <View style={styles.confettiRow}>
+                                {['🎉', '✨', '🎊', '💫', '🌟', '🎈', '✨', '🎉'].map((e, i) => (
+                                    <Text key={i} style={styles.confettiEmoji}>{e}</Text>
+                                ))}
+                            </View>
+
+                            <Text style={styles.awardCelebTitle}>
+                                {newAwards.length === 1 ? 'Award Unlocked! 🏆' : `${newAwards.length} Awards Unlocked! 🏆`}
+                            </Text>
+
+                            {/* All awards in one view */}
+                            {newAwards.map((award, i) => (
+                                <View key={award.id} style={styles.awardRow}>
+                                    <View style={styles.awardRowEmoji}>
+                                        <Text style={styles.awardRowEmojiText}>{award.emoji}</Text>
+                                    </View>
+                                    <View style={styles.awardRowInfo}>
+                                        <Text style={styles.awardRowName}>{award.name}</Text>
+                                        <Text style={styles.awardRowDesc} numberOfLines={2}>{award.description}</Text>
+                                    </View>
+                                    <View style={styles.awardRowXP}>
+                                        <Text style={styles.awardRowXPText}>+{award.karmaReward}</Text>
+                                        <Text style={styles.awardRowXPLabel}>Karma</Text>
+                                    </View>
+                                </View>
+                            ))}
+
+                            <TouchableOpacity
+                                style={styles.awardDismissBtn}
+                                onPress={handleAwardModalDismiss}
+                                activeOpacity={0.8}
+                            >
+                                <Text style={styles.awardDismissBtnText}>Done 🎉</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
+            )}
         </View>
     );
 }
@@ -590,7 +657,152 @@ const styles = StyleSheet.create({
         color: 'rgba(26,26,26,0.4)',
         fontWeight: '600',
         fontSize: 14,
-    }
+    },
+    // Award Celebration Modal
+    awardOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 28,
+    },
+    awardCard: {
+        backgroundColor: 'white',
+        borderRadius: 36,
+        padding: 28,
+        width: '100%',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOpacity: 0.2,
+        shadowRadius: 24,
+        elevation: 12,
+    },
+    confettiRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+        marginBottom: 12,
+    },
+    confettiEmoji: {
+        fontSize: 18,
+    },
+    awardCelebTitle: {
+        fontSize: 13,
+        fontWeight: '800',
+        color: '#307b75',
+        textTransform: 'uppercase',
+        letterSpacing: 2,
+        marginBottom: 16,
+    },
+    awardEmojiContainer: {
+        width: 100,
+        height: 100,
+        borderRadius: 30,
+        backgroundColor: 'rgba(48,123,117,0.08)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+    },
+    awardBigEmoji: {
+        fontSize: 56,
+    },
+    awardName: {
+        fontSize: 24,
+        fontWeight: '800',
+        color: '#1A1A1A',
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    awardDesc: {
+        fontSize: 14,
+        color: '#6A6A6A',
+        textAlign: 'center',
+        lineHeight: 20,
+        marginBottom: 20,
+    },
+    awardXPBadge: {
+        backgroundColor: 'rgba(48,123,117,0.1)',
+        paddingHorizontal: 20,
+        paddingVertical: 8,
+        borderRadius: 20,
+        marginBottom: 8,
+    },
+    awardXPText: {
+        fontSize: 16,
+        fontWeight: '800',
+        color: '#307b75',
+    },
+    awardCounter: {
+        fontSize: 12,
+        color: '#A0A0A0',
+        fontWeight: '600',
+        marginBottom: 16,
+        marginTop: 4,
+    },
+    awardDismissBtn: {
+        backgroundColor: '#307b75',
+        paddingHorizontal: 32,
+        paddingVertical: 14,
+        borderRadius: 28,
+        marginTop: 8,
+        width: '100%',
+        alignItems: 'center',
+    },
+    awardDismissBtnText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '800',
+    },
+    // Award row styles (for multi-award display)
+    awardRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(0,0,0,0.05)',
+        gap: 12,
+    },
+    awardRowEmoji: {
+        width: 44,
+        height: 44,
+        borderRadius: 14,
+        backgroundColor: 'rgba(48,123,117,0.08)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    awardRowEmojiText: {
+        fontSize: 24,
+    },
+    awardRowInfo: {
+        flex: 1,
+    },
+    awardRowName: {
+        fontSize: 14,
+        fontWeight: '800',
+        color: '#1A1A1A',
+        marginBottom: 2,
+    },
+    awardRowDesc: {
+        fontSize: 11,
+        color: '#8A8A8A',
+        lineHeight: 15,
+    },
+    awardRowXP: {
+        alignItems: 'center',
+    },
+    awardRowXPText: {
+        fontSize: 15,
+        fontWeight: '900',
+        color: '#307b75',
+    },
+    awardRowXPLabel: {
+        fontSize: 9,
+        fontWeight: '700',
+        color: '#307b75',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
 });
 
 export default ResultScreen;

@@ -2,7 +2,7 @@ export default {
   expo: {
     name: "Colorfloww",
     slug: "colorfloww",
-    version: "1.3.1",
+    version: "1.4.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
@@ -15,7 +15,7 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.nailay.colorfloww",
-      buildNumber: "5",
+      buildNumber: "6",
       infoPlist: {
         NSCameraUsageDescription: "Allow Colorfloww to access your camera to create nail art.",
         NSPhotoLibraryUsageDescription: "Allow Colorfloww to access your photos to select nail art references.",
@@ -26,7 +26,7 @@ export default {
     },
     android: {
       package: "com.nailay.colorfloww",
-      versionCode: 3,
+      versionCode: 4,
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff"

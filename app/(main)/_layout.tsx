@@ -12,8 +12,12 @@ export default function MainLayout() {
         <Tabs
             screenOptions={{
                 headerShown: false,
-                tabBarActiveTintColor: '#697D59',
+                tabBarActiveTintColor: '#307b75',
                 tabBarInactiveTintColor: '#8A8A8A',
+                tabBarLabelStyle: {
+                    fontWeight: '700',
+                    fontSize: 10,
+                },
                 tabBarStyle: [
                     styles.tabBar,
                     {
@@ -67,12 +71,6 @@ export default function MainLayout() {
                 options={{
                     title: 'Me',
                     tabBarIcon: ({ color, size }) => <LucideUser size={size} color={color} />,
-                }}
-            />
-            <Tabs.Screen
-                name="edit-profile"
-                options={{
-                    href: null,
                 }}
             />
         </Tabs>
